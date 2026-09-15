@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-mono text-body antialiased;
+  }
+}
+
+@layer components {
+  /* The signature divider: dashed rule between content sections. */
+  .rule-y {
+    @apply border-b border-dashed border-rule;
+  }
+  .rule-dotted-y {
+    @apply border-b border-dotted border-rule;
+  }
+}
