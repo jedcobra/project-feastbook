@@ -1,3 +1,5 @@
+# Requires Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
+# (a one-time repo setting only an admin can flip; the workflow can't enable it itself).
 name: Deploy to GitHub Pages
 
 on:
@@ -31,8 +33,6 @@ jobs:
           NEXT_STATIC_EXPORT: '1'
           NEXT_BASE_PATH: /${{ github.event.repository.name }}
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
