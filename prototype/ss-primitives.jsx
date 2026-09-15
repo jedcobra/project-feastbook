@@ -188,6 +188,13 @@ function SSIcon({ name, size = 18, color = 'currentColor', weight = 1.4 }) {
     pot: <><path d="M4 10h16v2a7 7 0 01-7 7h-2a7 7 0 01-7-7v-2z"/><path d="M3 10h18M8 6v3M12 6v3M16 6v3"/></>,
     pencil: <path d="M3 21l4-1L19 8l-3-3L4 17l-1 4z"/>,
     star: <path d="M12 3l2.5 6 6.5.5-5 4.5 1.5 6.5L12 17l-5.5 3.5L8 14 3 9.5l6.5-.5L12 3z"/>,
+    link: <><path d="M10 13a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 11a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></>,
+    camera: <><path d="M3 8a1 1 0 011-1h3l1.5-2h7L17 7h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/><circle cx="12" cy="12.5" r="3.5"/></>,
+    fork: <><circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M7 8.5v2a3 3 0 003 3h4a3 3 0 003-3v-2M12 13.5v3"/></>,
+    drag: <><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></>,
+    warn: <><path d="M12 4l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></>,
+    save: <><path d="M5 4h11l3 3v13H5V4z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></>,
+    wand: <><path d="M6 18L17 7"/><path d="M15 5l1 1M19 9l1 1M4 12h2M12 4v2"/></>,
   };
   return <svg viewBox="0 0 24 24" style={s}>{paths[name] || null}</svg>;
 }

@@ -84,10 +84,11 @@ Once the Feed looks right, work through these one at a time:
 3. Profile / cookbook (`/me` and `/[handle]`)
 4. Discover (`/discover`)
 5. Cooking mode (`/cook/[id]`) — including the working timer
-6. Supabase + auth, replacing fixtures with real reads
-7. Write actions — follow, save, comment
+6. **Add-recipe flow** — composer first, then publish, then the entry screen, drafts, and empty state. Skip the two import-review screens until a parser exists.
+7. Supabase + auth, replacing fixtures with real reads
+8. Write actions — follow, save, comment
 
-The README's "Build Order" section covers this in more detail, plus the open design questions you'll hit around step 5 (recipe creation isn't designed yet).
+The README's "Build Order" section covers this in more detail, plus the open design questions you'll hit around the import screens (parsing backend and fork attribution aren't decided).
 
 ---
 

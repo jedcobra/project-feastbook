@@ -97,6 +97,8 @@
 <script type="text/babel" src="ss-profile.jsx"></script>
 <script type="text/babel" src="ss-cooking.jsx"></script>
 <script type="text/babel" src="ss-discover.jsx"></script>
+<script type="text/babel" src="ss-create.jsx"></script>
+<script type="text/babel" src="ss-create-2.jsx"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -105,9 +107,9 @@
 <script type="text/babel">
 const TWEAKS = /*EDITMODE-BEGIN*/{
   "theme": "cream",
-  "type": "bookish",
+  "type": "garamond",
   "feedLayout": "index",
-  "detailLayout": "document",
+  "detailLayout": "margin",
   "showcase": "prototype"
 }/*EDITMODE-END*/;
 
@@ -154,6 +156,7 @@ function SpecialSpoonApp() {
     const showcaseOpts = [
       ['prototype',       'Live prototype'],
       ['flow',            'All screens'],
+      ['create',          'Add-recipe flow'],
       ['feed-variants',   'Feed variants'],
       ['detail-variants', 'Detail variants'],
       ['type-variants',   'Typography'],
@@ -212,6 +215,7 @@ function SpecialSpoonApp() {
   if (tweaks.showcase === 'feed-variants')   return <FeedVariants   baseStyle={baseStyle} tweaks={tweaks}/>;
   if (tweaks.showcase === 'detail-variants') return <DetailVariants baseStyle={baseStyle} tweaks={tweaks}/>;
   if (tweaks.showcase === 'type-variants')   return <TypeVariants   tweaks={tweaks}/>;
+  if (tweaks.showcase === 'create')          return <CreateFlow     baseStyle={baseStyle}/>;
   if (tweaks.showcase === 'flow')            return <FullFlow       baseStyle={baseStyle} tweaks={tweaks}/>;
   return <Prototype baseStyle={baseStyle} tweaks={tweaks}/>;
 }
@@ -289,27 +293,64 @@ function Prototype({ baseStyle, tweaks }) {
       onExit={pop}
     />;
   } else if (cur.view === 'add') {
-    screen = (
-      <>
-        <SSTopBar title="Add a recipe" onBack={pop}/>
-        <SSScroll>
-          <div style={{
-            padding: '32px 20px', fontFamily: 'var(--ss-mono)', fontSize: 12,
-            color: 'var(--ss-ink-mute)', textAlign: 'center', lineHeight: 1.6,
-          }}>
-            Recipe creation flow lives here.<br/>
-            <span style={{ color: 'var(--ss-ink)' }}>Not yet built.</span>
-          </div>
-        </SSScroll>
-      </>
-    );
+    screen = <SSNewEntryScreen
+      onClose={pop}
+      onCompose={() => push({ tab: 'add', view: 'composer' })}
+      onImportLink={() => push({ tab: 'add', view: 'import', mode: 'confident' })}
+      onPhoto={() => push({ tab: 'add', view: 'import', mode: 'uncertain' })}
+      onDrafts={() => push({ tab: 'add', view: 'drafts' })}
+    />;
+  } else if (cur.view === 'composer') {
+    showTabs = false;
+    screen = <SSComposerScreen
+      seed={cur.seed}
+      onClose={pop}
+      onGuideMe={() => push({ tab: 'add', view: 'wizard' })}
+      onPublish={() => push({ tab: 'add', view: 'publish' })}
+    />;
+  } else if (cur.view === 'wizard') {
+    showTabs = false;
+    screen = <SSWizardScreen
+      onClose={pop}
+      onLongPage={pop}
+      onPublish={() => push({ tab: 'add', view: 'publish' })}
+    />;
+  } else if (cur.view === 'import') {
+    showTabs = false;
+    screen = <SSImportReviewScreen
+      mode={cur.mode}
+      onBack={pop}
+      onSwitchMode={() => setStack(st => [
+        ...st.slice(0, -1),
+        { ...cur, mode: cur.mode === 'uncertain' ? 'confident' : 'uncertain' },
+      ])}
+      onAccept={() => push({ tab: 'add', view: 'composer' })}
+    />;
+  } else if (cur.view === 'publish') {
+    showTabs = false;
+    screen = <SSPublishScreen
+      onBack={pop}
+      onDone={() => setStack([{ tab: 'cookbook', view: 'profile', handle: 'me' }])}
+    />;
+  } else if (cur.view === 'drafts') {
+    showTabs = false;
+    screen = <SSDraftsScreen
+      onBack={pop}
+      onOpen={() => push({ tab: 'add', view: 'composer' })}
+    />;
   }
 
   // Build path string for the URL chip
   const path = stack.map(r => {
-    if (r.view === 'recipe')  return `/recipe/${r.recipeId}`;
-    if (r.view === 'profile') return r.handle === 'me' || r.handle === 'you' ? '/me' : `/@${r.handle}`;
-    if (r.view === 'cooking') return `/cook/${r.recipeId}`;
+    if (r.view === 'recipe')   return `/recipe/${r.recipeId}`;
+    if (r.view === 'profile')  return r.handle === 'me' || r.handle === 'you' ? '/me' : `/@${r.handle}`;
+    if (r.view === 'cooking')  return `/cook/${r.recipeId}`;
+    if (r.view === 'import')   return `/new/import?src=${r.mode === 'uncertain' ? 'photo' : 'link'}`;
+    if (r.view === 'composer') return '/new/edit';
+    if (r.view === 'wizard')   return '/new/guided';
+    if (r.view === 'publish')  return '/new/publish';
+    if (r.view === 'drafts')   return '/new/drafts';
+    if (r.view === 'add')      return '/new';
     return `/${r.view}`;
   }).join('');
 
@@ -318,7 +359,7 @@ function Prototype({ baseStyle, tweaks }) {
       <div className="ss-header">
         <div className="eyebrow">Special Spoon · live prototype</div>
         <h1>Tap through the app</h1>
-        <p>One phone, real navigation. Tap any recipe to open it, tap a name to see their cookbook, hit Start Cooking for full-screen mode. Use the tab bar to switch sections.</p>
+        <p>One phone, real navigation. Tap any recipe to open it, tap a name to see their cookbook, hit Start Cooking for full-screen mode. Tap <b>New</b> to add a recipe — paste a link, photograph a card, or type it out.</p>
       </div>
 
       {/* URL / breadcrumb chip */}
@@ -444,6 +485,39 @@ function FullFlow({ baseStyle, tweaks }) {
           <div key={i}>
             <div className="ss-device-label">{s.label}</div>
             {s.node}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Create flow showcase — all seven screens side by side
+// ─────────────────────────────────────────────────────────────
+function CreateFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Entry \u2014 link first',      node: <SSNewEntryScreen/> },
+    { label: '2 · Import review \u2014 clean',   node: <SSImportReviewScreen mode="confident"/> },
+    { label: '3 · Import review \u2014 messy',   node: <SSImportReviewScreen mode="uncertain"/> },
+    { label: '4 · Composer \u2014 long page',    node: <SSComposerScreen/> },
+    { label: '5 · Wizard \u2014 guide me',       node: <SSWizardScreen/> },
+    { label: '6 · Publish',                    node: <SSPublishScreen/> },
+    { label: '7 · Drafts',                     node: <SSDraftsScreen/> },
+    { label: '8 · Empty \u2014 first recipe',    node: <SSEmptyCookbookScreen/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Add a recipe</div>
+        <h1>Four ways in, one place to check the result</h1>
+        <p>Link paste leads. Photograph, type-it-out and fork sit beneath. Every import lands in a review screen before it saves — and the messy state is designed as carefully as the clean one.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
           </div>
         ))}
       </div>

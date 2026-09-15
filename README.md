@@ -54,7 +54,7 @@ What this design embraces:
 
 ## Screens
 
-The prototype implements **six core screens**. The order matches the tab bar.
+The prototype implements **fourteen screens** across seven areas. The first six match the tab bar; the seventh is the add-recipe flow.
 
 ### 1. Feed (`/feed`)
 **Tab:** Feed (home)
@@ -148,8 +148,90 @@ Same component as My Cookbook, but:
 - Cooks to follow: vertical list, each row = avatar + name + meta (recipes / followers count) + Follow outlined button
 - Editor's picks: vertical list of recipes — serif title, mono meta, tag chip right-aligned
 
-### 7. Add Recipe (`/add`) — Not yet designed
-The center tab bar button. Currently a placeholder ("not yet built"). Recipe-creation flow is the obvious next design task.
+### 7. Add Recipe — **designed, 8 screens**
+
+The center tab-bar button ("New"). Source: `prototype/ss-create.jsx` and `prototype/ss-create-2.jsx`. View all eight side by side via Tweaks → Showcase → "Add-recipe flow".
+
+**Four entry methods. Link paste leads; the rest sit beneath a dashed `or` divider.**
+
+#### 7a. Entry (`/new`)
+- Top bar: "New recipe" + back, trailing `Drafts · N` outlined button
+- **Primary block** (solid 1px indigo border, 16px padding): `IMPORT FROM A LINK` label, a link-icon + URL input on a dashed underline, a filled indigo **Fetch recipe** button, then small mono helper text: *"We pull the ingredients and method, then you confirm every field before it saves."*
+- Dashed `or` divider (rule — "or" — rule)
+- Three secondary rows, each with a 34px square bordered icon box, serif title, mono subtitle, chevron:
+  - **Type it out** — "Blank page. Your words, your measurements."
+  - **Photograph a card** — "Handwritten card or a page from a book."
+  - **Fork a recipe** — "Start from someone else's and change it."
+
+#### 7b. Import review — clean (`/new/import?src=link`)
+Every import lands here before saving. Nothing auto-commits.
+- Subtitle: "Everything parsed cleanly"
+- Source chip (dashed border): link icon, `Link · smittenkitchen.com`, recipe name beneath
+- Status banner bordered in `--accent-2` (forest) with a check icon: *"Ingredients and method came through cleanly. Read it over anyway — sites sometimes bury steps in prose."*
+- Editable title + time fields
+- `INGREDIENTS FOUND` — N lines, each an editable quantity + name pair on dotted rules
+- `METHOD FOUND` — numbered `01`–`04`, serif step titles
+- Footer: outlined **Discard** + filled **Looks right — continue**
+
+#### 7c. Import review — uncertain (`/new/import?src=photo`)
+Same screen, low-confidence state. **This is a deliberate design requirement, not an error case to hide.**
+- Subtitle: "N fields to confirm"
+- Source chip shows camera icon + filename
+- Status banner bordered in `--accent` (vermilion) with a warn icon: *"The handwriting was hard to read in places. Fields marked **check** are our best guess — confirm or correct them before saving."*
+- Unparsed/low-confidence fields get: a small `check` badge (vermilion 1px border, 9px mono), vermilion text, and a **solid vermilion underline** instead of the usual dashed rule
+- A garbled step renders in vermilion with its own `check` badge (e.g. `Whisk in miso and s—[illegible]`)
+- Editing a flagged field clears its flag
+- Footer CTA reads **Open in editor** instead of "Looks right"
+- The header has a dev toggle switching between clean/messy samples — remove in production
+
+#### 7d. Composer — long page (`/new/edit`) — **default**
+One scrolling page. This is what most users get.
+- Top bar: "Write it out", subtitle `N% · draft saved`, trailing **Guide me** button (wand icon) which opts into the wizard
+- 2px progress hairline, fills as title/first-ingredient/first-step are completed
+- **Title** — serif 24px on a dashed underline
+- **One-line description** — mono
+- **Meta trio** in a 3-col grid: Time, Serves, and a Level segmented control (`E`/`M`/`H` boxes, filled indigo when active)
+- **Intro — the story** — 4-row textarea, hint: *"Optional. This is what makes it yours rather than a spec sheet."*
+- **Ingredients editor** — `+ section` link top-right. Each section: an uppercase mono section-name input, then rows of `drag handle · quantity (62px) · ingredient name` on dotted rules, then a `+ ingredient` row
+- **Method editor** — numbered `01`, `02`…: serif title input, 2-row mono description textarea (placeholder: *"What to do, and what it should look like when it's right."*), and a timer-icon + `timer (min)` input. Then `+ step`
+- **Your notes** — "Substitutions, warnings, the thing you always forget."
+- **Tags** — selected tags as removable pills; suggestions as dashed `+ tag` chips
+- Sticky footer: square outlined save-icon button + filled **Continue to publish**
+
+#### 7e. Wizard — "guide me" (`/new/guided`) — opt-in only
+Same fields, one question per screen. Reached only via the composer's **Guide me** button; never forced.
+- Top bar: "Guide me", subtitle `Step N of 6`, trailing **Long page** escape hatch
+- Segmented progress (6 thin bars)
+- Large serif question + mono hint, then the field
+- Six steps: title → one-liner → time/serves/level → ingredients (6-row textarea, "One per line. Quantity first.") → method (6-row textarea, "One step per line. We'll number them.") → intro (optional)
+- Textarea steps use a bordered `--surface` box; single-line steps use a solid-underline input; the title step renders in 26px serif
+- Footer: plain **Skip** text link + filled **Next** / **Review and publish**
+
+#### 7f. Publish (`/new/publish`)
+- Summary card (solid border): serif title + mono `25 min · serves 2 · Easy · 5 ingredients · 4 steps`
+- **Who can see it** — radio rows, **no default selected**; label shows a vermilion `required` marker until chosen:
+  - **Public** — "Anyone can find it. Appears in your followers' feeds."
+  - **Followers** — "Only people who follow you."
+  - **Just me** — "Saved to your cookbook. Nobody else sees it."
+- **Add to shelves** — checkbox rows from the user's shelves with counts, plus `+ new shelf`
+- **Tell my followers** — single checkbox row between dashed rules
+- Footer CTA is **disabled at 50% opacity** reading *"Choose who can see it"* until visibility is picked; then becomes filled indigo *"Publish to my cookbook"*
+- On publish, the prototype resets the nav stack to the user's cookbook
+
+#### 7g. Drafts (`/new/drafts`)
+- Top bar: "Drafts", subtitle `N unfinished`
+- Rows: serif title (muted grey if `Untitled recipe`) + a source icon (pencil / link / camera) right-aligned, then a 2px progress bar with `N% · updated` beside it
+- Mock drafts in `SS_DRAFTS` (`ss-create.jsx`) cover all three sources and a range of completion
+
+#### 7h. Empty state — first recipe
+Shown in place of the cookbook when the user has authored nothing.
+- Bordered plate: `THE COOKBOOK OF` / **You** / "Nothing in it yet."
+- **Four dashed rules at decreasing opacity** — a blank ruled page, the design's stand-in for emptiness
+- Filled **Add your first recipe** button
+- Below: `THREE WAYS TO START` — numbered `01`/`02`/`03` rows for paste-a-link, photograph-a-card, type-it-out, each with a one-line explanation
+
+#### 7i. Edit an existing recipe
+Reuses the composer. `SSComposerScreen` accepts a `seed` prop shaped exactly like a recipe object from `ss-data.jsx` and pre-fills every field from it. **The entry point from a recipe you own is not yet placed** — add an edit affordance to the recipe detail top bar when the viewer is the author.
 
 ---
 
@@ -291,7 +373,7 @@ Don't ship photo uploads in v1. The design works without them, and adding them l
 2. **Static screens with mock data** — port the six screens from `prototype/`
 3. **Navigation** — tab bar + per-tab stack + back buttons
 4. **Authentication** — sign up / sign in
-5. **Recipe creation flow** — this isn't designed yet; the user will need to design it (or you do it from the existing language)
+5. **Add-recipe flow** — build in this order: composer (7d) → publish (7e) → entry screen (7a) → drafts (7g) → empty state (7h). Leave both import-review screens (7b/7c) until a parser exists; until then wire **Fetch recipe** and **Photograph a card** to open the composer directly.
 6. **Real data layer** — replace mock data with backend reads
 7. **Following / saving / comments** — write actions
 8. **Cooking mode timer + persistence** — make the timer survive backgrounding (on iOS, use `BGProcessingTask` or simple state restoration)
@@ -314,6 +396,8 @@ Don't ship photo uploads in v1. The design works without them, and adding them l
 | `prototype/ss-profile.jsx` | Profile / cookbook screen (handles both own + friend variants) |
 | `prototype/ss-discover.jsx` | Discover screen |
 | `prototype/ss-cooking.jsx` | Cooking mode screen |
+| `prototype/ss-create.jsx` | Entry screen, long-page composer, wizard, `SSField` input primitive, `SS_DRAFTS` mock data |
+| `prototype/ss-create-2.jsx` | Import review (both states), publish sheet, drafts list, empty state |
 | `prototype/ios-frame.jsx` | Status bar mock (not needed in the real app) |
 
 ---
@@ -322,9 +406,10 @@ Don't ship photo uploads in v1. The design works without them, and adding them l
 
 These haven't been resolved yet — flag them with the user before building:
 
-1. **Recipe creation flow.** Not designed. How does someone add a recipe? Photo-of-recipe-card OCR? Paste-a-URL? Manual form?
-2. **"Made it" photo handling.** Once users post photos of dishes they made, how do those appear in the feed without overwhelming the typographic design?
-3. **Onboarding.** Not designed. First-time user signup → follow some cooks → see a feed.
+1. **Parsing backend.** The import-review screens are designed, but nothing decides *how* parsing happens. Link imports can use JSON-LD `Recipe` schema (most recipe sites publish it) with an HTML-scraping fallback. Photo imports need real OCR — the design's low-confidence state assumes the parser can report per-field confidence, so pick a service that returns it.
+2. **Fork attribution.** Forking is offered on the entry screen but the attribution model isn't designed — does a forked recipe credit the original author on the detail page, link back, and notify them?
+3. **"Made it" photo handling.** Once users post photos of dishes they made, how do those appear in the feed without overwhelming the typographic design?
+4. **Onboarding.** Not designed. First-time user signup → follow some cooks → see a feed.
 4. **Notifications.** What does someone get notified about (new recipe from someone followed, comment on their recipe, etc.)?
 5. **Search.** The Discover screen has a search input but no results state designed.
 6. **Edit / delete recipe.** No design for the author's own recipe management.
