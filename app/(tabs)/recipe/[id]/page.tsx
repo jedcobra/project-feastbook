@@ -30,7 +30,7 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           </>
         }
       />
-      <div className="flex flex-1 flex-col overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <DocumentDetail recipe={recipe} author={author} />
       </div>
     </>

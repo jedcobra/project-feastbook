@@ -17,7 +17,7 @@ export default function FeedPage() {
         }
       />
       <FeedDateBar date="WED 22 APR" count={FEED.length} />
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-8">
         {FEED.map((item, i) => (
           <FeedRow key={i} item={item} />
         ))}

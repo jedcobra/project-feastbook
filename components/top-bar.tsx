@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { BackIcon } from '@/components/icons';
-import { outlineBoxClasses } from '@/components/outline-box';
+import { BackButton } from '@/components/back-button';
 
 interface TopBarProps {
   title?: string;
@@ -13,12 +11,8 @@ interface TopBarProps {
 // App header — brand wordmark or screen title, plus a trailing action slot.
 export function TopBar({ title, trailing, variant = 'default', backHref }: TopBarProps) {
   return (
-    <div className="flex items-center gap-2.5 px-5 pb-3.5 pt-6">
-      {backHref && (
-        <Link href={backHref} aria-label="Back" className={outlineBoxClasses(true)}>
-          <BackIcon size={14} weight={1.8} />
-        </Link>
-      )}
+    <div className="flex flex-shrink-0 items-center gap-2.5 px-5 pb-3.5 pt-6">
+      {backHref && <BackButton fallbackHref={backHref} />}
       <div className="min-w-0 flex-1">
         {variant === 'brand' ? (
           <div className="font-display text-[26px] font-bold leading-none text-ink">

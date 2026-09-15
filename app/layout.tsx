@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${mono.variable}`}>
       <body>
-        <div className="mx-auto flex min-h-dvh w-full max-w-column flex-col">
+        <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
           {children}
         </div>
       </body>
