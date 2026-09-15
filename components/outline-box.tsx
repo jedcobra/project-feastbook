@@ -1,17 +1,16 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-// Outlined square-cornered button — the design's only button shape.
+// Shared classes for the design's one button shape — outlined, square corners.
+export function outlineBoxClasses(compact: boolean, className = '') {
+  return `inline-flex items-center gap-1.5 rounded-button border border-ink bg-cream font-mono font-medium text-ink ${
+    compact ? 'px-2 py-1 text-meta' : 'px-3 py-1.5 text-body'
+  } ${className}`;
+}
+
 export function OutlineBox({
-  compact,
+  compact = false,
   className = '',
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { compact?: boolean }) {
-  return (
-    <button
-      className={`inline-flex items-center gap-1.5 rounded-button border border-ink bg-cream font-mono font-medium text-ink ${
-        compact ? 'px-2 py-1 text-meta' : 'px-3 py-1.5 text-body'
-      } ${className}`}
-      {...props}
-    />
-  );
+  return <button className={outlineBoxClasses(compact, className)} {...props} />;
 }

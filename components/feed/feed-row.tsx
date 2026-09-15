@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { Tag } from '@/components/tag';
 import { byHandle, recipeById } from '@/lib/fixtures';
@@ -26,9 +27,12 @@ export function FeedRow({ item }: { item: FeedActivity }) {
         <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
       </div>
 
-      <div className="cursor-pointer px-5 pb-1 pt-2 font-display text-feed-title font-bold text-ink">
+      <Link
+        href={`/recipe/${recipe.id}`}
+        className="block px-5 pb-1 pt-2 font-display text-feed-title font-bold text-ink"
+      >
         {recipe.title}
-      </div>
+      </Link>
 
       {item.caption && (
         <div className="px-5 pb-1 font-mono text-[12px] leading-relaxed text-ink-mute">
