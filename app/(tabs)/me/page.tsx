@@ -1,12 +1,23 @@
-import { PlaceholderScreen } from '@/components/placeholder-screen';
+import { EditIcon } from '@/components/icons';
+import { OutlineBox } from '@/components/outline-box';
+import { ProfileScreen } from '@/components/profile/profile-screen';
 import { TopBar } from '@/components/top-bar';
+import { byHandle } from '@/lib/fixtures';
 
-// My Cookbook / Profile isn't built yet — see the suggested build order.
 export default function CookbookPage() {
+  const person = byHandle('you');
+
   return (
     <>
-      <TopBar title="Cookbook" />
-      <PlaceholderScreen line1="Your cookbook lives here." line2="Not yet built." />
+      <TopBar
+        variant="brand"
+        trailing={
+          <OutlineBox compact aria-label="Edit profile">
+            <EditIcon size={14} />
+          </OutlineBox>
+        }
+      />
+      <ProfileScreen person={person} isOwn />
     </>
   );
 }

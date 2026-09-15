@@ -91,3 +91,20 @@ export function PlusIcon(props: StrokeIconProps) {
     </StrokeIcon>
   );
 }
+
+export function ChevronIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M9 6l6 6-6 6" />
+    </StrokeIcon>
+  );
+}
+
+export function EditIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 20h4L19 9l-4-4L4 16v4z" />
+      <path d="M14 6l4 4" />
+    </StrokeIcon>
+  );
+}

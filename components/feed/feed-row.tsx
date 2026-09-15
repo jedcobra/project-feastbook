@@ -19,10 +19,12 @@ export function FeedRow({ item }: { item: FeedActivity }) {
   return (
     <div className="rule-y">
       <div className="flex items-center gap-2 px-5 pt-3">
-        <Avatar name={author.name} size={22} />
-        <span className="cursor-pointer font-mono text-[12px] text-ink underline decoration-dashed underline-offset-[3px]">
-          {author.name}
-        </span>
+        <Link href={`/${author.handle}`} className="flex items-center gap-2">
+          <Avatar name={author.name} size={22} />
+          <span className="font-mono text-[12px] text-ink underline decoration-dashed underline-offset-[3px]">
+            {author.name}
+          </span>
+        </Link>
         <span className="font-mono text-meta text-ink-mute">{VERB[item.kind]}</span>
         <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
       </div>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { CommentsBlock } from '@/components/recipe/comments-block';
 import { CookButton } from '@/components/recipe/cook-button';
@@ -26,13 +27,13 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
           {recipe.subtitle}
         </div>
 
-        <div className="flex items-center gap-2">
+        <Link href={`/${author.handle}`} className="flex items-center gap-2">
           <Avatar name={author.name} size={24} />
-          <span className="cursor-pointer font-mono text-[13px] text-ink underline decoration-dashed underline-offset-[3px]">
+          <span className="font-mono text-[13px] text-ink underline decoration-dashed underline-offset-[3px]">
             {author.name}
           </span>
           <span className="font-mono text-meta text-ink-mute">@{author.handle}</span>
-        </div>
+        </Link>
 
         <RecipeMeta recipe={recipe} />
 
