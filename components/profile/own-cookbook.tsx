@@ -5,29 +5,20 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
-import { supabase } from '@/lib/supabase/client';
-import type { ProfileStatsRow } from '@/lib/supabase/types';
-import type { Person } from '@/lib/types';
+import { fetchProfileByHandle } from '@/lib/supabase/queries';
+import type { Person, Recipe, Shelf } from '@/lib/types';
 
-// The real, auth-backed Cookbook screen. Shelves/Recipes come back empty
-// for now — recipe creation and shelf management aren't wired up yet, so
-// a signed-in account genuinely has none, and that's the correct state
-// to show rather than borrowing the fixture content.
+// The real, auth-backed Cookbook screen.
 export function OwnCookbook() {
   const { loading, user, profile, signOut } = useAuth();
-  const [stats, setStats] = useState<ProfileStatsRow | null>(null);
+  const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
 
   useEffect(() => {
     if (!profile) {
-      setStats(null);
+      setData(null);
       return;
     }
-    supabase
-      .from('profile_stats')
-      .select('*')
-      .eq('id', profile.id)
-      .maybeSingle()
-      .then(({ data }) => setStats(data as ProfileStatsRow | null));
+    fetchProfileByHandle(profile.handle).then(setData);
   }, [profile]);
 
   if (loading) {
@@ -54,20 +45,17 @@ export function OwnCookbook() {
     );
   }
 
-  const person: Person = {
-    id: profile.id,
-    name: profile.name,
-    handle: profile.handle,
-    bio: profile.bio,
-    recipes: stats?.recipe_count ?? 0,
-    followers: stats?.follower_count ?? 0,
-    following: stats?.following_count ?? 0,
-    seed: 0,
-  };
+  if (!data) {
+    return (
+      <div className="flex min-h-0 flex-1 items-center justify-center">
+        <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <ProfileHeader person={person} />
+      <ProfileHeader person={data.person} />
       <div className="mb-5 px-5">
         <button
           type="button"
@@ -77,7 +65,12 @@ export function OwnCookbook() {
           Sign out
         </button>
       </div>
-      <ProfileTabs shelves={[]} recipes={[]} firstName={person.name.split(' ')[0]} isOwn />
+      <ProfileTabs
+        shelves={data.shelves}
+        recipes={data.recipes}
+        firstName={data.person.name.split(' ')[0]}
+        isOwn
+      />
     </div>
   );
 }

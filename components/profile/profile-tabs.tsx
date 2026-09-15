@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ChevronIcon, PlusIcon } from '@/components/icons';
 import { Tag } from '@/components/tag';
-import { recipeById } from '@/lib/fixtures';
 import type { Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'shelves' | 'recipes' | 'cooked';
@@ -66,8 +65,8 @@ function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
             <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
             <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
             <div className="flex flex-wrap gap-1.5">
-              {shelf.recipes.slice(0, 3).map((rid) => (
-                <Tag key={rid}>{recipeById(rid).title}</Tag>
+              {shelf.recipes.slice(0, 3).map((r) => (
+                <Tag key={r.id}>{r.title}</Tag>
               ))}
               {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
             </div>

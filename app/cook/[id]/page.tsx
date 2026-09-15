@@ -1,16 +1,18 @@
-import { notFound, redirect } from 'next/navigation';
-import { CookingScreen } from '@/components/cooking/cooking-screen';
-import { RECIPES } from '@/lib/fixtures';
+import { CookingScreenLoader } from '@/components/cooking/cooking-screen-loader';
+import { supabase } from '@/lib/supabase/client';
 
-export function generateStaticParams() {
-  // Include stepless recipes so a static page exists to run their redirect.
-  return RECIPES.map((r) => ({ id: r.id }));
+// See app/(tabs)/recipe/[id]/page.tsx for why this is a best-effort
+// build-time fetch with an empty-array fallback.
+export async function generateStaticParams() {
+  try {
+    const { data } = await supabase.from('recipes').select('id');
+    if (data && data.length > 0) return data.map((r: { id: string }) => ({ id: r.id }));
+  } catch (err) {
+    console.warn('generateStaticParams: could not reach Supabase', err);
+  }
+  return [{ id: '__placeholder__' }];
 }
 
 export default function CookPage({ params }: { params: { id: string } }) {
-  const recipe = RECIPES.find((r) => r.id === params.id);
-  if (!recipe) notFound();
-  if (recipe.steps.length === 0) redirect(`/recipe/${recipe.id}`);
-
-  return <CookingScreen recipe={recipe} />;
+  return <CookingScreenLoader id={params.id} />;
 }

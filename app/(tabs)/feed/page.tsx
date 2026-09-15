@@ -1,9 +1,7 @@
-import { FeedDateBar } from '@/components/feed/feed-date-bar';
-import { FeedRow } from '@/components/feed/feed-row';
+import { FeedScreen } from '@/components/feed/feed-screen';
 import { OutlineBox } from '@/components/outline-box';
 import { SearchIcon } from '@/components/icons';
 import { TopBar } from '@/components/top-bar';
-import { FEED } from '@/lib/fixtures';
 
 export default function FeedPage() {
   return (
@@ -16,12 +14,7 @@ export default function FeedPage() {
           </OutlineBox>
         }
       />
-      <FeedDateBar date="WED 22 APR" count={FEED.length} />
-      <div className="min-h-0 flex-1 overflow-y-auto pb-8">
-        {FEED.map((item, i) => (
-          <FeedRow key={i} item={item} />
-        ))}
-      </div>
+      <FeedScreen />
     </>
   );
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
+import { AddCommentForm } from '@/components/recipe/add-comment-form';
 import { CommentsBlock } from '@/components/recipe/comments-block';
 import { CookButton } from '@/components/recipe/cook-button';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
@@ -7,10 +8,20 @@ import { Label } from '@/components/label';
 import { MethodBlock } from '@/components/recipe/method-block';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { Tag } from '@/components/tag';
-import type { Person, Recipe } from '@/lib/types';
+import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 // The default Recipe Detail layout — a single scrolling document, noods-style.
-export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Person }) {
+export function DocumentDetail({
+  recipe,
+  author,
+  currentProfileId,
+  onCommentPosted,
+}: {
+  recipe: Recipe;
+  author: Person;
+  currentProfileId: string | null;
+  onCommentPosted: (comment: RecipeComment) => void;
+}) {
   return (
     <>
       <div className="flex-1 px-5">
@@ -66,7 +77,12 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
           </div>
         )}
 
-        {recipe.comments.length > 0 && <CommentsBlock comments={recipe.comments} />}
+        <CommentsBlock comments={recipe.comments} />
+        <AddCommentForm
+          recipeId={recipe.id}
+          authorProfileId={currentProfileId}
+          onPosted={onCommentPosted}
+        />
       </div>
       <CookButton recipeId={recipe.id} hasSteps={recipe.steps.length > 0} />
     </>

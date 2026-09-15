@@ -72,10 +72,15 @@ export interface FeedActivity {
   caption: string;
 }
 
+export interface ShelfRecipeRef {
+  id: string;
+  title: string;
+}
+
 export interface Shelf {
   id: string;
   title: string;
   subtitle: string;
   count: number;
-  recipes: string[]; // recipe ids
+  recipes: ShelfRecipeRef[];
 }

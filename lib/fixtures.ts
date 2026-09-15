@@ -263,8 +263,43 @@ export const FEED: FeedActivity[] = [
 ];
 
 export const SHELVES: Shelf[] = [
-  { id: 'weeknight', title: 'Weeknight', subtitle: '30 minutes or less', count: 12, recipes: ['brown-butter-miso', 'greens', 'lentil-soup'] },
-  { id: 'sunday', title: 'Sunday Projects', subtitle: 'When I have time', count: 6, recipes: ['sourdough-focaccia', 'jollof', 'tarte-tatin'] },
-  { id: 'bakery', title: 'Home Bakery', subtitle: 'Breads, pastries, all the flour', count: 9, recipes: ['sourdough-focaccia', 'tarte-tatin'] },
-  { id: 'pantry', title: 'Pantry + Preserves', subtitle: 'Keeps for weeks', count: 4, recipes: ['preserved-lemons'] },
+  {
+    id: 'weeknight',
+    title: 'Weeknight',
+    subtitle: '30 minutes or less',
+    count: 12,
+    recipes: [
+      { id: 'brown-butter-miso', title: 'Brown Butter Miso Pasta' },
+      { id: 'greens', title: 'Braised Greens with Garlic and Chili' },
+      { id: 'lentil-soup', title: 'Red Lentil + Coconut Soup' },
+    ],
+  },
+  {
+    id: 'sunday',
+    title: 'Sunday Projects',
+    subtitle: 'When I have time',
+    count: 6,
+    recipes: [
+      { id: 'sourdough-focaccia', title: 'Lazy Sourdough Focaccia' },
+      { id: 'jollof', title: 'Mum’s Jollof Rice' },
+      { id: 'tarte-tatin', title: 'Upside-Down Plum Tatin' },
+    ],
+  },
+  {
+    id: 'bakery',
+    title: 'Home Bakery',
+    subtitle: 'Breads, pastries, all the flour',
+    count: 9,
+    recipes: [
+      { id: 'sourdough-focaccia', title: 'Lazy Sourdough Focaccia' },
+      { id: 'tarte-tatin', title: 'Upside-Down Plum Tatin' },
+    ],
+  },
+  {
+    id: 'pantry',
+    title: 'Pantry + Preserves',
+    subtitle: 'Keeps for weeks',
+    count: 4,
+    recipes: [{ id: 'preserved-lemons', title: 'Preserved Lemons, Slowly' }],
+  },
 ];

@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { Tag } from '@/components/tag';
-import { byHandle, recipeById } from '@/lib/fixtures';
-import type { FeedActivity } from '@/lib/types';
+import type { FeedActivity, Person, Recipe } from '@/lib/types';
 
 const VERB: Record<FeedActivity['kind'], string> = {
   new: 'added',
@@ -12,10 +11,15 @@ const VERB: Record<FeedActivity['kind'], string> = {
 
 // Index feed row — noods-style activity line: author + verb, title, optional
 // caption, meta + tags. The default Feed layout.
-export function FeedRow({ item }: { item: FeedActivity }) {
-  const recipe = recipeById(item.recipe);
-  const author = byHandle(item.who);
-
+export function FeedRow({
+  item,
+  recipe,
+  author,
+}: {
+  item: FeedActivity;
+  recipe: Recipe;
+  author: Person;
+}) {
   return (
     <div className="rule-y">
       <div className="flex items-center gap-2 px-5 pt-3">
