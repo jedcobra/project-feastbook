@@ -32,6 +32,11 @@ jobs:
         env:
           NEXT_STATIC_EXPORT: '1'
           NEXT_BASE_PATH: /${{ github.event.repository.name }}
+          # Set these under Settings -> Secrets and variables -> Actions -> Variables
+          # (repository variables, not secrets — the anon key is meant to be public,
+          # but keeping it out of the workflow file's own history is still better hygiene).
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

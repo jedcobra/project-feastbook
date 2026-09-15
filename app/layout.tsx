@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AuthProvider } from '@/components/auth/auth-provider';
 import { display, mono } from '@/lib/fonts';
 import './globals.css';
 
@@ -16,7 +17,7 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${mono.variable}`}>
       <body>
         <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </div>
       </body>
     </html>

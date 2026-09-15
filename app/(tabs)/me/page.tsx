@@ -1,12 +1,9 @@
 import { EditIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
-import { ProfileScreen } from '@/components/profile/profile-screen';
+import { OwnCookbook } from '@/components/profile/own-cookbook';
 import { TopBar } from '@/components/top-bar';
-import { byHandle } from '@/lib/fixtures';
 
 export default function CookbookPage() {
-  const person = byHandle('you');
-
   return (
     <>
       <TopBar
@@ -17,7 +14,7 @@ export default function CookbookPage() {
           </OutlineBox>
         }
       />
-      <ProfileScreen person={person} isOwn />
+      <OwnCookbook />
     </>
   );
 }
