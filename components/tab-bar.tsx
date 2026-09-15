@@ -12,7 +12,7 @@ const RIGHT_TABS = [
 
 // Persistent bottom nav. Austere by design: mono labels, no pill highlight,
 // just a small dot under the active tab. Tapping a tab resets to its root;
-// the center "New" button pushes /add instead (see BackButton).
+// the center "New" button pushes /new instead (see BackButton).
 export function TabBar() {
   const pathname = usePathname();
 
@@ -22,7 +22,7 @@ export function TabBar() {
         <TabLink key={tab.id} href={tab.href} label={tab.label} active={pathname === tab.href} />
       ))}
       <Link
-        href="/add"
+        href="/new"
         aria-label="Add a recipe"
         className="flex flex-shrink-0 items-center gap-1.5 self-center rounded-button border border-ink bg-ink px-3.5 py-2 font-mono text-[12px] font-medium text-cream"
       >

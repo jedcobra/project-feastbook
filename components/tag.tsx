@@ -1,9 +1,11 @@
 export function Tag({
   children,
   selected = false,
+  onRemove,
 }: {
   children: React.ReactNode;
   selected?: boolean;
+  onRemove?: () => void;
 }) {
   return (
     <span
@@ -12,6 +14,11 @@ export function Tag({
       }`}
     >
       {children}
+      {onRemove && (
+        <button type="button" onClick={onRemove} className="opacity-60" aria-label="Remove tag">
+          ×
+        </button>
+      )}
     </span>
   );
 }

@@ -1,4 +1,5 @@
 import { formatRelativeTime } from '@/lib/format';
+import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
 import type { FeedActivity, Person, Recipe, Shelf } from '@/lib/types';
 
@@ -353,4 +354,109 @@ export async function postComment(authorId: string, recipeId: string, text: stri
     return null;
   }
   return { by: unwrapOne(data.author)?.name ?? 'Someone', text: data.text, likes: data.likes };
+}
+
+export async function createShelf(ownerId: string, title: string) {
+  const { data, error } = await supabase
+    .from('shelves')
+    .insert({ owner_id: ownerId, title, subtitle: '' })
+    .select('id, title')
+    .single();
+  if (error || !data) {
+    console.error('createShelf', error);
+    return null;
+  }
+  return { id: data.id as string, title: data.title as string };
+}
+
+// Writes a composer draft as a real recipe: the recipe row, its ingredient
+// sections/items, steps, and notes, plus links to any chosen shelves.
+// Skips blank rows (an empty ingredient line, a stepless step) rather than
+// saving placeholder junk. Returns the new recipe id, or null on failure.
+export async function publishRecipe(
+  authorId: string,
+  draft: RecipeDraft,
+  visibility: 'public' | 'followers' | 'private',
+  shelfIds: string[],
+) {
+  const { data: recipeRow, error: recipeError } = await supabase
+    .from('recipes')
+    .insert({
+      author_id: authorId,
+      title: draft.title.trim() || 'Untitled recipe',
+      subtitle: draft.subtitle.trim(),
+      intro: draft.intro.trim(),
+      time: draft.time.trim(),
+      serves: parseInt(draft.serves, 10) || 1,
+      difficulty: draft.level,
+      tags: draft.tags,
+      visibility,
+    })
+    .select('id')
+    .single();
+
+  if (recipeError || !recipeRow) {
+    console.error('publishRecipe: recipes insert', recipeError);
+    return null;
+  }
+  const recipeId = recipeRow.id as string;
+
+  for (const [position, section] of draft.sections.entries()) {
+    const items = section.items.filter((it) => it.i.trim());
+    if (items.length === 0) continue;
+
+    const { data: sectionRow, error: sectionError } = await supabase
+      .from('recipe_ingredient_sections')
+      .insert({ recipe_id: recipeId, label: section.section.trim() || null, position })
+      .select('id')
+      .single();
+    if (sectionError || !sectionRow) {
+      console.error('publishRecipe: section insert', sectionError);
+      continue;
+    }
+
+    const { error: itemsError } = await supabase.from('recipe_ingredients').insert(
+      items.map((it, i) => ({
+        section_id: sectionRow.id,
+        quantity: it.q.trim(),
+        name: it.i.trim(),
+        position: i,
+      })),
+    );
+    if (itemsError) console.error('publishRecipe: ingredients insert', itemsError);
+  }
+
+  const steps = draft.steps.filter((s) => s.t.trim());
+  if (steps.length > 0) {
+    const { error: stepsError } = await supabase.from('recipe_steps').insert(
+      steps.map((s, i) => ({
+        recipe_id: recipeId,
+        position: i,
+        title: s.t.trim(),
+        description: s.d.trim(),
+        timer_minutes: s.timer.trim() ? parseInt(s.timer, 10) || null : null,
+      })),
+    );
+    if (stepsError) console.error('publishRecipe: steps insert', stepsError);
+  }
+
+  const notes = draft.notes
+    .split('\n')
+    .map((n) => n.trim())
+    .filter(Boolean);
+  if (notes.length > 0) {
+    const { error: notesError } = await supabase
+      .from('recipe_notes')
+      .insert(notes.map((text, position) => ({ recipe_id: recipeId, text, position })));
+    if (notesError) console.error('publishRecipe: notes insert', notesError);
+  }
+
+  if (shelfIds.length > 0) {
+    const { error: shelfError } = await supabase
+      .from('shelf_recipes')
+      .insert(shelfIds.map((shelf_id) => ({ shelf_id, recipe_id: recipeId })));
+    if (shelfError) console.error('publishRecipe: shelf_recipes insert', shelfError);
+  }
+
+  return recipeId;
 }

@@ -108,6 +108,75 @@ export function XIcon(props: StrokeIconProps) {
   );
 }
 
+export function LinkIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M10 13a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1" />
+      <path d="M14 11a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1" />
+    </StrokeIcon>
+  );
+}
+
+export function CameraIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M3 8a1 1 0 011-1h3l1.5-2h7L17 7h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" />
+      <circle cx="12" cy="12.5" r="3.5" />
+    </StrokeIcon>
+  );
+}
+
+export function ForkIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="7" cy="6" r="2.5" />
+      <circle cx="17" cy="6" r="2.5" />
+      <circle cx="12" cy="19" r="2.5" />
+      <path d="M7 8.5v2a3 3 0 003 3h4a3 3 0 003-3v-2M12 13.5v3" />
+    </StrokeIcon>
+  );
+}
+
+export function DragIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="9" cy="6" r="1" />
+      <circle cx="15" cy="6" r="1" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="9" cy="18" r="1" />
+      <circle cx="15" cy="18" r="1" />
+    </StrokeIcon>
+  );
+}
+
+export function WarnIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 4l9 16H3l9-16z" />
+      <path d="M12 10v4M12 17h.01" />
+    </StrokeIcon>
+  );
+}
+
+export function TimerIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="13" r="7" />
+      <path d="M12 10v3l2 2M9 3h6M12 6V3" />
+    </StrokeIcon>
+  );
+}
+
+export function SaveIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 4h11l3 3v13H5V4z" />
+      <path d="M8 4v6h8V4M8 20v-6h8v6" />
+    </StrokeIcon>
+  );
+}
+
 export function EditIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
