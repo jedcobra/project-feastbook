@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Special Spoon — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  html, body { margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* Canvas */
+  .ss-stage {
+    min-height: 100vh;
+    padding: 52px 40px 80px;
+    display: flex; flex-direction: column; align-items: center; gap: 48px;
+    background: #E8E2CF;
+  }
+  .ss-header { text-align: center; max-width: 680px; }
+  .ss-header h1 {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700; font-size: 38px; letter-spacing: -0.01em;
+    margin: 0 0 8px; color: #232459;
+  }
+  .ss-header p {
+    margin: 0; color: #8B8AAF; font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; line-height: 1.6; max-width: 480px; margin: 0 auto;
+  }
+  .ss-header .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #8B8AAF; margin-bottom: 10px;
+  }
+  .ss-row {
+    display: flex; gap: 40px; align-items: flex-start;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .ss-device-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; color: #8B8AAF;
+    margin-bottom: 10px; text-align: center;
+    letter-spacing: 0.04em;
+  }
+
+  /* Tweaks panel */
+  .ss-tweaks {
+    position: fixed; bottom: 16px; right: 16px;
+    width: 280px; max-height: calc(100vh - 32px);
+    background: #F4EEDD; border: 1px solid #232459;
+    padding: 16px; z-index: 1000;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; color: #232459;
+    overflow: auto; display: none;
+  }
+  .ss-tweaks.on { display: block; }
+  .ss-tweaks h3 {
+    margin: 0 0 14px;
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700; font-size: 18px;
+  }
+  .ss-tweaks .section { margin-bottom: 14px; }
+  .ss-tweaks .section-label {
+    display: block; text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 9px; color: #8B8AAF; margin-bottom: 6px;
+    border-bottom: 1px dashed #CFC49C; padding-bottom: 4px;
+  }
+  .ss-tweaks .opts { display: flex; gap: 4px; flex-wrap: wrap; }
+  .ss-tweaks .opt {
+    padding: 4px 9px; border: 1px solid #232459;
+    font-size: 10px; cursor: pointer; background: transparent; color: #232459;
+    border-radius: 0;
+  }
+  .ss-tweaks .opt.on { background: #232459; color: #F4EEDD; }
+  .ss-tweaks .swatches { display: flex; gap: 6px; }
+  .ss-tweaks .sw {
+    width: 28px; height: 28px; border: 2px solid transparent; cursor: pointer;
+  }
+  .ss-tweaks .sw.on { border-color: #232459; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="theme.jsx"></script>
+<script type="text/babel" src="ss-primitives.jsx"></script>
+<script type="text/babel" src="ss-data.jsx"></script>
+<script type="text/babel" src="ss-chrome.jsx"></script>
+<script type="text/babel" src="ss-feed.jsx"></script>
+<script type="text/babel" src="ss-recipe.jsx"></script>
+<script type="text/babel" src="ss-profile.jsx"></script>
+<script type="text/babel" src="ss-cooking.jsx"></script>
+<script type="text/babel" src="ss-discover.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<div class="ss-tweaks" id="tweaks"></div>
+
+<script type="text/babel">
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "cream",
+  "type": "bookish",
+  "feedLayout": "index",
+  "detailLayout": "document",
+  "showcase": "prototype"
+}/*EDITMODE-END*/;
+
+function SpecialSpoonApp() {
+  const [tweaks, setTweaks] = React.useState(TWEAKS);
+
+  const theme = SS_THEMES[tweaks.theme] || SS_THEMES.cream;
+  const type  = SS_TYPE_PAIRS[tweaks.type] || SS_TYPE_PAIRS.bookish;
+  const baseStyle = ssStyleVars(theme, type);
+
+  // Canvas bg matches theme
+  React.useEffect(() => {
+    document.querySelector('.ss-stage') &&
+      (document.querySelector('.ss-stage').style.background = theme.bgDeep);
+  }, [theme]);
+
+  // Tweaks panel protocol
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode')
+        document.getElementById('tweaks').classList.add('on');
+      if (e.data.type === '__deactivate_edit_mode')
+        document.getElementById('tweaks').classList.remove('on');
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const setTweak = (k, v) => {
+    setTweaks(t => {
+      const next = { ...t, [k]: v };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+      return next;
+    });
+  };
+
+  // Render tweaks panel
+  React.useEffect(() => {
+    const el = document.getElementById('tweaks');
+    if (!el) return;
+
+    const showcaseOpts = [
+      ['prototype',       'Live prototype'],
+      ['flow',            'All screens'],
+      ['feed-variants',   'Feed variants'],
+      ['detail-variants', 'Detail variants'],
+      ['type-variants',   'Typography'],
+    ];
+    const feedOpts   = Object.keys(SS_FEED_LAYOUTS);
+    const detailOpts = Object.keys(SS_DETAIL_LAYOUTS);
+    const typeOpts   = Object.keys(SS_TYPE_PAIRS);
+    const themeOpts  = Object.keys(SS_THEMES);
+
+    el.innerHTML = `
+      <h3>Tweaks</h3>
+      <div class="section">
+        <span class="section-label">Showcase</span>
+        <div class="opts">${showcaseOpts.map(([id, n]) =>
+          `<div class="opt ${tweaks.showcase === id ? 'on' : ''}" data-k="showcase" data-v="${id}">${n}</div>`
+        ).join('')}</div>
+      </div>
+      <div class="section">
+        <span class="section-label">Palette</span>
+        <div class="swatches">${themeOpts.map(k => {
+          const t = SS_THEMES[k];
+          return `<div class="sw ${tweaks.theme === k ? 'on' : ''}" title="${t.name}"
+            style="background: linear-gradient(135deg, ${t.bg} 50%, ${t.ink} 50%)"
+            data-k="theme" data-v="${k}"></div>`;
+        }).join('')}</div>
+      </div>
+      <div class="section">
+        <span class="section-label">Typography</span>
+        <div class="opts">${typeOpts.map(k => {
+          const t = SS_TYPE_PAIRS[k];
+          return `<div class="opt ${tweaks.type === k ? 'on' : ''}" data-k="type" data-v="${k}">${t.name}</div>`;
+        }).join('')}</div>
+      </div>
+      <div class="section">
+        <span class="section-label">Feed layout</span>
+        <div class="opts">${feedOpts.map(k =>
+          `<div class="opt ${tweaks.feedLayout === k ? 'on' : ''}" data-k="feedLayout" data-v="${k}">${SS_FEED_LAYOUTS[k]}</div>`
+        ).join('')}</div>
+      </div>
+      <div class="section">
+        <span class="section-label">Recipe detail</span>
+        <div class="opts">${detailOpts.map(k =>
+          `<div class="opt ${tweaks.detailLayout === k ? 'on' : ''}" data-k="detailLayout" data-v="${k}">${SS_DETAIL_LAYOUTS[k]}</div>`
+        ).join('')}</div>
+      </div>
+    `;
+
+    const onClick = (e) => {
+      const t = e.target.closest('[data-k]');
+      if (t) setTweak(t.dataset.k, t.dataset.v);
+    };
+    el.addEventListener('click', onClick);
+    return () => el.removeEventListener('click', onClick);
+  }, [tweaks]);
+
+  if (tweaks.showcase === 'feed-variants')   return <FeedVariants   baseStyle={baseStyle} tweaks={tweaks}/>;
+  if (tweaks.showcase === 'detail-variants') return <DetailVariants baseStyle={baseStyle} tweaks={tweaks}/>;
+  if (tweaks.showcase === 'type-variants')   return <TypeVariants   tweaks={tweaks}/>;
+  if (tweaks.showcase === 'flow')            return <FullFlow       baseStyle={baseStyle} tweaks={tweaks}/>;
+  return <Prototype baseStyle={baseStyle} tweaks={tweaks}/>;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Live prototype — single phone, real navigation
+// History stack so the back button knows where to return.
+// ─────────────────────────────────────────────────────────────
+function Prototype({ baseStyle, tweaks }) {
+  // history: stack of route objects { tab, view, recipeId, handle }
+  // current screen is the top of the stack.
+  const initial = { tab: 'feed', view: 'feed' };
+  const [stack, setStack] = React.useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('ss-stack') || 'null');
+      if (Array.isArray(saved) && saved.length) return saved;
+    } catch {}
+    return [initial];
+  });
+  React.useEffect(() => {
+    localStorage.setItem('ss-stack', JSON.stringify(stack));
+  }, [stack]);
+
+  const cur = stack[stack.length - 1];
+  const push = (route) => setStack(s => [...s, route]);
+  const pop  = () => setStack(s => s.length > 1 ? s.slice(0, -1) : s);
+  const setTab = (tab) => setStack(s => {
+    // Tab switch resets the modal stack — simplest mental model.
+    const baseView = tab === 'me' ? 'profile' : tab;
+    const route = tab === 'me'
+      ? { tab: 'me', view: 'profile', handle: 'me' }
+      : tab === 'cookbook'
+        ? { tab: 'cookbook', view: 'profile', handle: 'me' }
+        : { tab, view: tab };
+    return [route];
+  });
+
+  const openRecipe  = (id)     => push({ tab: cur.tab, view: 'recipe',  recipeId: id });
+  const openProfile = (handle) => push({ tab: cur.tab, view: 'profile', handle });
+  const openCooking = (id)     => push({ tab: cur.tab, view: 'cooking', recipeId: id });
+
+  // Render the current view
+  let screen, showTabs = true;
+  if (cur.view === 'feed') {
+    screen = <SSFeedScreen
+      layout={tweaks.feedLayout}
+      onOpenRecipe={openRecipe}
+      onOpenProfile={openProfile}
+    />;
+  } else if (cur.view === 'discover') {
+    screen = <SSDiscoverScreen
+      onOpenRecipe={openRecipe}
+      onOpenProfile={openProfile}
+    />;
+  } else if (cur.view === 'profile') {
+    const isOwn = cur.handle === 'me' || cur.handle === 'you';
+    screen = <SSProfileScreen
+      handle={cur.handle}
+      isOwn={isOwn}
+      onBack={pop}
+      onOpenRecipe={openRecipe}
+    />;
+  } else if (cur.view === 'recipe') {
+    screen = <SSRecipeScreen
+      recipeId={cur.recipeId}
+      layout={tweaks.detailLayout}
+      onBack={pop}
+      onCook={() => openCooking(cur.recipeId)}
+      onOpenProfile={openProfile}
+    />;
+  } else if (cur.view === 'cooking') {
+    showTabs = false;
+    screen = <SSCookingScreen
+      recipeId={cur.recipeId}
+      onExit={pop}
+    />;
+  } else if (cur.view === 'add') {
+    screen = (
+      <>
+        <SSTopBar title="Add a recipe" onBack={pop}/>
+        <SSScroll>
+          <div style={{
+            padding: '32px 20px', fontFamily: 'var(--ss-mono)', fontSize: 12,
+            color: 'var(--ss-ink-mute)', textAlign: 'center', lineHeight: 1.6,
+          }}>
+            Recipe creation flow lives here.<br/>
+            <span style={{ color: 'var(--ss-ink)' }}>Not yet built.</span>
+          </div>
+        </SSScroll>
+      </>
+    );
+  }
+
+  // Build path string for the URL chip
+  const path = stack.map(r => {
+    if (r.view === 'recipe')  return `/recipe/${r.recipeId}`;
+    if (r.view === 'profile') return r.handle === 'me' || r.handle === 'you' ? '/me' : `/@${r.handle}`;
+    if (r.view === 'cooking') return `/cook/${r.recipeId}`;
+    return `/${r.view}`;
+  }).join('');
+
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Special Spoon · live prototype</div>
+        <h1>Tap through the app</h1>
+        <p>One phone, real navigation. Tap any recipe to open it, tap a name to see their cookbook, hit Start Cooking for full-screen mode. Use the tab bar to switch sections.</p>
+      </div>
+
+      {/* URL / breadcrumb chip */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 16px',
+        background: 'var(--ss-bg, #F4EEDD)',
+        border: '1px dashed #232459',
+        borderRadius: 6,
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+        fontSize: 12, color: '#232459',
+        maxWidth: 'min(560px, 90vw)',
+      }}>
+        <button onClick={pop} disabled={stack.length === 1} style={{
+          border: '1px solid #232459',
+          background: stack.length === 1 ? 'transparent' : '#232459',
+          color: stack.length === 1 ? '#8B8AAF' : '#F4EEDD',
+          padding: '3px 8px', borderRadius: 4, fontSize: 11,
+          fontFamily: 'inherit', cursor: stack.length === 1 ? 'default' : 'pointer',
+          opacity: stack.length === 1 ? 0.4 : 1,
+        }}>← back</button>
+        <span style={{ opacity: 0.5 }}>specialspoon.app</span>
+        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{path || '/'}</span>
+        <button onClick={() => { setStack([initial]); }} style={{
+          border: '1px solid #232459', background: 'transparent',
+          color: '#232459', padding: '3px 8px', borderRadius: 4, fontSize: 11,
+          fontFamily: 'inherit', cursor: 'pointer',
+        }}>reset</button>
+      </div>
+
+      <div>
+        <Host baseStyle={baseStyle}>
+          {screen}
+          {showTabs && <SSTabBar current={cur.tab} onChange={(id) => {
+            if (id === 'add') push({ tab: 'add', view: 'add' });
+            else setTab(id);
+          }}/>}
+        </Host>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Screen host
+// ─────────────────────────────────────────────────────────────
+function Host({ baseStyle, children }) {
+  return (
+    <SSDevice style={baseStyle}>
+      {children}
+    </SSDevice>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Full flow — six screens side by side
+// ─────────────────────────────────────────────────────────────
+function FullFlow({ baseStyle, tweaks }) {
+  const screens = [
+    {
+      label: 'Home · Feed',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSFeedScreen layout={tweaks.feedLayout}/>
+          <SSTabBar current="feed"/>
+        </Host>
+      ),
+    },
+    {
+      label: 'Recipe detail',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSRecipeScreen recipeId="brown-butter-miso" layout={tweaks.detailLayout}
+            onBack={() => {}} onCook={() => {}} onOpenProfile={() => {}}/>
+        </Host>
+      ),
+    },
+    {
+      label: 'My cookbook',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSProfileScreen handle="me" isOwn={true} onOpenRecipe={() => {}}/>
+          <SSTabBar current="cookbook"/>
+        </Host>
+      ),
+    },
+    {
+      label: 'Friend · Maya Osei',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSProfileScreen handle="mayacooks" isOwn={false} onOpenRecipe={() => {}} onBack={() => {}}/>
+        </Host>
+      ),
+    },
+    {
+      label: 'Cooking mode',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSCookingScreen recipeId="brown-butter-miso" onExit={() => {}}/>
+        </Host>
+      ),
+    },
+    {
+      label: 'Discover',
+      node: (
+        <Host baseStyle={baseStyle}>
+          <SSDiscoverScreen onOpenRecipe={() => {}} onOpenProfile={() => {}}/>
+          <SSTabBar current="discover"/>
+        </Host>
+      ),
+    },
+  ];
+
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Special Spoon · iOS prototype</div>
+        <h1>A personal cookbook, shared</h1>
+        <p>Bookish, text-first, indigo on cream. Six core screens. Toggle tweaks to switch palette, typography, feed layout, and recipe detail style.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            {s.node}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Feed variants
+// ─────────────────────────────────────────────────────────────
+function FeedVariants({ baseStyle, tweaks }) {
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Feed layouts</div>
+        <h1>Three ways to browse</h1>
+        <p>Index is a text ledger of activity. Magazine gives each entry room to breathe. Compact is maximum density — one line per item.</p>
+      </div>
+      <div className="ss-row">
+        {Object.keys(SS_FEED_LAYOUTS).map(layout => (
+          <div key={layout}>
+            <div className="ss-device-label">{SS_FEED_LAYOUTS[layout]}</div>
+            <Host baseStyle={baseStyle}>
+              <SSFeedScreen layout={layout}/>
+              <SSTabBar current="feed"/>
+            </Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Detail variants
+// ─────────────────────────────────────────────────────────────
+function DetailVariants({ baseStyle, tweaks }) {
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Recipe detail layouts</div>
+        <h1>Three ways to read a recipe</h1>
+        <p>Document stacks ingredient checklist above numbered method. Focus spreads it with generous type. Margin puts ingredients alongside steps in two columns.</p>
+      </div>
+      <div className="ss-row">
+        {Object.keys(SS_DETAIL_LAYOUTS).map(layout => (
+          <div key={layout}>
+            <div className="ss-device-label">{SS_DETAIL_LAYOUTS[layout]}</div>
+            <Host baseStyle={baseStyle}>
+              <SSRecipeScreen recipeId="brown-butter-miso" layout={layout}
+                onBack={() => {}} onCook={() => {}} onOpenProfile={() => {}}/>
+            </Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Type variants
+// ─────────────────────────────────────────────────────────────
+function TypeVariants({ tweaks }) {
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Typography pairings</div>
+        <h1>Three voices</h1>
+        <p>Bookish: Caslon + JetBrains Mono. Garamond: EB Garamond + IBM Plex. Grotesk: Inter Tight + Mono.</p>
+      </div>
+      <div className="ss-row">
+        {Object.keys(SS_TYPE_PAIRS).map(k => {
+          const style = ssStyleVars(SS_THEMES[tweaks.theme] || SS_THEMES.cream, SS_TYPE_PAIRS[k]);
+          return (
+            <div key={k}>
+              <div className="ss-device-label">{SS_TYPE_PAIRS[k].name}</div>
+              <Host baseStyle={style}>
+                <SSFeedScreen layout="index"/>
+                <SSTabBar current="feed"/>
+              </Host>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<SpecialSpoonApp/>);
+</script>
+</body>
+</html>
