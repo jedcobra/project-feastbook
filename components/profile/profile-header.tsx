@@ -1,8 +1,5 @@
+import { formatCount } from '@/lib/format';
 import type { Person } from '@/lib/types';
-
-function formatCount(n: number) {
-  return n > 999 ? `${(n / 1000).toFixed(1)}k` : String(n);
-}
 
 // Bordered profile card — name, handle, bio, stats grid.
 export function ProfileHeader({ person }: { person: Person }) {
