@@ -6,7 +6,8 @@ import { TopBar } from '@/components/top-bar';
 import { PEOPLE } from '@/lib/fixtures';
 
 export function generateStaticParams() {
-  return PEOPLE.filter((p) => p.handle !== 'you').map((p) => ({ handle: p.handle }));
+  // Include 'you' so a static page exists to run its redirect to /me.
+  return PEOPLE.map((p) => ({ handle: p.handle }));
 }
 
 export default function FriendProfilePage({ params }: { params: { handle: string } }) {

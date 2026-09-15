@@ -3,7 +3,8 @@ import { CookingScreen } from '@/components/cooking/cooking-screen';
 import { RECIPES } from '@/lib/fixtures';
 
 export function generateStaticParams() {
-  return RECIPES.filter((r) => r.steps.length > 0).map((r) => ({ id: r.id }));
+  // Include stepless recipes so a static page exists to run their redirect.
+  return RECIPES.map((r) => ({ id: r.id }));
 }
 
 export default function CookPage({ params }: { params: { id: string } }) {
