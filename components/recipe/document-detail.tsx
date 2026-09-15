@@ -68,7 +68,7 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
 
         {recipe.comments.length > 0 && <CommentsBlock comments={recipe.comments} />}
       </div>
-      <CookButton />
+      <CookButton recipeId={recipe.id} hasSteps={recipe.steps.length > 0} />
     </>
   );
 }

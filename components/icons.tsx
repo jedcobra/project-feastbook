@@ -100,6 +100,14 @@ export function ChevronIcon(props: StrokeIconProps) {
   );
 }
 
+export function XIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </StrokeIcon>
+  );
+}
+
 export function EditIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
