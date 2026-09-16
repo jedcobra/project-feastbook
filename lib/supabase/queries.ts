@@ -242,6 +242,27 @@ export async function fetchProfileByHandle(handle: string) {
   return { person, recipes, shelves };
 }
 
+// Recipes a user has bookmarked, most recently saved first — these aren't
+// in `fetchProfileByHandle`'s `recipes` (that's what they've authored).
+export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
+  const { data: saveRows, error } = await supabase
+    .from('saves')
+    .select('recipe_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error || !saveRows) {
+    console.error('fetchSavedRecipes', error);
+    return [];
+  }
+
+  const { data: recipeRows } = await supabase
+    .from('recipes')
+    .select('*')
+    .in('id', saveRows.map((s) => s.recipe_id));
+  const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
+  return saveRows.map((s) => recipeById.get(s.recipe_id)).filter((r): r is Recipe => !!r);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Recipe detail
 // ─────────────────────────────────────────────────────────────
