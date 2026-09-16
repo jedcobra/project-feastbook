@@ -13,7 +13,10 @@ export function DraftsScreen() {
   const [drafts, setDrafts] = useState<RecipeDraft[] | null>(null);
 
   useEffect(() => {
-    setDrafts(listDrafts());
+    // Edits-in-progress of an already-published recipe (7i) are drafts
+    // under the hood too, but they aren't "unfinished recipes" in the 7g
+    // sense, so they don't belong in this list.
+    setDrafts(listDrafts().filter((d) => !d.editId));
   }, []);
 
   return (

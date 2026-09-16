@@ -3,6 +3,8 @@
 // no real content typed into it is never persisted, so the drafts list
 // (7g) only ever shows things someone actually started.
 
+import type { Recipe, Visibility } from '@/lib/types';
+
 export type DraftSource = 'manual' | 'link' | 'photo';
 
 export interface DraftIngredientItem {
@@ -36,6 +38,12 @@ export interface RecipeDraft {
   notes: string;
   tags: string[];
   sourceUrl?: string;
+  // Set when this draft is editing an already-published recipe (7i) rather
+  // than composing a new one — Publish updates that recipe instead of
+  // inserting, and the Drafts list (7g) hides these since the recipe isn't
+  // actually unpublished.
+  editId?: string;
+  visibility?: Visibility;
 }
 
 export function createDraft(source: DraftSource = 'manual', sourceUrl?: string): RecipeDraft {
@@ -54,6 +62,36 @@ export function createDraft(source: DraftSource = 'manual', sourceUrl?: string):
     notes: '',
     tags: [],
     sourceUrl,
+  };
+}
+
+// Seeds a composer draft from an already-published recipe, for editing (7i).
+export function draftFromRecipe(recipe: Recipe): RecipeDraft {
+  return {
+    id: crypto.randomUUID(),
+    source: 'manual',
+    updatedAt: new Date().toISOString(),
+    title: recipe.title,
+    subtitle: recipe.subtitle,
+    intro: recipe.intro,
+    time: recipe.time,
+    serves: String(recipe.serves),
+    level: recipe.difficulty,
+    sections:
+      recipe.ingredients.length > 0
+        ? recipe.ingredients.map((s) => ({
+            section: s.section ?? '',
+            items: s.items.length > 0 ? s.items.map((it) => ({ q: it.q, i: it.i })) : [{ q: '', i: '' }],
+          }))
+        : [{ section: '', items: [{ q: '', i: '' }] }],
+    steps:
+      recipe.steps.length > 0
+        ? recipe.steps.map((s) => ({ t: s.t, d: s.d, timer: s.timer != null ? String(s.timer) : '' }))
+        : [{ t: '', d: '', timer: '' }],
+    notes: recipe.notes.map((n) => n.text).join('\n'),
+    tags: recipe.tags,
+    editId: recipe.id,
+    visibility: recipe.visibility,
   };
 }
 

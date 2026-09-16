@@ -1,7 +1,7 @@
 import { formatRelativeTime } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
-import type { FeedActivity, Person, Recipe, Shelf } from '@/lib/types';
+import type { FeedActivity, Person, Recipe, Shelf, Visibility } from '@/lib/types';
 
 // The client isn't given a generated Database type, so supabase-js can't
 // always tell a to-one embed from a to-many one and defaults to arrays.
@@ -59,6 +59,7 @@ interface RecipeRow {
   tags: string[];
   rating: number | null;
   author_id: string;
+  visibility: Visibility;
 }
 
 async function fetchRecipeStatsByIds(ids: string[]): Promise<Map<string, RecipeStats>> {
@@ -83,6 +84,7 @@ function mapRecipeSummary(row: RecipeRow, authorHandle: string, stats?: RecipeSt
     saves: stats?.save_count ?? 0,
     rating: row.rating ?? 0,
     intro: row.intro,
+    visibility: row.visibility,
     ingredients: [],
     steps: [],
     notes: [],
@@ -369,38 +371,23 @@ export async function createShelf(ownerId: string, title: string) {
   return { id: data.id as string, title: data.title as string };
 }
 
-// Writes a composer draft as a real recipe: the recipe row, its ingredient
-// sections/items, steps, and notes, plus links to any chosen shelves.
-// Skips blank rows (an empty ingredient line, a stepless step) rather than
-// saving placeholder junk. Returns the new recipe id, or null on failure.
-export async function publishRecipe(
-  authorId: string,
-  draft: RecipeDraft,
-  visibility: 'public' | 'followers' | 'private',
-  shelfIds: string[],
-) {
-  const { data: recipeRow, error: recipeError } = await supabase
-    .from('recipes')
-    .insert({
-      author_id: authorId,
-      title: draft.title.trim() || 'Untitled recipe',
-      subtitle: draft.subtitle.trim(),
-      intro: draft.intro.trim(),
-      time: draft.time.trim(),
-      serves: parseInt(draft.serves, 10) || 1,
-      difficulty: draft.level,
-      tags: draft.tags,
-      visibility,
-    })
-    .select('id')
-    .single();
+function recipeFields(draft: RecipeDraft, visibility: Visibility) {
+  return {
+    title: draft.title.trim() || 'Untitled recipe',
+    subtitle: draft.subtitle.trim(),
+    intro: draft.intro.trim(),
+    time: draft.time.trim(),
+    serves: parseInt(draft.serves, 10) || 1,
+    difficulty: draft.level,
+    tags: draft.tags,
+    visibility,
+  };
+}
 
-  if (recipeError || !recipeRow) {
-    console.error('publishRecipe: recipes insert', recipeError);
-    return null;
-  }
-  const recipeId = recipeRow.id as string;
-
+// Writes a draft's ingredient sections/items, steps, notes, and shelf links
+// for a recipe row that already exists. Skips blank rows (an empty
+// ingredient line, a stepless step) rather than saving placeholder junk.
+async function insertRecipeContents(recipeId: string, draft: RecipeDraft, shelfIds: string[]) {
   for (const [position, section] of draft.sections.entries()) {
     const items = section.items.filter((it) => it.i.trim());
     if (items.length === 0) continue;
@@ -411,7 +398,7 @@ export async function publishRecipe(
       .select('id')
       .single();
     if (sectionError || !sectionRow) {
-      console.error('publishRecipe: section insert', sectionError);
+      console.error('insertRecipeContents: section insert', sectionError);
       continue;
     }
 
@@ -423,7 +410,7 @@ export async function publishRecipe(
         position: i,
       })),
     );
-    if (itemsError) console.error('publishRecipe: ingredients insert', itemsError);
+    if (itemsError) console.error('insertRecipeContents: ingredients insert', itemsError);
   }
 
   const steps = draft.steps.filter((s) => s.t.trim());
@@ -437,7 +424,7 @@ export async function publishRecipe(
         timer_minutes: s.timer.trim() ? parseInt(s.timer, 10) || null : null,
       })),
     );
-    if (stepsError) console.error('publishRecipe: steps insert', stepsError);
+    if (stepsError) console.error('insertRecipeContents: steps insert', stepsError);
   }
 
   const notes = draft.notes
@@ -448,15 +435,73 @@ export async function publishRecipe(
     const { error: notesError } = await supabase
       .from('recipe_notes')
       .insert(notes.map((text, position) => ({ recipe_id: recipeId, text, position })));
-    if (notesError) console.error('publishRecipe: notes insert', notesError);
+    if (notesError) console.error('insertRecipeContents: notes insert', notesError);
   }
 
   if (shelfIds.length > 0) {
     const { error: shelfError } = await supabase
       .from('shelf_recipes')
       .insert(shelfIds.map((shelf_id) => ({ shelf_id, recipe_id: recipeId })));
-    if (shelfError) console.error('publishRecipe: shelf_recipes insert', shelfError);
+    if (shelfError) console.error('insertRecipeContents: shelf_recipes insert', shelfError);
+  }
+}
+
+// Writes a composer draft as a brand-new recipe. Returns the new recipe id,
+// or null on failure.
+export async function publishRecipe(
+  authorId: string,
+  draft: RecipeDraft,
+  visibility: Visibility,
+  shelfIds: string[],
+) {
+  const { data: recipeRow, error: recipeError } = await supabase
+    .from('recipes')
+    .insert({ author_id: authorId, ...recipeFields(draft, visibility) })
+    .select('id')
+    .single();
+
+  if (recipeError || !recipeRow) {
+    console.error('publishRecipe: recipes insert', recipeError);
+    return null;
+  }
+  const recipeId = recipeRow.id as string;
+  await insertRecipeContents(recipeId, draft, shelfIds);
+  return recipeId;
+}
+
+// Overwrites an existing recipe with a draft's edited content (7i). Ingredient
+// sections/steps/notes/shelf links are replaced wholesale rather than diffed
+// — simplest correct approach for a form that edits everything at once.
+export async function updateRecipe(recipeId: string, draft: RecipeDraft, visibility: Visibility, shelfIds: string[]) {
+  const { error: recipeError } = await supabase.from('recipes').update(recipeFields(draft, visibility)).eq('id', recipeId);
+  if (recipeError) {
+    console.error('updateRecipe: recipes update', recipeError);
+    return null;
   }
 
+  const [{ error: sectionsError }, { error: stepsError }, { error: notesError }, { error: shelfError }] =
+    await Promise.all([
+      supabase.from('recipe_ingredient_sections').delete().eq('recipe_id', recipeId),
+      supabase.from('recipe_steps').delete().eq('recipe_id', recipeId),
+      supabase.from('recipe_notes').delete().eq('recipe_id', recipeId),
+      supabase.from('shelf_recipes').delete().eq('recipe_id', recipeId),
+    ]);
+  if (sectionsError) console.error('updateRecipe: sections delete', sectionsError);
+  if (stepsError) console.error('updateRecipe: steps delete', stepsError);
+  if (notesError) console.error('updateRecipe: notes delete', notesError);
+  if (shelfError) console.error('updateRecipe: shelf_recipes delete', shelfError);
+
+  await insertRecipeContents(recipeId, draft, shelfIds);
   return recipeId;
+}
+
+// Which of the author's shelves a recipe currently sits on, for pre-checking
+// the "Add to shelves" list when editing (7i).
+export async function fetchShelfIdsForRecipe(recipeId: string): Promise<Set<string>> {
+  const { data, error } = await supabase.from('shelf_recipes').select('shelf_id').eq('recipe_id', recipeId);
+  if (error) {
+    console.error('fetchShelfIdsForRecipe', error);
+    return new Set();
+  }
+  return new Set((data ?? []).map((r: { shelf_id: string }) => r.shelf_id));
 }

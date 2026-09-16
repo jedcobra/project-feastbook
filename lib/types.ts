@@ -42,6 +42,8 @@ export interface RecipeComment {
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
+export type Visibility = 'public' | 'followers' | 'private';
+
 export interface Recipe {
   id: string;
   title: string;
@@ -56,6 +58,7 @@ export interface Recipe {
   saves: number;
   rating: number;
   intro: string;
+  visibility: Visibility;
   ingredients: IngredientSection[];
   steps: RecipeStep[];
   notes: RecipeNote[];

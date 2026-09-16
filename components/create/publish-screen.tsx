@@ -7,10 +7,14 @@ import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
 import { TopBar } from '@/components/top-bar';
 import { deleteDraft, draftCounts, loadDraft, type RecipeDraft } from '@/lib/recipe-draft';
-import { createShelf, fetchProfileByHandle, publishRecipe } from '@/lib/supabase/queries';
-import type { Shelf } from '@/lib/types';
-
-type Visibility = 'public' | 'followers' | 'private';
+import {
+  createShelf,
+  fetchProfileByHandle,
+  fetchShelfIdsForRecipe,
+  publishRecipe,
+  updateRecipe,
+} from '@/lib/supabase/queries';
+import type { Shelf, Visibility } from '@/lib/types';
 
 const VISIBILITY_OPTIONS: { id: Visibility; title: string; sub: string }[] = [
   { id: 'public', title: 'Public', sub: "Anyone can find it. Appears in your followers' feeds." },
@@ -39,6 +43,15 @@ export function PublishScreen() {
     if (profile) fetchProfileByHandle(profile.handle).then((data) => setShelves(data?.shelves ?? []));
   }, [profile]);
 
+  // Editing an existing recipe: it already has a visibility and shelf
+  // membership, so start from those instead of forcing the choice again.
+  useEffect(() => {
+    if (!draft?.editId) return;
+    if (draft.visibility) setVisibility(draft.visibility);
+    setNotify(false);
+    fetchShelfIdsForRecipe(draft.editId).then(setSelectedShelves);
+  }, [draft]);
+
   const toggleShelf = (id: string) =>
     setSelectedShelves((s) => {
       const next = new Set(s);
@@ -62,11 +75,13 @@ export function PublishScreen() {
   const handlePublish = async () => {
     if (!visibility || !draft || !profile) return;
     setPublishing(true);
-    const recipeId = await publishRecipe(profile.id, draft, visibility, [...selectedShelves]);
+    const recipeId = draft.editId
+      ? await updateRecipe(draft.editId, draft, visibility, [...selectedShelves])
+      : await publishRecipe(profile.id, draft, visibility, [...selectedShelves]);
     setPublishing(false);
     if (recipeId) {
       deleteDraft(draft.id);
-      router.push('/me');
+      router.push(draft.editId ? `/recipe/${draft.editId}` : '/me');
     }
   };
 
@@ -93,10 +108,11 @@ export function PublishScreen() {
   }
 
   const { ingredientCount, stepCount } = draftCounts(draft);
+  const isEdit = !!draft.editId;
 
   return (
     <>
-      <TopBar title="Publish" backHref={`/new/edit?draft=${draft.id}`} />
+      <TopBar title={isEdit ? 'Save changes' : 'Publish'} backHref={`/new/edit?draft=${draft.id}`} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         <div className="mb-[22px] border border-ink p-3.5">
           <h3 className="mb-1 font-display text-section font-bold text-ink">
@@ -207,7 +223,15 @@ export function PublishScreen() {
             visibility ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
           }`}
         >
-          {publishing ? 'Publishing…' : visibility ? 'Publish to my cookbook' : 'Choose who can see it'}
+          {publishing
+            ? isEdit
+              ? 'Saving…'
+              : 'Publishing…'
+            : visibility
+              ? isEdit
+                ? 'Save changes'
+                : 'Publish to my cookbook'
+              : 'Choose who can see it'}
         </button>
       </div>
     </>

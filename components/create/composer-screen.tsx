@@ -11,12 +11,14 @@ import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import {
   createDraft,
+  draftFromRecipe,
   draftProgress,
   loadDraft,
   saveDraft,
   type DraftSource,
   type RecipeDraft,
 } from '@/lib/recipe-draft';
+import { fetchRecipeFull } from '@/lib/supabase/queries';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
@@ -29,24 +31,31 @@ export function ComposerScreen() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const draftId = params.get('draft');
-    let resolved: RecipeDraft;
+    const editId = params.get('edit');
 
-    if (draftId) {
-      resolved = loadDraft(draftId) ?? createDraft();
-    } else {
-      const source = (params.get('source') as DraftSource | null) ?? 'manual';
-      const url = params.get('url') ?? undefined;
-      resolved = createDraft(source, url);
-    }
-    setDraft(resolved);
+    async function init() {
+      let resolved: RecipeDraft;
+      if (draftId) {
+        resolved = loadDraft(draftId) ?? createDraft();
+      } else if (editId) {
+        const data = await fetchRecipeFull(editId);
+        resolved = data ? draftFromRecipe(data.recipe) : createDraft();
+      } else {
+        const source = (params.get('source') as DraftSource | null) ?? 'manual';
+        const url = params.get('url') ?? undefined;
+        resolved = createDraft(source, url);
+      }
+      setDraft(resolved);
 
-    // The URL's `draft` id is the stable identifier from here on — drop the
-    // one-time `source`/`url` creation hints (and adopt the fresh id if this
-    // was a brand-new or missing draft) so a refresh resumes from storage
-    // instead of minting another draft or losing this one's id.
-    if (draftId !== resolved.id) {
-      window.history.replaceState(null, '', `${window.location.pathname}?draft=${resolved.id}`);
+      // The URL's `draft` id is the stable identifier from here on — drop the
+      // one-time `source`/`url`/`edit` creation hints (and adopt the fresh id
+      // if this was a brand-new, missing, or freshly-seeded draft) so a
+      // refresh resumes from storage instead of re-fetching or losing it.
+      if (draftId !== resolved.id) {
+        window.history.replaceState(null, '', `${window.location.pathname}?draft=${resolved.id}`);
+      }
     }
+    init();
   }, []);
 
   useEffect(() => {
@@ -75,6 +84,8 @@ export function ComposerScreen() {
     );
   }
 
+  const isEdit = !!draft.editId;
+  const closeHref = isEdit ? `/recipe/${draft.editId}` : '/new';
   const pct = draftProgress(draft);
   const update = (patch: Partial<RecipeDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
 
@@ -116,7 +127,11 @@ export function ComposerScreen() {
 
   return (
     <>
-      <TopBar title="Write it out" backHref="/new" subtitle={`${pct}% · draft saved`} />
+      <TopBar
+        title={isEdit ? 'Edit recipe' : 'Write it out'}
+        backHref={closeHref}
+        subtitle={`${pct}% · draft saved`}
+      />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         <div className="mb-[18px] h-0.5 bg-rule-soft">
           <div className="h-full bg-ink transition-[width] duration-200" style={{ width: `${pct}%` }} />
@@ -299,7 +314,7 @@ export function ComposerScreen() {
       </div>
 
       <div className="flex flex-shrink-0 gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
-        <OutlineBox onClick={() => router.push('/new/drafts')} aria-label="Save and close">
+        <OutlineBox onClick={() => router.push(closeHref)} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>
         <button

@@ -1,9 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { BookmarkIcon, ShareIcon } from '@/components/icons';
-import { OutlineBox } from '@/components/outline-box';
+import { BookmarkIcon, PencilIcon, ShareIcon } from '@/components/icons';
+import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { TopBar } from '@/components/top-bar';
 import { fetchRecipeFull, isSaved, setSaved } from '@/lib/supabase/queries';
@@ -65,6 +66,11 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         backHref="/feed"
         trailing={
           <>
+            {profile?.id === data.author.id && (
+              <Link href={`/new/edit?edit=${id}`} className={outlineBoxClasses(true)} aria-label="Edit recipe">
+                <PencilIcon size={14} />
+              </Link>
+            )}
             <OutlineBox compact filled={saved} aria-label={saved ? 'Unsave' : 'Save'} onClick={toggleSave}>
               <BookmarkIcon size={14} />
             </OutlineBox>
