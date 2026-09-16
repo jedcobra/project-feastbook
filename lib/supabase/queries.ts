@@ -495,6 +495,18 @@ export async function updateRecipe(recipeId: string, draft: RecipeDraft, visibil
   return recipeId;
 }
 
+// Deletes a recipe outright. Every child row (ingredients, steps, notes,
+// comments, saves, made_it entries, shelf links) cascades via its FK, so
+// this is the only statement needed. Returns whether it succeeded.
+export async function deleteRecipe(recipeId: string): Promise<boolean> {
+  const { error } = await supabase.from('recipes').delete().eq('id', recipeId);
+  if (error) {
+    console.error('deleteRecipe', error);
+    return false;
+  }
+  return true;
+}
+
 // Which of the author's shelves a recipe currently sits on, for pre-checking
 // the "Add to shelves" list when editing (7i).
 export async function fetchShelfIdsForRecipe(recipeId: string): Promise<Set<string>> {

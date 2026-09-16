@@ -185,3 +185,12 @@ export function EditIcon(props: StrokeIconProps) {
     </StrokeIcon>
   );
 }
+
+export function TrashIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 7h14M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m3 0l-1 13a1 1 0 01-1 1H8a1 1 0 01-1-1L6 7h12z" />
+      <path d="M10 11v6M14 11v6" />
+    </StrokeIcon>
+  );
+}
