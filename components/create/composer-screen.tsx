@@ -29,6 +29,9 @@ export function ComposerScreen() {
     if (params.get('new') === '1') {
       const url = params.get('url') ?? undefined;
       setDraft(emptyDraft(url));
+      // Drop the one-time init params so a refresh resumes the draft from
+      // storage instead of wiping it with a fresh one every time.
+      window.history.replaceState(null, '', window.location.pathname);
     } else {
       setDraft(loadDraft() ?? emptyDraft());
     }
