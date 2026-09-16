@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { CameraIcon, LinkIcon, PencilIcon } from '@/components/icons';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
-import { draftProgress, listDrafts, type RecipeDraft } from '@/lib/recipe-draft';
+import { draftProgress, listUnstartedDrafts, type RecipeDraft } from '@/lib/recipe-draft';
 
 const SOURCE_ICON = { manual: PencilIcon, link: LinkIcon, photo: CameraIcon } as const;
 
@@ -13,10 +13,7 @@ export function DraftsScreen() {
   const [drafts, setDrafts] = useState<RecipeDraft[] | null>(null);
 
   useEffect(() => {
-    // Edits-in-progress of an already-published recipe (7i) are drafts
-    // under the hood too, but they aren't "unfinished recipes" in the 7g
-    // sense, so they don't belong in this list.
-    setDrafts(listDrafts().filter((d) => !d.editId));
+    setDrafts(listUnstartedDrafts());
   }, []);
 
   return (

@@ -120,6 +120,13 @@ export function listDrafts(): RecipeDraft[] {
   return Object.values(loadAll()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
+// Drafts that represent an actual unfinished new recipe (7g) — excludes
+// edit-in-progress drafts of an already-published recipe (7i), which are
+// drafts under the hood but shouldn't show up or count as "unfinished".
+export function listUnstartedDrafts(): RecipeDraft[] {
+  return listDrafts().filter((d) => !d.editId);
+}
+
 export function loadDraft(id: string): RecipeDraft | null {
   return loadAll()[id] ?? null;
 }

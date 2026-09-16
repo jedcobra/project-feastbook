@@ -7,7 +7,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { CameraIcon, ChevronIcon, ForkIcon, LinkIcon, PencilIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { listDrafts, type DraftSource } from '@/lib/recipe-draft';
+import { listUnstartedDrafts, type DraftSource } from '@/lib/recipe-draft';
 
 const SECONDARY_ROWS = [
   { icon: PencilIcon, title: 'Type it out', sub: 'Blank page. Your words, your measurements.', source: 'manual' as DraftSource },
@@ -25,7 +25,7 @@ export function EntryScreen() {
   const [draftCount, setDraftCount] = useState(0);
 
   useEffect(() => {
-    setDraftCount(listDrafts().length);
+    setDraftCount(listUnstartedDrafts().length);
   }, []);
 
   const startComposer = (source: DraftSource, sourceUrl?: string) => {
