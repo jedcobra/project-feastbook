@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { EmptyCookbook } from '@/components/profile/empty-cookbook';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { fetchProfileByHandle } from '@/lib/supabase/queries';
@@ -53,18 +54,31 @@ export function OwnCookbook() {
     );
   }
 
+  const signOutLink = (
+    <div className="mb-5 px-5">
+      <button
+        type="button"
+        onClick={signOut}
+        className="font-mono text-[12px] text-ink-mute underline decoration-dashed underline-offset-[3px]"
+      >
+        Sign out
+      </button>
+    </div>
+  );
+
+  if (data.recipes.length === 0) {
+    return (
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {signOutLink}
+        <EmptyCookbook name={data.person.name.split(' ')[0]} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <ProfileHeader person={data.person} />
-      <div className="mb-5 px-5">
-        <button
-          type="button"
-          onClick={signOut}
-          className="font-mono text-[12px] text-ink-mute underline decoration-dashed underline-offset-[3px]"
-        >
-          Sign out
-        </button>
-      </div>
+      {signOutLink}
       <ProfileTabs
         shelves={data.shelves}
         recipes={data.recipes}
