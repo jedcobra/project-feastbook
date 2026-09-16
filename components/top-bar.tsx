@@ -7,13 +7,14 @@ interface TopBarProps {
   trailing?: ReactNode;
   variant?: 'brand' | 'default';
   backHref?: string;
+  onBack?: () => void;
 }
 
 // App header — brand wordmark or screen title, plus a trailing action slot.
-export function TopBar({ title, subtitle, trailing, variant = 'default', backHref }: TopBarProps) {
+export function TopBar({ title, subtitle, trailing, variant = 'default', backHref, onBack }: TopBarProps) {
   return (
     <div className="flex flex-shrink-0 items-center gap-2.5 px-5 pb-3.5 pt-6">
-      {backHref && <BackButton fallbackHref={backHref} />}
+      {(backHref || onBack) && <BackButton fallbackHref={backHref ?? '/'} onBack={onBack} />}
       <div className="min-w-0 flex-1">
         {variant === 'brand' ? (
           <div className="font-display text-[26px] font-bold leading-none text-ink">

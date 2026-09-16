@@ -186,6 +186,16 @@ export function EditIcon(props: StrokeIconProps) {
   );
 }
 
+export function WandIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 20l10-10" />
+      <path d="M17 4v3M15.5 5.5h3" />
+      <path d="M20 9v2M19 10h2" />
+    </StrokeIcon>
+  );
+}
+
 export function TrashIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

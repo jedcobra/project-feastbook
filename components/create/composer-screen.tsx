@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Field } from '@/components/create/field';
-import { DragIcon, SaveIcon, TimerIcon, TrashIcon } from '@/components/icons';
+import { DragIcon, SaveIcon, TimerIcon, TrashIcon, WandIcon } from '@/components/icons';
 import { Label } from '@/components/label';
-import { OutlineBox } from '@/components/outline-box';
+import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import {
@@ -145,6 +146,12 @@ export function ComposerScreen() {
         title={isEdit ? 'Edit recipe' : 'Write it out'}
         backHref={closeHref}
         subtitle={`${pct}% · draft saved`}
+        trailing={
+          <Link href={`/new/guided?draft=${draft.id}`} className={outlineBoxClasses(true)}>
+            <WandIcon size={12} />
+            Guide me
+          </Link>
+        }
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         <div className="mb-[18px] h-0.5 bg-rule-soft">
