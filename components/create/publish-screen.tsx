@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
 import { TopBar } from '@/components/top-bar';
-import { draftCounts, loadDraft, clearDraft, type RecipeDraft } from '@/lib/recipe-draft';
+import { deleteDraft, draftCounts, loadDraft, type RecipeDraft } from '@/lib/recipe-draft';
 import { createShelf, fetchProfileByHandle, publishRecipe } from '@/lib/supabase/queries';
 import type { Shelf } from '@/lib/types';
 
@@ -31,7 +31,8 @@ export function PublishScreen() {
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
-    setDraft(loadDraft());
+    const id = new URLSearchParams(window.location.search).get('draft');
+    setDraft(id ? loadDraft(id) : null);
   }, []);
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export function PublishScreen() {
     const recipeId = await publishRecipe(profile.id, draft, visibility, [...selectedShelves]);
     setPublishing(false);
     if (recipeId) {
-      clearDraft();
+      deleteDraft(draft.id);
       router.push('/me');
     }
   };
@@ -95,7 +96,7 @@ export function PublishScreen() {
 
   return (
     <>
-      <TopBar title="Publish" backHref="/new/edit" />
+      <TopBar title="Publish" backHref={`/new/edit?draft=${draft.id}`} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         <div className="mb-[22px] border border-ink p-3.5">
           <h3 className="mb-1 font-display text-section font-bold text-ink">

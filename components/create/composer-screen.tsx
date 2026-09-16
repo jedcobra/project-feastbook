@@ -9,15 +9,17 @@ import { Label } from '@/components/label';
 import { OutlineBox } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
-import { emptyDraft, loadDraft, saveDraft, type RecipeDraft } from '@/lib/recipe-draft';
+import {
+  createDraft,
+  draftProgress,
+  loadDraft,
+  saveDraft,
+  type DraftSource,
+  type RecipeDraft,
+} from '@/lib/recipe-draft';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
-
-function computeProgress(draft: RecipeDraft) {
-  const filled = [draft.title, draft.sections[0]?.items[0]?.i, draft.steps[0]?.t].filter((v) => v?.trim()).length;
-  return Math.round((filled / 3) * 100);
-}
 
 export function ComposerScreen() {
   const router = useRouter();
@@ -26,14 +28,24 @@ export function ComposerScreen() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('new') === '1') {
-      const url = params.get('url') ?? undefined;
-      setDraft(emptyDraft(url));
-      // Drop the one-time init params so a refresh resumes the draft from
-      // storage instead of wiping it with a fresh one every time.
-      window.history.replaceState(null, '', window.location.pathname);
+    const draftId = params.get('draft');
+    let resolved: RecipeDraft;
+
+    if (draftId) {
+      resolved = loadDraft(draftId) ?? createDraft();
     } else {
-      setDraft(loadDraft() ?? emptyDraft());
+      const source = (params.get('source') as DraftSource | null) ?? 'manual';
+      const url = params.get('url') ?? undefined;
+      resolved = createDraft(source, url);
+    }
+    setDraft(resolved);
+
+    // The URL's `draft` id is the stable identifier from here on — drop the
+    // one-time `source`/`url` creation hints (and adopt the fresh id if this
+    // was a brand-new or missing draft) so a refresh resumes from storage
+    // instead of minting another draft or losing this one's id.
+    if (draftId !== resolved.id) {
+      window.history.replaceState(null, '', `${window.location.pathname}?draft=${resolved.id}`);
     }
   }, []);
 
@@ -63,7 +75,7 @@ export function ComposerScreen() {
     );
   }
 
-  const pct = computeProgress(draft);
+  const pct = draftProgress(draft);
   const update = (patch: Partial<RecipeDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
 
   const setSectionName = (si: number, value: string) =>
@@ -287,12 +299,12 @@ export function ComposerScreen() {
       </div>
 
       <div className="flex flex-shrink-0 gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
-        <OutlineBox onClick={() => router.push('/me')} aria-label="Save and close">
+        <OutlineBox onClick={() => router.push('/new/drafts')} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>
         <button
           type="button"
-          onClick={() => router.push('/new/publish')}
+          onClick={() => router.push(`/new/publish?draft=${draft.id}`)}
           className="flex-1 rounded-button border border-ink bg-ink py-[13px] font-mono text-[13px] font-semibold text-cream"
         >
           Continue to publish
