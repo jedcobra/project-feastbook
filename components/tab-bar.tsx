@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PlusIcon } from '@/components/icons';
 
-const LEFT_TABS = [{ id: 'feed', label: 'Feed', href: '/feed' }];
-const RIGHT_TABS = [
-  { id: 'cookbook', label: 'Cookbook', href: '/me' },
+const LEFT_TABS = [
+  { id: 'feed', label: 'Feed', href: '/feed' },
   { id: 'discover', label: 'Discover', href: '/discover' },
 ];
+const RIGHT_TABS = [{ id: 'cookbook', label: 'Cookbook', href: '/me' }];
 
 // Persistent bottom nav. Austere by design: mono labels, no pill highlight,
 // just a small dot under the active tab. Tapping a tab resets to its root;
