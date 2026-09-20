@@ -161,9 +161,13 @@ export async function fetchFeed(limit = 20) {
 // Discover
 // ─────────────────────────────────────────────────────────────
 export async function fetchDiscoverPeople(excludeProfileId: string | null, limit = 4) {
+  // "you" is an unclaimed demo profile seeded as a pre-auth stand-in for the
+  // viewer — a leftover from before real signup existed, not a real person
+  // to suggest following.
   let query = supabase
     .from('profiles')
     .select('id, name, handle, bio')
+    .neq('handle', 'you')
     .order('created_at', { ascending: true })
     .limit(limit + 1);
   if (excludeProfileId) query = query.neq('id', excludeProfileId);
