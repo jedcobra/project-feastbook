@@ -98,7 +98,17 @@
 <script type="text/babel" src="ss-cooking.jsx"></script>
 <script type="text/babel" src="ss-discover.jsx"></script>
 <script type="text/babel" src="ss-create.jsx"></script>
+<script type="text/babel" src="ss-auth.jsx"></script>
 <script type="text/babel" src="ss-create-2.jsx"></script>
+<script type="text/babel" src="ss-comments.jsx"></script>
+<script type="text/babel" src="ss-edit.jsx"></script>
+<script type="text/babel" src="ss-onboarding.jsx"></script>
+<script type="text/babel" src="ss-search.jsx"></script>
+<script type="text/babel" src="ss-shelves.jsx"></script>
+<script type="text/babel" src="ss-notify.jsx"></script>
+<script type="text/babel" src="ss-settings.jsx"></script>
+<script type="text/babel" src="ss-states.jsx"></script>
+<script type="text/babel" src="ss-share.jsx"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -109,8 +119,8 @@ const TWEAKS = /*EDITMODE-BEGIN*/{
   "theme": "cream",
   "type": "garamond",
   "feedLayout": "index",
-  "detailLayout": "margin",
-  "showcase": "prototype"
+  "detailLayout": "document",
+  "showcase": "states"
 }/*EDITMODE-END*/;
 
 function SpecialSpoonApp() {
@@ -156,6 +166,12 @@ function SpecialSpoonApp() {
     const showcaseOpts = [
       ['prototype',       'Live prototype'],
       ['flow',            'All screens'],
+      ['auth',            'Signed-out'],
+      ['social',          'Notes & editing'],
+      ['onboarding',      'Onboarding'],
+      ['find',            'Search & shelves'],
+      ['system',          'Inbox & settings'],
+      ['states',          'States & sharing'],
       ['create',          'Add-recipe flow'],
       ['feed-variants',   'Feed variants'],
       ['detail-variants', 'Detail variants'],
@@ -216,6 +232,12 @@ function SpecialSpoonApp() {
   if (tweaks.showcase === 'detail-variants') return <DetailVariants baseStyle={baseStyle} tweaks={tweaks}/>;
   if (tweaks.showcase === 'type-variants')   return <TypeVariants   tweaks={tweaks}/>;
   if (tweaks.showcase === 'create')          return <CreateFlow     baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'auth')            return <AuthFlow       baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'social')          return <SocialFlow     baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'onboarding')      return <OnboardingShowcase baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'find')            return <FindFlow       baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'system')          return <SystemFlow     baseStyle={baseStyle}/>;
+  if (tweaks.showcase === 'states')          return <StatesFlow     baseStyle={baseStyle}/>;
   if (tweaks.showcase === 'flow')            return <FullFlow       baseStyle={baseStyle} tweaks={tweaks}/>;
   return <Prototype baseStyle={baseStyle} tweaks={tweaks}/>;
 }
@@ -239,6 +261,12 @@ function Prototype({ baseStyle, tweaks }) {
     localStorage.setItem('ss-stack', JSON.stringify(stack));
   }, [stack]);
 
+  // Signed-out gate. Persisted so a refresh keeps you where you were.
+  const [session, setSession] = React.useState(() => {
+    try { return localStorage.getItem('ss-session') || 'out'; } catch { return 'out'; }
+  });
+  React.useEffect(() => { localStorage.setItem('ss-session', session); }, [session]);
+
   const cur = stack[stack.length - 1];
   const push = (route) => setStack(s => [...s, route]);
   const pop  = () => setStack(s => s.length > 1 ? s.slice(0, -1) : s);
@@ -253,23 +281,93 @@ function Prototype({ baseStyle, tweaks }) {
     return [route];
   });
 
+  const [ownerSheet, setOwnerSheet] = React.useState(null);
+  const [shelfSheet, setShelfSheet] = React.useState(null);
   const openRecipe  = (id)     => push({ tab: cur.tab, view: 'recipe',  recipeId: id });
   const openProfile = (handle) => push({ tab: cur.tab, view: 'profile', handle });
   const openCooking = (id)     => push({ tab: cur.tab, view: 'cooking', recipeId: id });
 
   // Render the current view
   let screen, showTabs = true;
+  if (session !== 'in') {
+    showTabs = false;
+    const signIn = () => { setSession('in'); setStack([initial]); };
+    screen = session === 'signup'
+      ? <SSSignUpScreen onBack={() => setSession('out')} onDone={() => setSession('onboarding')} onSignIn={() => setSession('signin')}/>
+      : session === 'onboarding'
+        ? <SSOnboardingFlow onDone={signIn} onImport={signIn}/>
+      : session === 'signin'
+        ? <SSSignInScreen onBack={() => setSession('out')} onDone={signIn} onSignUp={() => setSession('signup')}/>
+        : <SSLandingScreen onSignUp={() => setSession('signup')} onSignIn={() => setSession('signin')}/>;
+    return (
+      <div className="ss-stage">
+        <div className="ss-header">
+          <div className="eyebrow">Special Spoon · live prototype</div>
+          <h1>Signed out</h1>
+          <p>The title page you land on before an account exists. Create one — you'll go through onboarding — or sign in to go straight to the feed.</p>
+        </div>
+        <div><Host baseStyle={baseStyle}>{screen}</Host></div>
+      </div>
+    );
+  }
   if (cur.view === 'feed') {
     screen = <SSFeedScreen
       layout={tweaks.feedLayout}
       onOpenRecipe={openRecipe}
       onOpenProfile={openProfile}
+      onOpenSearch={() => push({ tab: cur.tab, view: 'search' })}
+      onOpenNotifications={() => push({ tab: cur.tab, view: 'notifications' })}
     />;
+  } else if (cur.view === 'notifications') {
+    showTabs = false;
+    screen = <SSNotificationsScreen
+      onBack={pop}
+      onOpenRecipe={openRecipe}
+      onOpenProfile={openProfile}
+      onSettings={() => push({ tab: cur.tab, view: 'settings' })}
+    />;
+  } else if (cur.view === 'settings') {
+    showTabs = false;
+    screen = <SSSettingsScreen
+      onBack={pop}
+      onProfile={() => push({ tab: cur.tab, view: 'editprofile' })}
+      onAccount={() => push({ tab: cur.tab, view: 'account' })}
+      onNotifications={() => push({ tab: cur.tab, view: 'notifications' })}
+      onSignOut={() => { setSession('out'); setStack([initial]); }}
+    />;
+  } else if (cur.view === 'editprofile') {
+    showTabs = false;
+    screen = <SSEditProfileScreen onBack={pop} onSave={pop}/>;
+  } else if (cur.view === 'account') {
+    showTabs = false;
+    screen = <SSAccountScreen onBack={pop}/>;
   } else if (cur.view === 'discover') {
     screen = <SSDiscoverScreen
       onOpenRecipe={openRecipe}
       onOpenProfile={openProfile}
+      onOpenSearch={() => push({ tab: cur.tab, view: 'search' })}
     />;
+  } else if (cur.view === 'search') {
+    showTabs = false;
+    screen = <SSSearchScreen
+      onBack={pop}
+      onOpenRecipe={openRecipe}
+      onOpenProfile={openProfile}
+      onOpenShelf={(id) => push({ tab: cur.tab, view: 'shelf', shelfId: id })}
+    />;
+  } else if (cur.view === 'shelves') {
+    showTabs = false;
+    screen = <SSShelvesScreen
+      onBack={pop}
+      onOpenShelf={(id) => push({ tab: cur.tab, view: 'shelf', shelfId: id })}
+      onNewShelf={() => push({ tab: cur.tab, view: 'newshelf' })}
+    />;
+  } else if (cur.view === 'shelf') {
+    showTabs = false;
+    screen = <SSShelfScreen shelfId={cur.shelfId} onBack={pop} onOpenRecipe={openRecipe}/>;
+  } else if (cur.view === 'newshelf') {
+    showTabs = false;
+    screen = <SSNewShelfScreen onBack={pop} onCreate={pop}/>;
   } else if (cur.view === 'profile') {
     const isOwn = cur.handle === 'me' || cur.handle === 'you';
     screen = <SSProfileScreen
@@ -277,6 +375,8 @@ function Prototype({ baseStyle, tweaks }) {
       isOwn={isOwn}
       onBack={pop}
       onOpenRecipe={openRecipe}
+      onOpenShelf={(id) => push({ tab: cur.tab, view: 'shelf', shelfId: id })}
+      onSettings={() => push({ tab: cur.tab, view: 'settings' })}
     />;
   } else if (cur.view === 'recipe') {
     screen = <SSRecipeScreen
@@ -285,7 +385,28 @@ function Prototype({ baseStyle, tweaks }) {
       onBack={pop}
       onCook={() => openCooking(cur.recipeId)}
       onOpenProfile={openProfile}
+      onOpenComments={() => push({ tab: cur.tab, view: 'comments', recipeId: cur.recipeId })}
+      onOwnerMenu={() => setOwnerSheet(cur.recipeId)}
+      onSaveTo={() => setShelfSheet(cur.recipeId)}
     />;
+  } else if (cur.view === 'comments') {
+    showTabs = false;
+    screen = <SSCommentsScreen
+      recipeId={cur.recipeId}
+      onBack={pop}
+      onOpenProfile={openProfile}
+    />;
+  } else if (cur.view === 'edit') {
+    showTabs = false;
+    screen = <SSEditRecipeScreen
+      recipeId={cur.recipeId}
+      onClose={pop}
+      onSave={pop}
+      onRevisions={() => push({ tab: cur.tab, view: 'revisions', recipeId: cur.recipeId })}
+    />;
+  } else if (cur.view === 'revisions') {
+    showTabs = false;
+    screen = <SSRevisionsScreen recipeId={cur.recipeId} onBack={pop}/>;
   } else if (cur.view === 'cooking') {
     showTabs = false;
     screen = <SSCookingScreen
@@ -345,6 +466,17 @@ function Prototype({ baseStyle, tweaks }) {
     if (r.view === 'recipe')   return `/recipe/${r.recipeId}`;
     if (r.view === 'profile')  return r.handle === 'me' || r.handle === 'you' ? '/me' : `/@${r.handle}`;
     if (r.view === 'cooking')  return `/cook/${r.recipeId}`;
+    if (r.view === 'comments') return `/recipe/${r.recipeId}/notes`;
+    if (r.view === 'edit')     return `/recipe/${r.recipeId}/edit`;
+    if (r.view === 'revisions')return `/recipe/${r.recipeId}/history`;
+    if (r.view === 'search')   return '/search';
+    if (r.view === 'shelves')  return '/shelves';
+    if (r.view === 'shelf')    return `/shelf/${r.shelfId}`;
+    if (r.view === 'newshelf') return '/shelves/new';
+    if (r.view === 'notifications') return '/notifications';
+    if (r.view === 'settings') return '/settings';
+    if (r.view === 'editprofile') return '/settings/profile';
+    if (r.view === 'account')  return '/settings/account';
     if (r.view === 'import')   return `/new/import?src=${r.mode === 'uncertain' ? 'photo' : 'link'}`;
     if (r.view === 'composer') return '/new/edit';
     if (r.view === 'wizard')   return '/new/guided';
@@ -383,11 +515,11 @@ function Prototype({ baseStyle, tweaks }) {
         }}>← back</button>
         <span style={{ opacity: 0.5 }}>specialspoon.app</span>
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{path || '/'}</span>
-        <button onClick={() => { setStack([initial]); }} style={{
+        <button onClick={() => { setSession('out'); setStack([initial]); }} style={{
           border: '1px solid #232459', background: 'transparent',
           color: '#232459', padding: '3px 8px', borderRadius: 4, fontSize: 11,
           fontFamily: 'inherit', cursor: 'pointer',
-        }}>reset</button>
+        }}>sign out</button>
       </div>
 
       <div>
@@ -397,6 +529,18 @@ function Prototype({ baseStyle, tweaks }) {
             if (id === 'add') push({ tab: 'add', view: 'add' });
             else setTab(id);
           }}/>}
+          {ownerSheet && <SSOwnerSheet
+            recipeId={ownerSheet}
+            onClose={() => setOwnerSheet(null)}
+            onEdit={() => { push({ tab: cur.tab, view: 'edit', recipeId: ownerSheet }); setOwnerSheet(null); }}
+            onRevisions={() => { push({ tab: cur.tab, view: 'revisions', recipeId: ownerSheet }); setOwnerSheet(null); }}
+            onPrivacy={() => setOwnerSheet(null)}
+          />}
+          {shelfSheet && <SSAddToShelfSheet
+            recipeId={shelfSheet}
+            onClose={() => setShelfSheet(null)}
+            onNewShelf={() => { push({ tab: cur.tab, view: 'newshelf' }); setShelfSheet(null); }}
+          />}
         </Host>
       </div>
     </div>
@@ -485,6 +629,192 @@ function FullFlow({ baseStyle, tweaks }) {
           <div key={i}>
             <div className="ss-device-label">{s.label}</div>
             {s.node}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Signed-out showcase
+// ─────────────────────────────────────────────────────────────
+function AuthFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Landing — title page', node: <SSLandingScreen/> },
+    { label: '2 · Create an account',     node: <SSSignUpScreen/> },
+    { label: '3 · Sign in',               node: <SSSignInScreen/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Signed out</div>
+        <h1>A title page, not a billboard</h1>
+        <p>No hero photograph, no feature carousel. The app states what it is in serif, lists what you do with it, and offers two ways in.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Notes & editing showcase
+// ─────────────────────────────────────────────────────────────
+function SocialFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Notes thread', node: <SSCommentsScreen recipeId="brown-butter-miso"/> },
+    { label: '2 · Notes — empty', node: <SSCommentsScreen recipeId="greens" empty={true}/> },
+    { label: '3 · Your recipe — actions', node: <><SSRecipeScreen recipeId="sourdough-focaccia" layout="document"/><SSOwnerSheet recipeId="sourdough-focaccia"/></> },
+    { label: '4 · Edit recipe', node: <SSEditRecipeScreen recipeId="sourdough-focaccia"/> },
+    { label: '5 · Revision history', node: <SSRevisionsScreen recipeId="sourdough-focaccia"/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Notes & editing</div>
+        <h1>What happens after you publish</h1>
+        <p>The thread is where a recipe gets better — cooked-it marks, questions answered by the author, your own amendments. Editing is the same document with the rules turned into fields, and every save is kept.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Inbox & settings showcase
+// ─────────────────────────────────────────────────────────────
+function SystemFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Notifications', node: <SSNotificationsScreen/> },
+    { label: '2 · Inbox — empty', node: <SSNotificationsScreen empty={true}/> },
+    { label: '3 · Settings', node: <SSSettingsScreen/> },
+    { label: '4 · Edit profile', node: <SSEditProfileScreen/> },
+    { label: '5 · Account', node: <SSAccountScreen/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Inbox & settings</div>
+        <h1>The plumbing, written in plain words</h1>
+        <p>Notifications are grouped, marked, and every row leads to the thing it's about. Settings say what they do — deleting your account lists exactly what goes with it, and your writing exports as plain text.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
+          </div>
+        ))}
+      </div>
+      <div style={{ maxWidth: 420, width: '100%' }}>
+        <div className="ss-device-label">Push notification</div>
+        <div style={baseStyle}><SSPushPreview/></div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// States & sharing showcase
+// ─────────────────────────────────────────────────────────────
+function StatesFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Feed loading', node: <SSFeedLoadingScreen/> },
+    { label: '2 · Offline', node: <SSErrorScreen kind="offline"/> },
+    { label: '3 · Server error', node: <SSErrorScreen kind="server"/> },
+    { label: '4 · Recipe deleted', node: <SSErrorScreen kind="gone"/> },
+    { label: '5 · Recipe private', node: <SSErrorScreen kind="private"/> },
+    { label: '6 · Import failed', node: <SSImportFailScreen/> },
+    { label: '7 · Shared link, no account', node: <SSPublicRecipePage/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">States & sharing</div>
+        <h1>The screens a prototype usually skips</h1>
+        <p>Loading wears the feed's own shape rather than a spinner. Every failure says what happened, whose fault it is, and what you can still do. A shared link gives a stranger the whole recipe first and asks for an account after.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Onboarding showcase
+// ─────────────────────────────────────────────────────────────
+function OnboardingShowcase({ baseStyle }) {
+  const screens = [
+    { label: '1 · Taste', node: <SSOnboardTaste/> },
+    { label: '2 · Who to follow', node: <SSOnboardFollow/> },
+    { label: '3 · First recipe', node: <SSOnboardFirstRecipe/> },
+    { label: '4 · Notifications', node: <SSOnboardNotify/> },
+    { label: '5 · Empty cookbook', node: <><SSEmptyCookbookScreen/><SSTabBar current="cookbook"/></> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">After signup</div>
+        <h1>Four questions, each one used immediately</h1>
+        <p>Taste seeds Discover. Follows fill the feed. The first recipe is the habit that makes the app stick. Notifications are asked for with a reason, before the phone asks.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Search & shelves showcase
+// ─────────────────────────────────────────────────────────────
+function FindFlow({ baseStyle }) {
+  const screens = [
+    { label: '1 · Search — empty', node: <SSSearchScreen/> },
+    { label: '2 · Results', node: <SSSearchScreen initial="le"/> },
+    { label: '3 · Nothing found', node: <SSSearchScreen initial="kouign amann"/> },
+    { label: '4 · Shelves', node: <SSShelvesScreen/> },
+    { label: '5 · One shelf', node: <SSShelfScreen shelfId="weeknight"/> },
+    { label: '6 · Save to a shelf', node: <><SSRecipeScreen recipeId="brown-butter-miso" layout="document"/><SSAddToShelfSheet recipeId="brown-butter-miso"/></> },
+    { label: '7 · New shelf', node: <SSNewShelfScreen/> },
+  ];
+  return (
+    <div className="ss-stage">
+      <div className="ss-header">
+        <div className="eyebrow">Finding and filing</div>
+        <h1>Search everything, file it anywhere</h1>
+        <p>One field searches recipes, cooks, shelves and ingredients at once. Saving is never a single bookmark — it always asks which shelf, because that's the thing that makes a cookbook usable later.</p>
+      </div>
+      <div className="ss-row">
+        {screens.map((s, i) => (
+          <div key={i}>
+            <div className="ss-device-label">{s.label}</div>
+            <Host baseStyle={baseStyle}>{s.node}</Host>
           </div>
         ))}
       </div>

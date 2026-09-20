@@ -1,28 +1,33 @@
 // ss-recipe.jsx — Recipe detail. Noods-style document layout.
 // Two-column ingredients + numbered method. Minimal.
 
-function SSRecipeScreen({ recipeId, layout = 'document', onBack, onCook, onOpenProfile }) {
+function SSRecipeScreen({ recipeId, layout = 'document', onBack, onCook, onOpenProfile, onOpenComments, onOwnerMenu, onSaveTo }) {
   const r = recipeById(recipeId);
   if (!r) return null;
   const author = byHandle(r.author);
+  const isOwn = r.author === 'you';
+  const sub = { onCook, onOpenProfile, onOpenComments };
 
   return (
     <>
       <SSTopBar
         onBack={onBack}
         trailing={<>
-          <SSBox compact>
+          {!isOwn && <SSBox compact onClick={onSaveTo}>
             <SSIcon name="bookmark" size={14}/>
-          </SSBox>
+          </SSBox>}
           <SSBox compact>
             <SSIcon name="share" size={14}/>
           </SSBox>
+          {isOwn && <SSBox compact onClick={onOwnerMenu}>
+            <SSIcon name="more" size={14}/>
+          </SSBox>}
         </>}
       />
       <SSScroll>
-        {layout === 'document' && <DocumentDetail r={r} author={author} onCook={onCook} onOpenProfile={onOpenProfile}/>}
-        {layout === 'focus'    && <FocusDetail    r={r} author={author} onCook={onCook} onOpenProfile={onOpenProfile}/>}
-        {layout === 'margin'   && <MarginDetail   r={r} author={author} onCook={onCook} onOpenProfile={onOpenProfile}/>}
+        {layout === 'document' && <DocumentDetail r={r} author={author} {...sub}/>}
+        {layout === 'focus'    && <FocusDetail    r={r} author={author} {...sub}/>}
+        {layout === 'margin'   && <MarginDetail   r={r} author={author} {...sub}/>}
       </SSScroll>
     </>
   );
@@ -170,12 +175,15 @@ function MethodBlock({ r, showTitle = true }) {
 }
 
 // Shared — comments
-function CommentsBlock({ r }) {
+function CommentsBlock({ r, onOpenComments }) {
   return (
     <div style={{ paddingBottom: 32 }}>
       <div style={{ borderTop: '1px dashed var(--ss-rule)', marginBottom: 14 }}/>
-      <SSLabel style={{ marginBottom: 12 }}>Notes from the table</SSLabel>
-      {r.comments.map((c, i) => {
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
+        <SSLabel style={{ flex: 1 }}>Notes from the table</SSLabel>
+        <SSLink style={{ fontSize: 11 }} onClick={onOpenComments}>All {r.comments.length + 3} →</SSLink>
+      </div>
+      {r.comments.slice(0, 2).map((c, i) => {
         const a = byHandle(c.by);
         return (
           <div key={i} style={{
@@ -200,8 +208,8 @@ function CommentsBlock({ r }) {
           </div>
         );
       })}
-      <div style={{
-        marginTop: 14, padding: '9px 12px',
+      <div onClick={onOpenComments} style={{
+        marginTop: 14, padding: '9px 12px', cursor: 'pointer',
         border: '1px dashed var(--ss-rule)',
         borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6,
         color: 'var(--ss-ink-mute)', fontFamily: 'var(--ss-mono)', fontSize: 12,
@@ -242,7 +250,7 @@ function CookButton({ onCook }) {
 // Document layout — header block, then inline two-col on wide.
 // On narrow (phone) they stack: ingredients → method. Noods feel.
 // ─────────────────────────────────────────────────────────────
-function DocumentDetail({ r, author, onCook, onOpenProfile }) {
+function DocumentDetail({ r, author, onCook, onOpenProfile, onOpenComments }) {
   return (
     <>
       <div style={{ padding: '0 20px' }}>
@@ -317,7 +325,7 @@ function DocumentDetail({ r, author, onCook, onOpenProfile }) {
           </div>
         )}
 
-        {r.comments.length > 0 && <CommentsBlock r={r}/>}
+        {r.comments.length > 0 && <CommentsBlock r={r} onOpenComments={onOpenComments}/>}
       </div>
       <CookButton onCook={onCook}/>
     </>
@@ -327,7 +335,7 @@ function DocumentDetail({ r, author, onCook, onOpenProfile }) {
 // ─────────────────────────────────────────────────────────────
 // Focus layout — one generous column, larger type
 // ─────────────────────────────────────────────────────────────
-function FocusDetail({ r, author, onCook, onOpenProfile }) {
+function FocusDetail({ r, author, onCook, onOpenProfile, onOpenComments }) {
   return (
     <>
       <div style={{ padding: '0 24px' }}>
@@ -377,7 +385,7 @@ function FocusDetail({ r, author, onCook, onOpenProfile }) {
           </div>
         )}
 
-        {r.comments.length > 0 && <CommentsBlock r={r}/>}
+        {r.comments.length > 0 && <CommentsBlock r={r} onOpenComments={onOpenComments}/>}
       </div>
       <CookButton onCook={onCook}/>
     </>
@@ -387,7 +395,7 @@ function FocusDetail({ r, author, onCook, onOpenProfile }) {
 // ─────────────────────────────────────────────────────────────
 // Margin layout — ingredients in a left margin column, steps on right
 // ─────────────────────────────────────────────────────────────
-function MarginDetail({ r, author, onCook, onOpenProfile }) {
+function MarginDetail({ r, author, onCook, onOpenProfile, onOpenComments }) {
   const flatIngs = r.ingredients.flatMap(s => s.items);
   const [checked, setChecked] = React.useState({});
   const toggle = (k) => setChecked(c => ({ ...c, [k]: !c[k] }));
@@ -468,7 +476,7 @@ function MarginDetail({ r, author, onCook, onOpenProfile }) {
         </div>
 
         <SSRule style={{ margin: '16px 0' }}/>
-        {r.comments.length > 0 && <CommentsBlock r={r}/>}
+        {r.comments.length > 0 && <CommentsBlock r={r} onOpenComments={onOpenComments}/>}
       </div>
       <CookButton onCook={onCook}/>
     </>

@@ -1,16 +1,23 @@
 // ss-feed.jsx — Home feed. Three layouts: index (default), magazine, compact.
 // Text-first. No photo tiles. Dashed rules. Monospace meta.
 
-function SSFeedScreen({ layout = 'index', onOpenRecipe, onOpenProfile }) {
+function SSFeedScreen({ layout = 'index', onOpenRecipe, onOpenProfile, onOpenSearch, onOpenNotifications }) {
   return (
     <>
       <SSTopBar
         variant="brand"
-        trailing={
-          <SSBox compact>
+        trailing={<>
+          <SSBox compact onClick={onOpenSearch}>
             <SSIcon name="search" size={14}/>
           </SSBox>
-        }
+          <SSBox compact onClick={onOpenNotifications} style={{ position: 'relative' }}>
+            <SSIcon name="heart" size={14}/>
+            <span style={{
+              position: 'absolute', top: -3, right: -3, width: 7, height: 7,
+              borderRadius: '50%', background: 'var(--ss-accent)',
+            }}/>
+          </SSBox>
+        </>}
       />
       {/* Date bar */}
       <div style={{

@@ -1,6 +1,6 @@
 // ss-profile.jsx — Personal cookbook / profile. Text-first, noods-style.
 
-function SSProfileScreen({ handle = 'me', onBack, onOpenRecipe, isOwn }) {
+function SSProfileScreen({ handle = 'me', onBack, onOpenRecipe, onOpenShelf, onSettings, isOwn }) {
   const p = byHandle(handle === 'me' ? 'you' : handle) || SS_PEOPLE[0];
   const myRecipes = SS_RECIPES.filter(r => r.author === p.handle);
   const [tab, setTab] = React.useState('shelves');
@@ -12,7 +12,7 @@ function SSProfileScreen({ handle = 'me', onBack, onOpenRecipe, isOwn }) {
         title={isOwn ? null : undefined}
         variant={isOwn ? 'brand' : 'default'}
         trailing={isOwn
-          ? <SSBox compact><SSIcon name="edit" size={14}/></SSBox>
+          ? <SSBox compact onClick={onSettings}><SSIcon name="more" size={14}/></SSBox>
           : <SSBox compact><SSIcon name="share" size={14}/></SSBox>
         }
       />
@@ -96,7 +96,7 @@ function SSProfileScreen({ handle = 'me', onBack, onOpenRecipe, isOwn }) {
         {tab === 'shelves' && (
           <div style={{ margin: '0 20px', paddingBottom: 32 }}>
             {SS_SHELVES.map((s, i) => (
-              <div key={s.id} style={{
+              <div key={s.id} onClick={() => onOpenShelf && onOpenShelf(s.id)} style={{
                 padding: '14px 0',
                 borderBottom: '1px dashed var(--ss-rule)',
                 display: 'flex', alignItems: 'flex-start', gap: 14,

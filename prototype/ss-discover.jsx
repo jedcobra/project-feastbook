@@ -1,6 +1,6 @@
 // ss-discover.jsx — Discover / search. Text index of trending + people.
 
-function SSDiscoverScreen({ onOpenRecipe, onOpenProfile }) {
+function SSDiscoverScreen({ onOpenRecipe, onOpenProfile, onOpenSearch }) {
   const [query, setQuery] = React.useState('');
 
   return (
@@ -9,12 +9,14 @@ function SSDiscoverScreen({ onOpenRecipe, onOpenProfile }) {
       <SSScroll>
         <div style={{ padding: '0 20px 32px' }}>
           {/* Search input */}
-          <SSInput
-            placeholder="Search recipes, cooks, tags…"
-            value={query}
-            rightSlot={<SSIcon name="search" size={14}/>}
-            style={{ marginBottom: 20 }}
-          />
+          <div onClick={onOpenSearch} style={{ cursor: 'pointer' }}>
+            <SSInput
+              placeholder="Search recipes, cooks, tags…"
+              value={query}
+              rightSlot={<SSIcon name="search" size={14}/>}
+              style={{ marginBottom: 20 }}
+            />
+          </div>
 
           {/* Trending tags */}
           <div style={{ marginBottom: 24 }}>
