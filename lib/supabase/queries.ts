@@ -192,6 +192,32 @@ export async function fetchEditorsPicks(limit = 5) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Auth / onboarding
+// ─────────────────────────────────────────────────────────────
+export async function checkHandleAvailable(handle: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('handle', handle)
+    .maybeSingle();
+  if (error) {
+    console.error('checkHandleAvailable', error);
+    return true;
+  }
+  return !data;
+}
+
+// Marks the four-step post-signup onboarding flow as done and persists the
+// taste tags picked in step 1 for future Discover-ranking use.
+export async function completeOnboarding(profileId: string, tasteTags: string[]) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ onboarded_at: new Date().toISOString(), taste_tags: tasteTags })
+    .eq('id', profileId);
+  if (error) console.error('completeOnboarding', error);
+}
+
+// ─────────────────────────────────────────────────────────────
 // Profile (own + friend)
 // ─────────────────────────────────────────────────────────────
 export async function fetchProfileByHandle(handle: string) {

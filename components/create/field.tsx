@@ -10,6 +10,8 @@ interface FieldProps {
   multiline?: boolean;
   rows?: number;
   hint?: string;
+  type?: string;
+  autoComplete?: string;
 }
 
 // Underline field — real input, no border box. The composer's signature
@@ -24,6 +26,8 @@ export function Field({
   multiline,
   rows = 3,
   hint,
+  type = 'text',
+  autoComplete,
 }: FieldProps) {
   const inputClassName = `block w-full resize-none border-none bg-transparent py-1.5 outline-none ${
     mono ? 'font-mono' : 'font-display'
@@ -46,6 +50,8 @@ export function Field({
         />
       ) : (
         <input
+          type={type}
+          autoComplete={autoComplete}
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}

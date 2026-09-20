@@ -8,6 +8,8 @@ export interface ProfileRow {
   bio: string;
   avatar_url: string | null;
   created_at: string;
+  onboarded_at: string | null;
+  taste_tags: string[];
 }
 
 export interface ProfileStatsRow {
