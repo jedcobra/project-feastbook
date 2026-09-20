@@ -7,7 +7,8 @@ import { OutlineBox } from '@/components/outline-box';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { TopBar } from '@/components/top-bar';
-import { fetchRecipeFull, isSaved, setSaved } from '@/lib/supabase/queries';
+import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
+import { fetchRecipeFull, isSaved } from '@/lib/supabase/queries';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 export function RecipeDetailScreen({ id }: { id: string }) {
@@ -15,6 +16,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [saved, setSavedState] = useState(false);
   const [ownerSheetOpen, setOwnerSheetOpen] = useState(false);
+  const [shelfSheetOpen, setShelfSheetOpen] = useState(false);
 
   useEffect(() => {
     fetchRecipeFull(id).then(setData);
@@ -27,13 +29,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
       setSavedState(false);
     }
   }, [profile, id]);
-
-  const toggleSave = async () => {
-    if (!profile) return;
-    const next = !saved;
-    setSavedState(next);
-    await setSaved(profile.id, id, next);
-  };
 
   const handleCommentPosted = (comment: RecipeComment) => {
     setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: [...d.recipe.comments, comment] } } : d));
@@ -70,7 +65,12 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         trailing={
           <>
             {!isOwner && (
-              <OutlineBox compact filled={saved} aria-label={saved ? 'Unsave' : 'Save'} onClick={toggleSave}>
+              <OutlineBox
+                compact
+                filled={saved}
+                aria-label={saved ? 'Manage shelves' : 'Save to a shelf'}
+                onClick={() => setShelfSheetOpen(true)}
+              >
                 <BookmarkIcon size={14} />
               </OutlineBox>
             )}
@@ -102,6 +102,15 @@ export function RecipeDetailScreen({ id }: { id: string }) {
             setData((d) => (d ? { ...d, recipe: { ...d.recipe, visibility: v } } : d))
           }
           onClose={() => setOwnerSheetOpen(false)}
+        />
+      )}
+      {shelfSheetOpen && profile && (
+        <AddToShelfSheet
+          ownerId={profile.id}
+          recipeId={id}
+          recipeTitle={data.recipe.title}
+          onSaved={setSavedState}
+          onClose={() => setShelfSheetOpen(false)}
         />
       )}
     </>

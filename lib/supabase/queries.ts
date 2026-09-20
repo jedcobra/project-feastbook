@@ -1,7 +1,7 @@
 import { formatRelativeTime } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
-import type { FeedActivity, Person, Recipe, Shelf, Visibility } from '@/lib/types';
+import type { FeedActivity, Person, Recipe, Shelf, ShelfVisibility, Visibility } from '@/lib/types';
 
 // The client isn't given a generated Database type, so supabase-js can't
 // always tell a to-one embed from a to-many one and defaults to arrays.
@@ -241,7 +241,7 @@ export async function fetchProfileByHandle(handle: string) {
     supabase.from('recipes').select('*').eq('author_id', profileRow.id),
     supabase
       .from('shelves')
-      .select('id, title, subtitle, shelf_recipes(recipe_id, position, recipes(title))')
+      .select('id, title, subtitle, visibility, shelf_recipes(recipe_id, position, recipes(title))')
       .eq('owner_id', profileRow.id),
   ]);
 
@@ -253,6 +253,7 @@ export async function fetchProfileByHandle(handle: string) {
       id: string;
       title: string;
       subtitle: string;
+      visibility: ShelfVisibility;
       shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
     }) => {
       const sorted = [...s.shelf_recipes].sort((a, b) => a.position - b.position);
@@ -260,6 +261,7 @@ export async function fetchProfileByHandle(handle: string) {
         id: s.id,
         title: s.title,
         subtitle: s.subtitle,
+        visibility: s.visibility,
         count: sorted.length,
         recipes: sorted.map((sr) => ({
           id: sr.recipe_id,
@@ -409,10 +411,15 @@ export async function postComment(authorId: string, recipeId: string, text: stri
   return { by: unwrapOne(data.author)?.name ?? 'Someone', text: data.text, likes: data.likes };
 }
 
-export async function createShelf(ownerId: string, title: string) {
+export async function createShelf(
+  ownerId: string,
+  title: string,
+  subtitle = '',
+  visibility: ShelfVisibility = 'private',
+) {
   const { data, error } = await supabase
     .from('shelves')
-    .insert({ owner_id: ownerId, title, subtitle: '' })
+    .insert({ owner_id: ownerId, title, subtitle, visibility })
     .select('id, title')
     .single();
   if (error || !data) {
@@ -420,6 +427,102 @@ export async function createShelf(ownerId: string, title: string) {
     return null;
   }
   return { id: data.id as string, title: data.title as string };
+}
+
+// Just the current user's own shelves — the add-to-shelf sheet's list and
+// the Cookbook's Shelves tab both need this without the rest of the
+// profile bundle fetchProfileByHandle pulls in.
+export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
+  const { data, error } = await supabase
+    .from('shelves')
+    .select('id, title, subtitle, visibility, shelf_recipes(recipe_id)')
+    .eq('owner_id', ownerId)
+    .order('created_at', { ascending: true });
+  if (error || !data) {
+    console.error('fetchShelvesForOwner', error);
+    return [];
+  }
+  return data.map(
+    (s: { id: string; title: string; subtitle: string; visibility: ShelfVisibility; shelf_recipes: unknown[] }) => ({
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      visibility: s.visibility,
+      count: s.shelf_recipes.length,
+      recipes: [],
+    }),
+  );
+}
+
+// Replaces which of the user's own shelves a recipe sits on in one go, and
+// keeps the plain `saves` signal (recipe_stats, feed activity, the Saved
+// tab) in sync with it — filed on any shelf counts as saved, filed on none
+// doesn't. This is what the bookmark button opens now instead of a silent
+// toggle.
+export async function setRecipeShelves(userId: string, recipeId: string, shelfIds: string[]) {
+  // RLS scopes this delete to shelves the caller owns, so it can't touch
+  // other people's placements of the same recipe.
+  const { error: deleteError } = await supabase.from('shelf_recipes').delete().eq('recipe_id', recipeId);
+  if (deleteError) console.error('setRecipeShelves: delete', deleteError);
+
+  if (shelfIds.length > 0) {
+    const { error: insertError } = await supabase
+      .from('shelf_recipes')
+      .insert(shelfIds.map((shelf_id) => ({ shelf_id, recipe_id: recipeId })));
+    if (insertError) console.error('setRecipeShelves: insert', insertError);
+  }
+
+  await setSaved(userId, recipeId, shelfIds.length > 0);
+}
+
+export interface ShelfDetail {
+  id: string;
+  title: string;
+  subtitle: string;
+  visibility: ShelfVisibility;
+  ownerId: string;
+  recipes: Recipe[];
+}
+
+export async function fetchShelfDetail(shelfId: string): Promise<ShelfDetail | null> {
+  const { data: shelfRow, error } = await supabase
+    .from('shelves')
+    .select('id, title, subtitle, visibility, owner_id')
+    .eq('id', shelfId)
+    .maybeSingle();
+  if (error || !shelfRow) {
+    if (error) console.error('fetchShelfDetail', error);
+    return null;
+  }
+
+  const { data: shelfRecipeRows } = await supabase
+    .from('shelf_recipes')
+    .select('recipe_id, created_at')
+    .eq('shelf_id', shelfId)
+    .order('created_at', { ascending: false });
+
+  const { data: recipeRows } = await supabase
+    .from('recipes')
+    .select('*')
+    .in('id', (shelfRecipeRows ?? []).map((r: { recipe_id: string }) => r.recipe_id));
+  const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
+  const recipes = (shelfRecipeRows ?? [])
+    .map((r: { recipe_id: string }) => recipeById.get(r.recipe_id))
+    .filter((r): r is Recipe => !!r);
+
+  return {
+    id: shelfRow.id,
+    title: shelfRow.title,
+    subtitle: shelfRow.subtitle,
+    visibility: shelfRow.visibility,
+    ownerId: shelfRow.owner_id,
+    recipes,
+  };
+}
+
+export async function removeRecipeFromShelf(shelfId: string, recipeId: string) {
+  const { error } = await supabase.from('shelf_recipes').delete().eq('shelf_id', shelfId).eq('recipe_id', recipeId);
+  if (error) console.error('removeRecipeFromShelf', error);
 }
 
 function recipeFields(draft: RecipeDraft, visibility: Visibility) {

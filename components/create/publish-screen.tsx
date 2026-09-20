@@ -60,7 +60,10 @@ export function PublishScreen() {
     if (!name || !profile) return;
     const created = await createShelf(profile.id, name);
     if (created) {
-      setShelves((s) => [...s, { id: created.id, title: created.title, subtitle: '', count: 0, recipes: [] }]);
+      setShelves((s) => [
+        ...s,
+        { id: created.id, title: created.title, subtitle: '', visibility: 'private', count: 0, recipes: [] },
+      ]);
       setSelectedShelves((s) => new Set(s).add(created.id));
     }
     setNewShelfName('');

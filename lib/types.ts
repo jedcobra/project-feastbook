@@ -80,10 +80,13 @@ export interface ShelfRecipeRef {
   title: string;
 }
 
+export type ShelfVisibility = 'private' | 'followers' | 'link';
+
 export interface Shelf {
   id: string;
   title: string;
   subtitle: string;
+  visibility: ShelfVisibility;
   count: number;
   recipes: ShelfRecipeRef[];
 }

@@ -101,6 +101,7 @@ export interface ShelfRow {
   owner_id: string;
   title: string;
   subtitle: string;
+  visibility: 'private' | 'followers' | 'link';
   created_at: string;
 }
 
@@ -113,6 +114,7 @@ export interface ShelfRecipeRow {
   shelf_id: string;
   recipe_id: string;
   position: number;
+  created_at: string;
 }
 
 export interface FeedActivityRow {

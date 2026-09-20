@@ -63,7 +63,11 @@ function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
   return (
     <div className="mx-5 pb-8">
       {shelves.map((shelf) => (
-        <div key={shelf.id} className="flex items-start gap-3.5 border-b border-dashed border-rule py-3.5">
+        <Link
+          key={shelf.id}
+          href={`/shelf/${shelf.id}`}
+          className="flex items-start gap-3.5 border-b border-dashed border-rule py-3.5"
+        >
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
             <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
           </div>
@@ -78,16 +82,16 @@ function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
             </div>
           </div>
           <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
-        </div>
+        </Link>
       ))}
       {isOwn && (
-        <button
-          type="button"
+        <Link
+          href="/new-shelf"
           className="mt-3.5 flex w-full items-center justify-center gap-1.5 border border-dashed border-rule py-3 font-mono text-[12px] text-ink-mute"
         >
           <PlusIcon size={13} />
           New shelf
-        </button>
+        </Link>
       )}
     </div>
   );
