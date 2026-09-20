@@ -234,6 +234,15 @@ export function PrintIcon(props: StrokeIconProps) {
   );
 }
 
+export function BellIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 10a6 6 0 1112 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z" />
+      <path d="M10 19a2 2 0 004 0" />
+    </StrokeIcon>
+  );
+}
+
 export function UserIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { HeartIcon } from '@/components/icons';
+import { BellIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { countUnreadNotifications } from '@/lib/supabase/queries';
 
@@ -21,7 +21,7 @@ export function NotificationsButton() {
 
   return (
     <Link href="/notifications" aria-label="Notifications" className={`relative ${outlineBoxClasses(true)}`}>
-      <HeartIcon size={14} />
+      <BellIcon size={14} />
       {unread > 0 && <span className="absolute -right-1 -top-1 h-[7px] w-[7px] rounded-full bg-accent" />}
     </Link>
   );

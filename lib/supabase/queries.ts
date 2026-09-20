@@ -979,7 +979,10 @@ export async function fetchShelfIdsForRecipe(recipeId: string): Promise<Set<stri
 export async function fetchNotifications(recipientId: string): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('notifications')
-    .select('id, kind, excerpt, created_at, read_at, actor:profiles(name, handle), recipe:recipes(id, title)')
+    // `notifications` has two FKs into `profiles` (recipient_id, actor_id),
+    // so the embed must name which column to join on — otherwise it's
+    // ambiguous to PostgREST and silently resolves to nothing.
+    .select('id, kind, excerpt, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)')
     .eq('recipient_id', recipientId)
     .order('created_at', { ascending: false })
     .limit(100);
