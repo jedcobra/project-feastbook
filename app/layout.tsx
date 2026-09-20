@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AuthGate } from '@/components/auth/auth-gate';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { display, mono } from '@/lib/fonts';
 import './globals.css';
@@ -17,7 +18,10 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${mono.variable}`}>
       <body>
         <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <AuthGate />
+            {children}
+          </AuthProvider>
         </div>
       </body>
     </html>

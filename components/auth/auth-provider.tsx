@@ -1,6 +1,7 @@
 'use client';
 
 import type { Session, User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import type { ProfileRow } from '@/lib/supabase/types';
@@ -24,6 +25,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -68,16 +70,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: { data: { name, handle } },
     });
     if (error) return { error: error.message, needsEmailConfirmation: false };
+    // Set session/profile locally instead of waiting on the onAuthStateChange
+    // listener — the caller navigates immediately after this resolves, and
+    // AuthGate/OnboardingGate need `user`/`profile` current by then or they'll
+    // bounce the fresh signup right back to the Landing screen.
+    if (data.session) {
+      setSession(data.session);
+      await loadProfile(data.session.user.id);
+    }
     return { error: null, needsEmailConfirmation: !data.session };
   };
 
   const signIn: AuthContextValue['signIn'] = async ({ email, password }) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    if (data.session) {
+      setSession(data.session);
+      await loadProfile(data.session.user.id);
+    }
+    return { error: null };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    router.push('/account');
   };
 
   return (

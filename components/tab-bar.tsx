@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/auth/auth-provider';
 import { PlusIcon } from '@/components/icons';
 
 const LEFT_TABS = [
@@ -17,7 +18,12 @@ const RIGHT_TABS = [{ id: 'cookbook', label: 'Cookbook', href: '/me' }];
 // when its own section is the active one.
 export function TabBar() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const newActive = pathname.startsWith('/new');
+
+  // The whole app is signed-in only (see AuthGate) — nothing to navigate to
+  // while signed out, so there's nothing to show here either.
+  if (!user) return null;
 
   return (
     <nav className="flex flex-shrink-0 items-stretch justify-around gap-1 border-t border-rule bg-cream px-4 pb-5 pt-2.5">
