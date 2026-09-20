@@ -233,3 +233,23 @@ export function PrintIcon(props: StrokeIconProps) {
     </StrokeIcon>
   );
 }
+
+export function UserIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20c0-3.6 3.4-6.5 7.5-6.5s7.5 2.9 7.5 6.5" />
+    </StrokeIcon>
+  );
+}
+
+export function HeartIcon({ filled, ...props }: StrokeIconProps & { filled?: boolean }) {
+  return (
+    <StrokeIcon {...props}>
+      <path
+        d="M12 20.5c-.3 0-.6-.1-.8-.3C7.8 17.6 3 13.6 3 9.3 3 6.4 5.2 4 8 4c1.7 0 3.2.9 4 2.3C12.8 4.9 14.3 4 16 4c2.8 0 5 2.4 5 5.3 0 4.3-4.8 8.3-8.2 10.9-.2.2-.5.3-.8.3z"
+        fill={filled ? 'currentColor' : 'none'}
+      />
+    </StrokeIcon>
+  );
+}

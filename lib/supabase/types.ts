@@ -70,9 +70,29 @@ export interface CommentRow {
   id: string;
   recipe_id: string;
   author_id: string;
+  parent_id: string | null;
   text: string;
   likes: number;
+  cooked: boolean;
   created_at: string;
+}
+
+export interface CommentLikeRow {
+  comment_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface NotificationRow {
+  id: string;
+  recipient_id: string;
+  actor_id: string | null;
+  kind: 'note' | 'reply' | 'follow' | 'cooked' | 'digest';
+  recipe_id: string | null;
+  comment_id: string | null;
+  excerpt: string | null;
+  created_at: string;
+  read_at: string | null;
 }
 
 export interface FollowRow {

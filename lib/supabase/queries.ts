@@ -1,7 +1,17 @@
 import { formatRelativeTime } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
-import type { FeedActivity, Person, Recipe, Shelf, ShelfVisibility, Visibility } from '@/lib/types';
+import type {
+  AppNotification,
+  FeedActivity,
+  NotificationKind,
+  Person,
+  Recipe,
+  RecipeComment,
+  Shelf,
+  ShelfVisibility,
+  Visibility,
+} from '@/lib/types';
 
 // The client isn't given a generated Database type, so supabase-js can't
 // always tell a to-one embed from a to-many one and defaults to arrays.
@@ -298,7 +308,61 @@ export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
 // ─────────────────────────────────────────────────────────────
 // Recipe detail
 // ─────────────────────────────────────────────────────────────
-export async function fetchRecipeFull(id: string) {
+// Threads flat comment rows into one level of replies, and folds in real
+// per-user like counts from comment_likes (the old `comments.likes` column
+// can't be toggled or de-duped per person).
+async function mapCommentRows(
+  rows: {
+    id: string;
+    parent_id: string | null;
+    text: string;
+    cooked: boolean;
+    created_at: string;
+    author: { id: string; name: string; handle: string } | { id: string; name: string; handle: string }[] | null;
+  }[],
+  viewerId: string | null,
+): Promise<RecipeComment[]> {
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id);
+  const { data: likeRows } = await supabase.from('comment_likes').select('comment_id, user_id').in('comment_id', ids);
+  const likeCounts = new Map<string, number>();
+  const likedByViewer = new Set<string>();
+  for (const l of (likeRows ?? []) as { comment_id: string; user_id: string }[]) {
+    likeCounts.set(l.comment_id, (likeCounts.get(l.comment_id) ?? 0) + 1);
+    if (viewerId && l.user_id === viewerId) likedByViewer.add(l.comment_id);
+  }
+
+  const byId = new Map<string, RecipeComment>();
+  for (const r of rows) {
+    const a = unwrapOne(r.author) as { id: string; name: string; handle: string } | undefined;
+    byId.set(r.id, {
+      id: r.id,
+      authorId: a?.id ?? '',
+      by: a?.name ?? 'Someone',
+      handle: a?.handle ?? '',
+      at: formatRelativeTime(r.created_at),
+      text: r.text,
+      likes: likeCounts.get(r.id) ?? 0,
+      likedByMe: likedByViewer.has(r.id),
+      cooked: r.cooked,
+      isQuestion: r.text.trim().endsWith('?'),
+      replies: [],
+    });
+  }
+
+  const roots: RecipeComment[] = [];
+  for (const r of rows) {
+    const comment = byId.get(r.id)!;
+    if (r.parent_id && byId.has(r.parent_id)) {
+      byId.get(r.parent_id)!.replies.push(comment);
+    } else {
+      roots.push(comment);
+    }
+  }
+  return roots;
+}
+
+export async function fetchRecipeFull(id: string, viewerId: string | null = null) {
   const { data: recipeRow, error } = await supabase.from('recipes').select('*').eq('id', id).maybeSingle();
 
   if (error || !recipeRow) {
@@ -306,7 +370,7 @@ export async function fetchRecipeFull(id: string) {
     return null;
   }
 
-  const [{ data: sections }, { data: steps }, { data: notes }, { data: comments }, { data: authorRow }, authorStats] =
+  const [{ data: sections }, { data: steps }, { data: notes }, { data: commentRows }, { data: authorRow }, authorStats] =
     await Promise.all([
       supabase
         .from('recipe_ingredient_sections')
@@ -315,7 +379,11 @@ export async function fetchRecipeFull(id: string) {
         .order('position'),
       supabase.from('recipe_steps').select('*').eq('recipe_id', id).order('position'),
       supabase.from('recipe_notes').select('*').eq('recipe_id', id).order('position'),
-      supabase.from('comments').select('*, author:profiles(name)').eq('recipe_id', id).order('created_at'),
+      supabase
+        .from('comments')
+        .select('id, parent_id, text, cooked, created_at, author:profiles(id, name, handle)')
+        .eq('recipe_id', id)
+        .order('created_at'),
       supabase.from('profiles').select('id, name, handle, bio').eq('id', recipeRow.author_id).maybeSingle(),
       fetchProfileStatsByIds([recipeRow.author_id]),
     ]);
@@ -340,12 +408,9 @@ export async function fetchRecipeFull(id: string) {
     timer: s.timer_minutes ?? undefined,
   }));
   recipe.notes = (notes ?? []).map((n: { text: string }) => ({ by: '', text: n.text }));
-  recipe.comments = (comments ?? []).map(
-    (c: { text: string; likes: number; author: { name: string } | { name: string }[] | null }) => ({
-      by: unwrapOne(c.author)?.name ?? 'Someone',
-      text: c.text,
-      likes: c.likes,
-    }),
+  recipe.comments = await mapCommentRows(
+    (commentRows ?? []) as Parameters<typeof mapCommentRows>[0],
+    viewerId,
   );
 
   return { recipe, author };
@@ -364,10 +429,31 @@ export async function isFollowing(followerId: string, followeeId: string) {
   return !!data;
 }
 
+// Writes a notification for someone else's inbox. Never for your own —
+// nobody needs to be told about their own action.
+async function notify(
+  recipientId: string,
+  actorId: string,
+  kind: NotificationKind,
+  extra: { recipeId?: string; commentId?: string; excerpt?: string } = {},
+) {
+  if (recipientId === actorId) return;
+  const { error } = await supabase.from('notifications').insert({
+    recipient_id: recipientId,
+    actor_id: actorId,
+    kind,
+    recipe_id: extra.recipeId ?? null,
+    comment_id: extra.commentId ?? null,
+    excerpt: extra.excerpt ?? null,
+  });
+  if (error) console.error('notify', error);
+}
+
 export async function setFollowing(followerId: string, followeeId: string, follow: boolean) {
   if (follow) {
     const { error } = await supabase.from('follows').insert({ follower_id: followerId, followee_id: followeeId });
     if (error) console.error('setFollowing insert', error);
+    else await notify(followeeId, followerId, 'follow');
   } else {
     const { error } = await supabase
       .from('follows')
@@ -398,17 +484,89 @@ export async function setSaved(userId: string, recipeId: string, saved: boolean)
   }
 }
 
-export async function postComment(authorId: string, recipeId: string, text: string) {
+// Posts a note or a reply (when parentId is given), optionally marked as
+// "I cooked it" — which also records a made_it row the first time (so
+// recipe_stats.made_it_count and the feed's "cooked" activity, previously
+// unwritten, finally get real data) — and notifies whoever should hear
+// about it: the recipe's author for a fresh top-level note or a cook mark,
+// or the parent note's author for a reply. Nobody is notified about their
+// own action.
+export async function postComment(
+  authorId: string,
+  recipeId: string,
+  text: string,
+  opts: { parentId?: string; cooked?: boolean; recipeAuthorId?: string } = {},
+): Promise<RecipeComment | null> {
   const { data, error } = await supabase
     .from('comments')
-    .insert({ author_id: authorId, recipe_id: recipeId, text })
-    .select('*, author:profiles(name)')
+    .insert({
+      author_id: authorId,
+      recipe_id: recipeId,
+      text,
+      parent_id: opts.parentId ?? null,
+      cooked: !!opts.cooked,
+    })
+    .select('*, author:profiles(id, name, handle)')
     .single();
   if (error || !data) {
     console.error('postComment', error);
     return null;
   }
-  return { by: unwrapOne(data.author)?.name ?? 'Someone', text: data.text, likes: data.likes };
+  const author = unwrapOne(data.author) as { id: string; name: string; handle: string } | undefined;
+
+  if (opts.parentId) {
+    const { data: parent } = await supabase.from('comments').select('author_id').eq('id', opts.parentId).maybeSingle();
+    if (parent) await notify(parent.author_id, authorId, 'reply', { recipeId, commentId: data.id, excerpt: text });
+  } else if (opts.recipeAuthorId) {
+    await notify(opts.recipeAuthorId, authorId, 'note', { recipeId, commentId: data.id, excerpt: text });
+  }
+
+  if (opts.cooked) {
+    const { data: existingMadeIt } = await supabase
+      .from('made_it')
+      .select('id')
+      .eq('user_id', authorId)
+      .eq('recipe_id', recipeId)
+      .maybeSingle();
+    if (!existingMadeIt) {
+      const { error: madeItError } = await supabase.from('made_it').insert({ user_id: authorId, recipe_id: recipeId });
+      if (madeItError) console.error('postComment: made_it insert', madeItError);
+    }
+    if (opts.recipeAuthorId) await notify(opts.recipeAuthorId, authorId, 'cooked', { recipeId });
+  }
+
+  return {
+    id: data.id,
+    authorId,
+    by: author?.name ?? 'Someone',
+    handle: author?.handle ?? '',
+    at: formatRelativeTime(data.created_at),
+    text: data.text,
+    likes: 0,
+    likedByMe: false,
+    cooked: data.cooked,
+    isQuestion: text.trim().endsWith('?'),
+    replies: [],
+  };
+}
+
+export async function toggleCommentLike(commentId: string, userId: string, liked: boolean) {
+  if (liked) {
+    const { error } = await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: userId });
+    if (error) console.error('toggleCommentLike insert', error);
+  } else {
+    const { error } = await supabase
+      .from('comment_likes')
+      .delete()
+      .eq('comment_id', commentId)
+      .eq('user_id', userId);
+    if (error) console.error('toggleCommentLike delete', error);
+  }
+}
+
+export async function deleteComment(commentId: string) {
+  const { error } = await supabase.from('comments').delete().eq('id', commentId);
+  if (error) console.error('deleteComment', error);
 }
 
 export async function createShelf(
@@ -813,4 +971,72 @@ export async function fetchShelfIdsForRecipe(recipeId: string): Promise<Set<stri
     return new Set();
   }
   return new Set((data ?? []).map((r: { shelf_id: string }) => r.shelf_id));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────────────────────
+export async function fetchNotifications(recipientId: string): Promise<AppNotification[]> {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('id, kind, excerpt, created_at, read_at, actor:profiles(name, handle), recipe:recipes(id, title)')
+    .eq('recipient_id', recipientId)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error || !data) {
+    console.error('fetchNotifications', error);
+    return [];
+  }
+  return data.map(
+    (n: {
+      id: string;
+      kind: AppNotification['kind'];
+      excerpt: string | null;
+      created_at: string;
+      read_at: string | null;
+      actor: { name: string; handle: string } | { name: string; handle: string }[] | null;
+      recipe: { id: string; title: string } | { id: string; title: string }[] | null;
+    }) => {
+      const actor = unwrapOne(n.actor);
+      const recipe = unwrapOne(n.recipe);
+      return {
+        id: n.id,
+        kind: n.kind,
+        actorName: actor?.name ?? null,
+        actorHandle: actor?.handle ?? null,
+        recipeId: recipe?.id ?? null,
+        recipeTitle: recipe?.title ?? null,
+        excerpt: n.excerpt,
+        createdAt: n.created_at,
+        read: !!n.read_at,
+      };
+    },
+  );
+}
+
+export async function countUnreadNotifications(recipientId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', recipientId)
+    .is('read_at', null);
+  if (error) {
+    console.error('countUnreadNotifications', error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function markAllNotificationsRead(recipientId: string) {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('recipient_id', recipientId)
+    .is('read_at', null);
+  if (error) console.error('markAllNotificationsRead', error);
+}
+
+export async function markNotificationRead(id: string) {
+  const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+  if (error) console.error('markNotificationRead', error);
 }

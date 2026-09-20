@@ -34,10 +34,31 @@ export interface RecipeNote {
 }
 
 export interface RecipeComment {
+  id: string;
+  authorId: string;
   by: string;
+  handle: string;
+  at: string;
   text: string;
   likes: number;
-  replies?: number;
+  likedByMe: boolean;
+  cooked: boolean;
+  isQuestion: boolean;
+  replies: RecipeComment[];
+}
+
+export type NotificationKind = 'note' | 'reply' | 'follow' | 'cooked' | 'digest';
+
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  actorName: string | null;
+  actorHandle: string | null;
+  recipeId: string | null;
+  recipeTitle: string | null;
+  excerpt: string | null;
+  createdAt: string;
+  read: boolean;
 }
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';

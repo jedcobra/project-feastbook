@@ -9,7 +9,7 @@ import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { TopBar } from '@/components/top-bar';
 import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
 import { fetchRecipeFull, isSaved } from '@/lib/supabase/queries';
-import type { Person, Recipe, RecipeComment } from '@/lib/types';
+import type { Person, Recipe } from '@/lib/types';
 
 export function RecipeDetailScreen({ id }: { id: string }) {
   const { profile } = useAuth();
@@ -19,8 +19,8 @@ export function RecipeDetailScreen({ id }: { id: string }) {
   const [shelfSheetOpen, setShelfSheetOpen] = useState(false);
 
   useEffect(() => {
-    fetchRecipeFull(id).then(setData);
-  }, [id]);
+    fetchRecipeFull(id, profile?.id ?? null).then(setData);
+  }, [id, profile?.id]);
 
   useEffect(() => {
     if (profile) {
@@ -29,10 +29,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
       setSavedState(false);
     }
   }, [profile, id]);
-
-  const handleCommentPosted = (comment: RecipeComment) => {
-    setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: [...d.recipe.comments, comment] } } : d));
-  };
 
   if (data === undefined) {
     return (
@@ -86,12 +82,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         }
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <DocumentDetail
-          recipe={data.recipe}
-          author={data.author}
-          currentProfileId={profile?.id ?? null}
-          onCommentPosted={handleCommentPosted}
-        />
+        <DocumentDetail recipe={data.recipe} author={data.author} />
       </div>
       {ownerSheetOpen && (
         <OwnerSheet
