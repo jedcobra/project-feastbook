@@ -3,18 +3,27 @@
 import { useState } from 'react';
 import { Checkbox } from '@/components/checkbox';
 import { OnboardStep } from '@/components/onboarding/onboard-step';
+import type { NotificationPrefs } from '@/lib/supabase/types';
 
-const ROWS: { key: string; label: string; sub: string }[] = [
+const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'notes', label: 'Someone notes on your recipe', sub: 'Including answers to your questions' },
   { key: 'follows', label: 'Someone follows you', sub: '' },
   { key: 'cooked', label: 'Someone cooks your recipe', sub: 'Can get busy if a recipe takes off' },
   { key: 'digest', label: 'Weekly: what your people cooked', sub: 'One message, Sunday morning' },
 ];
 
-// Step 4 of 4 — preferences only; there's no notifications table yet
-// (that's a later phase), so this doesn't persist anything server-side.
-export function NotifyStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
-  const [on, setOn] = useState<Record<string, boolean>>({ notes: true, follows: true, cooked: false, digest: false });
+const ALL_OFF: NotificationPrefs = { notes: false, follows: false, cooked: false, digest: false };
+
+// Step 4 of 4 — these persist for real, to profiles.notification_prefs
+// (Settings > Notifications reads and writes the same row).
+export function NotifyStep({
+  onNext,
+  onSkip,
+}: {
+  onNext: (prefs: NotificationPrefs) => void;
+  onSkip: (prefs: NotificationPrefs) => void;
+}) {
+  const [on, setOn] = useState<NotificationPrefs>({ notes: true, follows: true, cooked: false, digest: false });
 
   return (
     <OnboardStep
@@ -23,8 +32,8 @@ export function NotifyStep({ onNext, onSkip }: { onNext: () => void; onSkip: () 
       title="What's worth interrupting you for?"
       blurb="Pick now, change any time in settings. We'll only ask the phone for permission if you say yes to something."
       cta="Done — take me in"
-      onNext={onNext}
-      onSkip={onSkip}
+      onNext={() => onNext(on)}
+      onSkip={() => onSkip(ALL_OFF)}
       skipLabel="None of it"
     >
       <div className="pb-5">

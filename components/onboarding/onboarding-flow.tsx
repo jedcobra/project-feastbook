@@ -8,7 +8,8 @@ import { FollowStep } from '@/components/onboarding/follow-step';
 import { NotifyStep } from '@/components/onboarding/notify-step';
 import { TasteStep } from '@/components/onboarding/taste-step';
 import type { DraftSource } from '@/lib/recipe-draft';
-import { completeOnboarding } from '@/lib/supabase/queries';
+import { completeOnboarding, updateNotificationPrefs } from '@/lib/supabase/queries';
+import type { NotificationPrefs } from '@/lib/supabase/types';
 
 // Four short screens between "account created" and the feed. Each one asks
 // for something the app immediately uses. Runs once — the OnboardingGate
@@ -27,9 +28,10 @@ export function OnboardingFlow() {
     if (profile?.onboarded_at) router.replace('/feed');
   }, [profile, router]);
 
-  const finish = async (redirectTo: string) => {
+  const finish = async (redirectTo: string, notificationPrefs?: NotificationPrefs) => {
     if (profile) {
       await completeOnboarding(profile.id, tastes);
+      if (notificationPrefs) await updateNotificationPrefs(profile.id, notificationPrefs);
       await refreshProfile();
     }
     router.push(redirectTo);
@@ -58,5 +60,10 @@ export function OnboardingFlow() {
   if (step === 2) {
     return <FirstRecipeStep onImport={handleImport} onSkip={() => setStep(3)} />;
   }
-  return <NotifyStep onNext={() => finish('/feed')} onSkip={() => finish('/feed')} />;
+  return (
+    <NotifyStep
+      onNext={(prefs) => finish('/feed', prefs)}
+      onSkip={(prefs) => finish('/feed', prefs)}
+    />
+  );
 }

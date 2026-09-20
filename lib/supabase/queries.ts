@@ -1,6 +1,7 @@
 import { formatRelativeTime } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
+import type { NotificationPrefs } from '@/lib/supabase/types';
 import type {
   AppNotification,
   FeedActivity,
@@ -306,12 +307,10 @@ export async function searchAll(query: string): Promise<SearchResults> {
 // ─────────────────────────────────────────────────────────────
 // Auth / onboarding
 // ─────────────────────────────────────────────────────────────
-export async function checkHandleAvailable(handle: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('handle', handle)
-    .maybeSingle();
+export async function checkHandleAvailable(handle: string, excludeProfileId?: string): Promise<boolean> {
+  let query = supabase.from('profiles').select('id').eq('handle', handle);
+  if (excludeProfileId) query = query.neq('id', excludeProfileId);
+  const { data, error } = await query.maybeSingle();
   if (error) {
     console.error('checkHandleAvailable', error);
     return true;
@@ -327,6 +326,34 @@ export async function completeOnboarding(profileId: string, tasteTags: string[])
     .update({ onboarded_at: new Date().toISOString(), taste_tags: tasteTags })
     .eq('id', profileId);
   if (error) console.error('completeOnboarding', error);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Settings
+// ─────────────────────────────────────────────────────────────
+export async function updateProfile(
+  profileId: string,
+  fields: { name: string; handle: string; bio: string; link: string },
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      name: fields.name.trim(),
+      handle: fields.handle.trim(),
+      bio: fields.bio.trim(),
+      link: fields.link.trim(),
+    })
+    .eq('id', profileId);
+  if (error) {
+    console.error('updateProfile', error);
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+export async function updateNotificationPrefs(profileId: string, prefs: NotificationPrefs) {
+  const { error } = await supabase.from('profiles').update({ notification_prefs: prefs }).eq('id', profileId);
+  if (error) console.error('updateNotificationPrefs', error);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -527,8 +554,20 @@ export async function isFollowing(followerId: string, followeeId: string) {
   return !!data;
 }
 
+// Which notification_prefs key gates each kind — a reply lands in the same
+// note thread as a top-level note, so it's gated by the same "notes" toggle
+// rather than a separate one nobody was asked about.
+const PREF_KEY: Record<NotificationKind, keyof NotificationPrefs> = {
+  note: 'notes',
+  reply: 'notes',
+  follow: 'follows',
+  cooked: 'cooked',
+  digest: 'digest',
+};
+
 // Writes a notification for someone else's inbox. Never for your own —
-// nobody needs to be told about their own action.
+// nobody needs to be told about their own action — and never when the
+// recipient has turned this kind off in Settings.
 async function notify(
   recipientId: string,
   actorId: string,
@@ -536,6 +575,14 @@ async function notify(
   extra: { recipeId?: string; commentId?: string; excerpt?: string } = {},
 ) {
   if (recipientId === actorId) return;
+  const { data: recipient } = await supabase
+    .from('profiles')
+    .select('notification_prefs')
+    .eq('id', recipientId)
+    .maybeSingle();
+  const prefs = recipient?.notification_prefs as NotificationPrefs | undefined;
+  if (prefs && !prefs[PREF_KEY[kind]]) return;
+
   const { error } = await supabase.from('notifications').insert({
     recipient_id: recipientId,
     actor_id: actorId,
@@ -1140,4 +1187,61 @@ export async function markAllNotificationsRead(recipientId: string) {
 export async function markNotificationRead(id: string) {
   const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
   if (error) console.error('markNotificationRead', error);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Account
+// ─────────────────────────────────────────────────────────────
+// Consequence counts for the account-deletion confirmation copy.
+export async function fetchAccountDeleteImpact(
+  profileId: string,
+): Promise<{ recipes: number; shelves: number; comments: number; saves: number }> {
+  const [{ data: recipeRows }, { count: shelves }, { count: comments }] = await Promise.all([
+    supabase.from('recipes').select('id').eq('author_id', profileId),
+    supabase.from('shelves').select('*', { count: 'exact', head: true }).eq('owner_id', profileId),
+    supabase.from('comments').select('*', { count: 'exact', head: true }).eq('author_id', profileId),
+  ]);
+  const recipeIds = (recipeRows ?? []).map((r: { id: string }) => r.id);
+  let saves = 0;
+  if (recipeIds.length > 0) {
+    const { count } = await supabase.from('saves').select('*', { count: 'exact', head: true }).in('recipe_id', recipeIds);
+    saves = count ?? 0;
+  }
+  return { recipes: recipeIds.length, shelves: shelves ?? 0, comments: comments ?? 0, saves };
+}
+
+// Deletes the profile row outright — every recipe, shelf, comment, save,
+// made_it entry, follow, and notification cascades from profiles.id, so
+// this one delete is what actually erases someone's content. It doesn't
+// (can't, client-side) delete the underlying auth.users row, so the
+// password is scrambled first to make the old credentials unusable.
+export async function deleteAccount(profileId: string): Promise<boolean> {
+  const { error: passwordError } = await supabase.auth.updateUser({
+    password: `${crypto.randomUUID()}${crypto.randomUUID()}`,
+  });
+  if (passwordError) console.error('deleteAccount: password scramble', passwordError);
+
+  const { error } = await supabase.from('profiles').delete().eq('id', profileId);
+  if (error) {
+    console.error('deleteAccount: profile delete', error);
+    return false;
+  }
+  return true;
+}
+
+// Every recipe a user has authored, fully assembled (ingredients, steps,
+// notes) — for "export everything" and "print your cookbook", which both
+// need the full document rather than the summary fetchProfileByHandle uses.
+export async function fetchMyRecipesFull(authorId: string): Promise<Recipe[]> {
+  const { data: rows, error } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('author_id', authorId)
+    .order('created_at', { ascending: true });
+  if (error || !rows) {
+    console.error('fetchMyRecipesFull', error);
+    return [];
+  }
+  const full = await Promise.all(rows.map((r: { id: string }) => fetchRecipeFull(r.id)));
+  return full.filter((f): f is { recipe: Recipe; author: Person } => !!f).map((f) => f.recipe);
 }

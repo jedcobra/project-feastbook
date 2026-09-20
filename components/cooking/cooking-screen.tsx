@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BackIcon, ChevronIcon, XIcon } from '@/components/icons';
+import { getKeepAwake } from '@/lib/keep-awake';
 import type { Recipe } from '@/lib/types';
 
 function formatTime(seconds: number) {
@@ -21,6 +22,36 @@ export function CookingScreen({ recipe }: { recipe: Recipe }) {
   const total = recipe.steps.length;
   const progress = ((step + 1) / total) * 100;
   const allIngredients = recipe.ingredients.flatMap((section) => section.items);
+
+  // Wake Lock releases itself whenever the tab goes hidden, so it has to be
+  // re-requested on visibilitychange, not just once on mount.
+  useEffect(() => {
+    if (!getKeepAwake() || !('wakeLock' in navigator)) return;
+    let lock: WakeLockSentinel | null = null;
+    let cancelled = false;
+    const acquire = async () => {
+      try {
+        const sentinel = await navigator.wakeLock.request('screen');
+        if (cancelled) {
+          sentinel.release();
+        } else {
+          lock = sentinel;
+        }
+      } catch {
+        // Denied or unsupported in this context — cooking still works fine.
+      }
+    };
+    acquire();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && !lock) acquire();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
+      lock?.release();
+    };
+  }, []);
 
   useEffect(() => {
     if (!timerActive || timeLeft === null) return;

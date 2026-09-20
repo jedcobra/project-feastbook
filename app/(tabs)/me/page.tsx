@@ -1,5 +1,6 @@
-import { EditIcon } from '@/components/icons';
-import { OutlineBox } from '@/components/outline-box';
+import Link from 'next/link';
+import { MoreIcon } from '@/components/icons';
+import { outlineBoxClasses } from '@/components/outline-box';
 import { OwnCookbook } from '@/components/profile/own-cookbook';
 import { TopBar } from '@/components/top-bar';
 
@@ -9,9 +10,9 @@ export default function CookbookPage() {
       <TopBar
         variant="brand"
         trailing={
-          <OutlineBox compact aria-label="Edit profile">
-            <EditIcon size={14} />
-          </OutlineBox>
+          <Link href="/settings" aria-label="Settings" className={outlineBoxClasses(true)}>
+            <MoreIcon size={14} />
+          </Link>
         }
       />
       <OwnCookbook />

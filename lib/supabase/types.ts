@@ -1,5 +1,12 @@
 // Hand-written row types matching supabase/migrations/0001_init.sql.
 
+export interface NotificationPrefs {
+  notes: boolean;
+  follows: boolean;
+  cooked: boolean;
+  digest: boolean;
+}
+
 export interface ProfileRow {
   id: string;
   user_id: string | null;
@@ -10,6 +17,8 @@ export interface ProfileRow {
   created_at: string;
   onboarded_at: string | null;
   taste_tags: string[];
+  link: string;
+  notification_prefs: NotificationPrefs;
 }
 
 export interface ProfileStatsRow {
