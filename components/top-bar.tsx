@@ -14,7 +14,11 @@ interface TopBarProps {
 export function TopBar({ title, subtitle, trailing, variant = 'default', backHref, onBack }: TopBarProps) {
   return (
     <div className="flex flex-shrink-0 items-center gap-2.5 px-5 pb-3.5 pt-6">
-      {(backHref || onBack) && <BackButton fallbackHref={backHref ?? '/'} onBack={onBack} />}
+      {(backHref || onBack) && (
+        <span className="print:hidden">
+          <BackButton fallbackHref={backHref ?? '/'} onBack={onBack} />
+        </span>
+      )}
       <div className="min-w-0 flex-1">
         {variant === 'brand' ? (
           <div className="font-display text-[26px] font-bold leading-none text-ink">
@@ -27,7 +31,7 @@ export function TopBar({ title, subtitle, trailing, variant = 'default', backHre
           <div className="mt-0.5 font-mono text-meta text-ink-mute">{subtitle}</div>
         )}
       </div>
-      {trailing && <div className="flex gap-1.5">{trailing}</div>}
+      {trailing && <div className="flex gap-1.5 print:hidden">{trailing}</div>}
     </div>
   );
 }

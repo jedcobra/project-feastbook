@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Field } from '@/components/create/field';
-import { DragIcon, SaveIcon, TimerIcon, TrashIcon, WandIcon } from '@/components/icons';
+import { DragIcon, SaveIcon, TimerIcon, WandIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import {
   createDraft,
-  deleteDraft,
   draftFromRecipe,
   draftProgress,
   loadDraft,
@@ -20,7 +19,7 @@ import {
   type DraftSource,
   type RecipeDraft,
 } from '@/lib/recipe-draft';
-import { deleteRecipe, fetchRecipeFull } from '@/lib/supabase/queries';
+import { fetchRecipeFull } from '@/lib/supabase/queries';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
@@ -29,7 +28,6 @@ export function ComposerScreen() {
   const router = useRouter();
   const { loading, user } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -91,18 +89,6 @@ export function ComposerScreen() {
   const closeHref = isEdit ? `/recipe/${draft.editId}` : '/new';
   const pct = draftProgress(draft);
   const update = (patch: Partial<RecipeDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
-
-  const handleDelete = async () => {
-    if (!draft.editId) return;
-    if (!window.confirm('Delete this recipe? This can’t be undone.')) return;
-    setDeleting(true);
-    const ok = await deleteRecipe(draft.editId);
-    setDeleting(false);
-    if (ok) {
-      deleteDraft(draft.id);
-      router.push('/me');
-    }
-  };
 
   const setSectionName = (si: number, value: string) =>
     setDraft((d) =>
@@ -333,17 +319,6 @@ export function ComposerScreen() {
           </div>
         </div>
 
-        {isEdit && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-rule py-3.5 font-mono text-[12px] text-accent"
-          >
-            <TrashIcon size={13} />
-            {deleting ? 'Deleting…' : 'Delete recipe'}
-          </button>
-        )}
       </div>
 
       <div className="flex flex-shrink-0 gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">

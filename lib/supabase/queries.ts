@@ -435,10 +435,12 @@ function recipeFields(draft: RecipeDraft, visibility: Visibility) {
   };
 }
 
-// Writes a draft's ingredient sections/items, steps, notes, and shelf links
-// for a recipe row that already exists. Skips blank rows (an empty
-// ingredient line, a stepless step) rather than saving placeholder junk.
-async function insertRecipeContents(recipeId: string, draft: RecipeDraft, shelfIds: string[]) {
+// Writes a draft's ingredient sections/items, steps, and notes for a recipe
+// row that already exists. Skips blank rows (an empty ingredient line, a
+// stepless step) rather than saving placeholder junk. Shelf membership is
+// handled separately by linkShelves — a revision restore touches content
+// only and must leave shelves untouched.
+async function insertRecipeContent(recipeId: string, draft: Pick<RecipeDraft, 'sections' | 'steps' | 'notes'>) {
   for (const [position, section] of draft.sections.entries()) {
     const items = section.items.filter((it) => it.i.trim());
     if (items.length === 0) continue;
@@ -486,15 +488,16 @@ async function insertRecipeContents(recipeId: string, draft: RecipeDraft, shelfI
     const { error: notesError } = await supabase
       .from('recipe_notes')
       .insert(notes.map((text, position) => ({ recipe_id: recipeId, text, position })));
-    if (notesError) console.error('insertRecipeContents: notes insert', notesError);
+    if (notesError) console.error('insertRecipeContent: notes insert', notesError);
   }
+}
 
-  if (shelfIds.length > 0) {
-    const { error: shelfError } = await supabase
-      .from('shelf_recipes')
-      .insert(shelfIds.map((shelf_id) => ({ shelf_id, recipe_id: recipeId })));
-    if (shelfError) console.error('insertRecipeContents: shelf_recipes insert', shelfError);
-  }
+async function linkShelves(recipeId: string, shelfIds: string[]) {
+  if (shelfIds.length === 0) return;
+  const { error } = await supabase
+    .from('shelf_recipes')
+    .insert(shelfIds.map((shelf_id) => ({ shelf_id, recipe_id: recipeId })));
+  if (error) console.error('linkShelves', error);
 }
 
 // Writes a composer draft as a brand-new recipe. Returns the new recipe id,
@@ -516,14 +519,64 @@ export async function publishRecipe(
     return null;
   }
   const recipeId = recipeRow.id as string;
-  await insertRecipeContents(recipeId, draft, shelfIds);
+  await insertRecipeContent(recipeId, draft);
+  await linkShelves(recipeId, shelfIds);
   return recipeId;
 }
 
-// Overwrites an existing recipe with a draft's edited content (7i). Ingredient
-// sections/steps/notes/shelf links are replaced wholesale rather than diffed
-// — simplest correct approach for a form that edits everything at once.
+// The editorial content of a recipe, snapshotted into recipe_revisions on
+// every edit — deliberately excludes visibility and shelf membership,
+// which aren't "content" in the revision-history sense (see MERGE.md:
+// ownership/privacy is a separate row from revisions in the owner sheet).
+interface RevisionSnapshot {
+  title: string;
+  subtitle: string;
+  intro: string;
+  time: string;
+  serves: number;
+  difficulty: Recipe['difficulty'];
+  tags: string[];
+  ingredients: Recipe['ingredients'];
+  steps: Recipe['steps'];
+  notes: Recipe['notes'];
+}
+
+async function saveRevisionSnapshot(recipeId: string) {
+  const data = await fetchRecipeFull(recipeId);
+  if (!data) return;
+  const { recipe } = data;
+  const snapshot: RevisionSnapshot = {
+    title: recipe.title,
+    subtitle: recipe.subtitle,
+    intro: recipe.intro,
+    time: recipe.time,
+    serves: recipe.serves,
+    difficulty: recipe.difficulty,
+    tags: recipe.tags,
+    ingredients: recipe.ingredients,
+    steps: recipe.steps,
+    notes: recipe.notes,
+  };
+  const { error } = await supabase.from('recipe_revisions').insert({ recipe_id: recipeId, snapshot });
+  if (error) console.error('saveRevisionSnapshot', error);
+}
+
+function draftFromSnapshot(snapshot: RevisionSnapshot): Pick<RecipeDraft, 'sections' | 'steps' | 'notes'> {
+  return {
+    sections: snapshot.ingredients.map((s) => ({ section: s.section ?? '', items: s.items })),
+    steps: snapshot.steps.map((s) => ({ t: s.t, d: s.d, timer: s.timer != null ? String(s.timer) : '' })),
+    notes: snapshot.notes.map((n) => n.text).join('\n'),
+  };
+}
+
+// Overwrites an existing recipe with a draft's edited content (7i). Snapshots
+// the pre-edit state into recipe_revisions first — "every save writes a
+// version row" — then replaces ingredient sections/steps/notes/shelf links
+// wholesale rather than diffing them, the simplest correct approach for a
+// form that edits everything at once.
 export async function updateRecipe(recipeId: string, draft: RecipeDraft, visibility: Visibility, shelfIds: string[]) {
+  await saveRevisionSnapshot(recipeId);
+
   const { error: recipeError } = await supabase.from('recipes').update(recipeFields(draft, visibility)).eq('id', recipeId);
   if (recipeError) {
     console.error('updateRecipe: recipes update', recipeError);
@@ -542,8 +595,98 @@ export async function updateRecipe(recipeId: string, draft: RecipeDraft, visibil
   if (notesError) console.error('updateRecipe: notes delete', notesError);
   if (shelfError) console.error('updateRecipe: shelf_recipes delete', shelfError);
 
-  await insertRecipeContents(recipeId, draft, shelfIds);
+  await insertRecipeContent(recipeId, draft);
+  await linkShelves(recipeId, shelfIds);
   return recipeId;
+}
+
+// Just the visibility column — the owner sheet's "change who can see it"
+// row doesn't need the full edit flow, and doesn't touch revision history.
+export async function updateRecipeVisibility(recipeId: string, visibility: Visibility): Promise<boolean> {
+  const { error } = await supabase.from('recipes').update({ visibility }).eq('id', recipeId);
+  if (error) {
+    console.error('updateRecipeVisibility', error);
+    return false;
+  }
+  return true;
+}
+
+export interface RevisionEntry {
+  id: string;
+  createdAt: string;
+  snapshot: RevisionSnapshot;
+}
+
+// Oldest-last (most recent edit first) — the "current" live document is
+// always the newest state and isn't itself a row here.
+export async function fetchRevisions(recipeId: string): Promise<RevisionEntry[]> {
+  const { data, error } = await supabase
+    .from('recipe_revisions')
+    .select('id, created_at, snapshot')
+    .eq('recipe_id', recipeId)
+    .order('created_at', { ascending: false });
+  if (error || !data) {
+    console.error('fetchRevisions', error);
+    return [];
+  }
+  return data.map((r: { id: string; created_at: string; snapshot: RevisionSnapshot }) => ({
+    id: r.id,
+    createdAt: r.created_at,
+    snapshot: r.snapshot,
+  }));
+}
+
+// Restores a past revision's content. Snapshots the current state first —
+// same "every save keeps the version before it" guarantee, so restoring is
+// itself undoable — and leaves visibility and shelf membership alone.
+export async function restoreRevision(recipeId: string, revisionId: string): Promise<boolean> {
+  const { data: revRow, error: revError } = await supabase
+    .from('recipe_revisions')
+    .select('snapshot')
+    .eq('id', revisionId)
+    .eq('recipe_id', recipeId)
+    .maybeSingle();
+  if (revError || !revRow) {
+    console.error('restoreRevision: fetch', revError);
+    return false;
+  }
+  const snapshot = revRow.snapshot as RevisionSnapshot;
+
+  await saveRevisionSnapshot(recipeId);
+
+  const { error: recipeError } = await supabase
+    .from('recipes')
+    .update({
+      title: snapshot.title,
+      subtitle: snapshot.subtitle,
+      intro: snapshot.intro,
+      time: snapshot.time,
+      serves: snapshot.serves,
+      difficulty: snapshot.difficulty,
+      tags: snapshot.tags,
+    })
+    .eq('id', recipeId);
+  if (recipeError) {
+    console.error('restoreRevision: recipes update', recipeError);
+    return false;
+  }
+
+  await Promise.all([
+    supabase.from('recipe_ingredient_sections').delete().eq('recipe_id', recipeId),
+    supabase.from('recipe_steps').delete().eq('recipe_id', recipeId),
+    supabase.from('recipe_notes').delete().eq('recipe_id', recipeId),
+  ]);
+  await insertRecipeContent(recipeId, draftFromSnapshot(snapshot));
+  return true;
+}
+
+// Consequence counts for the owner sheet's delete confirmation copy.
+export async function fetchRecipeDeleteImpact(recipeId: string): Promise<{ comments: number; saves: number }> {
+  const [{ count: comments }, { count: saves }] = await Promise.all([
+    supabase.from('comments').select('*', { count: 'exact', head: true }).eq('recipe_id', recipeId),
+    supabase.from('saves').select('*', { count: 'exact', head: true }).eq('recipe_id', recipeId),
+  ]);
+  return { comments: comments ?? 0, saves: saves ?? 0 };
 }
 
 // Deletes a recipe outright. Every child row (ingredients, steps, notes,

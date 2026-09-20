@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { BookmarkIcon, PencilIcon, ShareIcon } from '@/components/icons';
-import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
+import { BookmarkIcon, MoreIcon, ShareIcon } from '@/components/icons';
+import { OutlineBox } from '@/components/outline-box';
 import { DocumentDetail } from '@/components/recipe/document-detail';
+import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { TopBar } from '@/components/top-bar';
 import { fetchRecipeFull, isSaved, setSaved } from '@/lib/supabase/queries';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
@@ -14,6 +14,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
   const { profile } = useAuth();
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [saved, setSavedState] = useState(false);
+  const [ownerSheetOpen, setOwnerSheetOpen] = useState(false);
 
   useEffect(() => {
     fetchRecipeFull(id).then(setData);
@@ -60,23 +61,27 @@ export function RecipeDetailScreen({ id }: { id: string }) {
     );
   }
 
+  const isOwner = profile?.id === data.author.id;
+
   return (
     <>
       <TopBar
         backHref="/feed"
         trailing={
           <>
-            {profile?.id === data.author.id && (
-              <Link href={`/new/edit?edit=${id}`} className={outlineBoxClasses(true)} aria-label="Edit recipe">
-                <PencilIcon size={14} />
-              </Link>
+            {!isOwner && (
+              <OutlineBox compact filled={saved} aria-label={saved ? 'Unsave' : 'Save'} onClick={toggleSave}>
+                <BookmarkIcon size={14} />
+              </OutlineBox>
             )}
-            <OutlineBox compact filled={saved} aria-label={saved ? 'Unsave' : 'Save'} onClick={toggleSave}>
-              <BookmarkIcon size={14} />
-            </OutlineBox>
             <OutlineBox compact aria-label="Share">
               <ShareIcon size={14} />
             </OutlineBox>
+            {isOwner && (
+              <OutlineBox compact aria-label="Recipe options" onClick={() => setOwnerSheetOpen(true)}>
+                <MoreIcon size={14} />
+              </OutlineBox>
+            )}
           </>
         }
       />
@@ -88,6 +93,17 @@ export function RecipeDetailScreen({ id }: { id: string }) {
           onCommentPosted={handleCommentPosted}
         />
       </div>
+      {ownerSheetOpen && (
+        <OwnerSheet
+          recipeId={id}
+          title={data.recipe.title}
+          visibility={data.recipe.visibility}
+          onVisibilityChanged={(v) =>
+            setData((d) => (d ? { ...d, recipe: { ...d.recipe, visibility: v } } : d))
+          }
+          onClose={() => setOwnerSheetOpen(false)}
+        />
+      )}
     </>
   );
 }

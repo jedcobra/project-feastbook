@@ -23,7 +23,7 @@ export function AddCommentForm({
     return (
       <Link
         href="/account"
-        className="mt-3.5 flex items-center gap-1.5 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[12px] text-ink-mute"
+        className="mt-3.5 flex items-center gap-1.5 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[12px] text-ink-mute print:hidden"
       >
         <PencilIcon size={13} />
         Sign in to leave a note…
@@ -36,7 +36,7 @@ export function AddCommentForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3.5 flex w-full items-center gap-1.5 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[12px] text-ink-mute"
+        className="mt-3.5 flex w-full items-center gap-1.5 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[12px] text-ink-mute print:hidden"
       >
         <PencilIcon size={13} />
         Leave a note…
@@ -58,7 +58,7 @@ export function AddCommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3.5 flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="mt-3.5 flex flex-col gap-2 print:hidden">
       <textarea
         autoFocus
         value={text}

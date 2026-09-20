@@ -15,12 +15,7 @@ import {
   updateRecipe,
 } from '@/lib/supabase/queries';
 import type { Shelf, Visibility } from '@/lib/types';
-
-const VISIBILITY_OPTIONS: { id: Visibility; title: string; sub: string }[] = [
-  { id: 'public', title: 'Public', sub: "Anyone can find it. Appears in your followers' feeds." },
-  { id: 'followers', title: 'Followers', sub: 'Only people who follow you.' },
-  { id: 'private', title: 'Just me', sub: 'Saved to your cookbook. Nobody else sees it.' },
-];
+import { VISIBILITY_OPTIONS } from '@/lib/visibility';
 
 export function PublishScreen() {
   const router = useRouter();

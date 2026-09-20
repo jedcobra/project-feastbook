@@ -204,3 +204,32 @@ export function TrashIcon(props: StrokeIconProps) {
     </StrokeIcon>
   );
 }
+
+export function MoreIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
+    </StrokeIcon>
+  );
+}
+
+export function BookIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 5.5A1.5 1.5 0 016.5 4H19v15H6.5A1.5 1.5 0 015 17.5v-12z" />
+      <path d="M8 4v15" />
+    </StrokeIcon>
+  );
+}
+
+export function PrintIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 8V4h12v4" />
+      <path d="M6 17H4a1 1 0 01-1-1v-6a1 1 0 011-1h16a1 1 0 011 1v6a1 1 0 01-1 1h-2" />
+      <path d="M6 13h12v7H6z" />
+    </StrokeIcon>
+  );
+}

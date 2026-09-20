@@ -26,7 +26,7 @@ export function TabBar() {
   if (!user) return null;
 
   return (
-    <nav className="flex flex-shrink-0 items-stretch justify-around gap-1 border-t border-rule bg-cream px-4 pb-5 pt-2.5">
+    <nav className="flex flex-shrink-0 items-stretch justify-around gap-1 border-t border-rule bg-cream px-4 pb-5 pt-2.5 print:hidden">
       {LEFT_TABS.map((tab) => (
         <TabLink key={tab.id} href={tab.href} label={tab.label} active={pathname === tab.href} />
       ))}
