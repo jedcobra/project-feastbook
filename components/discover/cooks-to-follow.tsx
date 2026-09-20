@@ -21,7 +21,7 @@ export function CooksToFollow({ people }: { people: Person[] }) {
   );
 }
 
-function CookRow({ person, first }: { person: Person; first: boolean }) {
+export function CookRow({ person, first }: { person: Person; first: boolean }) {
   const { profile } = useAuth();
   const [following, setFollowingState] = useState(false);
 

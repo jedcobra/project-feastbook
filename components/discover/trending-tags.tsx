@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Label } from '@/components/label';
 import { Tag } from '@/components/tag';
 
@@ -17,10 +18,10 @@ export function TrendingTags() {
     <div className="mb-6">
       <Label className="mb-2.5">Trending tags</Label>
       <div className="flex flex-wrap gap-1.5">
-        {TRENDING_TAGS.map((tag, i) => (
-          <Tag key={tag} selected={i === 0}>
-            {tag}
-          </Tag>
+        {TRENDING_TAGS.map((tag) => (
+          <Link key={tag} href={`/search?q=${encodeURIComponent(tag)}`}>
+            <Tag>{tag}</Tag>
+          </Link>
         ))}
       </div>
     </div>

@@ -206,6 +206,104 @@ export async function fetchEditorsPicks(limit = 5) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Search
+// ─────────────────────────────────────────────────────────────
+export interface SearchResults {
+  recipes: Recipe[];
+  people: Person[];
+  shelves: Shelf[];
+}
+
+// One query across recipes (title, subtitle, tags, ingredient text), people
+// (name, handle, bio), and shelves (title, subtitle). Runs as separate
+// single-column ilike queries merged in JS rather than one combined `.or()`
+// filter string — a raw search term can contain commas or parens, which
+// PostgREST's or-filter syntax treats as structural unless quoted, so
+// building one by hand from arbitrary user input isn't safe.
+export async function searchAll(query: string): Promise<SearchResults> {
+  const q = query.trim();
+  if (!q) return { recipes: [], people: [], shelves: [] };
+  const pattern = `%${q}%`;
+  const handlePattern = `%${q.replace(/^@/, '')}%`;
+
+  const [
+    { data: byTitle },
+    { data: bySubtitle },
+    { data: byTag },
+    { data: ingredientHits },
+    { data: byName },
+    { data: byHandle },
+    { data: byBio },
+    { data: shelfByTitle },
+    { data: shelfBySubtitle },
+  ] = await Promise.all([
+    supabase.from('recipes').select('id').ilike('title', pattern),
+    supabase.from('recipes').select('id').ilike('subtitle', pattern),
+    supabase.from('recipes').select('id').contains('tags', [q.toLowerCase()]),
+    supabase.from('recipe_ingredients').select('recipe_ingredient_sections(recipe_id)').ilike('name', pattern),
+    supabase.from('profiles').select('id, name, handle, bio').ilike('name', pattern).neq('handle', 'you'),
+    supabase.from('profiles').select('id, name, handle, bio').ilike('handle', handlePattern).neq('handle', 'you'),
+    supabase.from('profiles').select('id, name, handle, bio').ilike('bio', pattern).neq('handle', 'you'),
+    supabase
+      .from('shelves')
+      .select('id, title, subtitle, visibility, shelf_recipes(recipe_id)')
+      .ilike('title', pattern),
+    supabase
+      .from('shelves')
+      .select('id, title, subtitle, visibility, shelf_recipes(recipe_id)')
+      .ilike('subtitle', pattern),
+  ]);
+
+  const recipeIds = new Set<string>();
+  for (const r of [...(byTitle ?? []), ...(bySubtitle ?? []), ...(byTag ?? [])] as { id: string }[]) {
+    recipeIds.add(r.id);
+  }
+  for (const row of (ingredientHits ?? []) as {
+    recipe_ingredient_sections: { recipe_id: string } | { recipe_id: string }[] | null;
+  }[]) {
+    const section = unwrapOne(row.recipe_ingredient_sections);
+    if (section) recipeIds.add(section.recipe_id);
+  }
+  let recipes: Recipe[] = [];
+  if (recipeIds.size > 0) {
+    const { data: recipeRows } = await supabase.from('recipes').select('*').in('id', [...recipeIds]);
+    recipes = await mapRecipeRows((recipeRows ?? []) as RecipeRow[]);
+  }
+
+  const peopleById = new Map<string, ProfileRow>();
+  for (const p of [...(byName ?? []), ...(byHandle ?? []), ...(byBio ?? [])] as ProfileRow[]) {
+    peopleById.set(p.id, p);
+  }
+  const peopleRows = [...peopleById.values()];
+  const peopleStats = await fetchProfileStatsByIds(peopleRows.map((p) => p.id));
+  const people = peopleRows.map((p) => mapPerson(p, peopleStats.get(p.id)));
+
+  const shelvesById = new Map<
+    string,
+    { id: string; title: string; subtitle: string; visibility: ShelfVisibility; shelf_recipes: unknown[] }
+  >();
+  for (const s of [...(shelfByTitle ?? []), ...(shelfBySubtitle ?? [])] as {
+    id: string;
+    title: string;
+    subtitle: string;
+    visibility: ShelfVisibility;
+    shelf_recipes: unknown[];
+  }[]) {
+    shelvesById.set(s.id, s);
+  }
+  const shelves: Shelf[] = [...shelvesById.values()].map((s) => ({
+    id: s.id,
+    title: s.title,
+    subtitle: s.subtitle,
+    visibility: s.visibility,
+    count: s.shelf_recipes.length,
+    recipes: [],
+  }));
+
+  return { recipes, people, shelves };
+}
+
+// ─────────────────────────────────────────────────────────────
 // Auth / onboarding
 // ─────────────────────────────────────────────────────────────
 export async function checkHandleAvailable(handle: string): Promise<boolean> {
