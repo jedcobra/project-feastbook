@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
-import { SwipeableRow } from '@/components/messages/swipeable-row';
+import { SwipeableRow } from '@/components/swipeable-row';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
 import { deleteConversationForMe, fetchArchivedConversations, setConversationArchived } from '@/lib/supabase/queries';

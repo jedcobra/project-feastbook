@@ -78,6 +78,9 @@ export function OwnCookbook() {
         cookedRecipes={cookedRecipes}
         firstName={data.person.name.split(' ')[0]}
         isOwn
+        onRecipeDeleted={(recipeId) =>
+          setData((cur) => (cur ? { ...cur, recipes: cur.recipes.filter((r) => r.id !== recipeId) } : cur))
+        }
       />
     </div>
   );
