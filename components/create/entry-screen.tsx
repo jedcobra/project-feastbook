@@ -7,7 +7,8 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { CameraIcon, ChevronIcon, ForkIcon, LinkIcon, PencilIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { listUnstartedDrafts, type DraftSource } from '@/lib/recipe-draft';
+import { draftFromImport, listUnstartedDrafts, saveDraft, type DraftSource } from '@/lib/recipe-draft';
+import { importRecipeFromUrl } from '@/lib/recipe-import';
 
 const SECONDARY_ROWS = [
   { icon: PencilIcon, title: 'Type it out', sub: 'Blank page. Your words, your measurements.', source: 'manual' as DraftSource },
@@ -23,6 +24,8 @@ export function EntryScreen() {
   const { loading, user } = useAuth();
   const [url, setUrl] = useState('');
   const [draftCount, setDraftCount] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     setDraftCount(listUnstartedDrafts().length);
@@ -32,6 +35,44 @@ export function EntryScreen() {
     const params = new URLSearchParams({ source });
     if (sourceUrl) params.set('url', sourceUrl);
     router.push(`/new/edit?${params.toString()}`);
+  };
+
+  const fetchRecipe = async () => {
+    const trimmed = url.trim();
+    if (!trimmed || importing) return;
+    setImportError(null);
+    setImporting(true);
+    const result = await importRecipeFromUrl(trimmed);
+    setImporting(false);
+
+    if (result.ok) {
+      const draft = draftFromImport(result.recipe, result.sourceUrl);
+      saveDraft(draft);
+      router.push(`/new/edit?draft=${draft.id}`);
+      return;
+    }
+
+    if (result.reason === 'invalid-url') {
+      setImportError('That doesn’t look like a web address.');
+      return;
+    }
+    if (result.reason === 'blocked') {
+      setImportError('Can’t fetch that address.');
+      return;
+    }
+
+    // fetch-failed or no-recipe: hand off to the import-failed screen with
+    // whatever we recovered, and a draft already seeded so "fill in it
+    // yourself" has somewhere real to land.
+    const seeded = draftFromImport(
+      { title: result.partial?.title, subtitle: result.partial?.description },
+      result.sourceUrl ?? trimmed,
+    );
+    saveDraft(seeded);
+    const params = new URLSearchParams({ reason: result.reason, draft: seeded.id, url: result.sourceUrl ?? trimmed });
+    if (result.partial?.title) params.set('title', result.partial.title);
+    if (result.partial?.host) params.set('host', result.partial.host);
+    router.push(`/new/import-failed?${params.toString()}`);
   };
 
   if (loading) {
@@ -91,11 +132,13 @@ export function EntryScreen() {
           </div>
           <button
             type="button"
-            onClick={() => startComposer('link', url.trim() || undefined)}
-            className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[13px] font-semibold text-cream"
+            onClick={fetchRecipe}
+            disabled={!url.trim() || importing}
+            className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[13px] font-semibold text-cream disabled:opacity-50"
           >
-            Fetch recipe
+            {importing ? 'Fetching…' : 'Fetch recipe'}
           </button>
+          {importError && <div className="mt-2 font-mono text-[11px] text-accent">{importError}</div>}
           <div className="mt-2 font-mono text-[10px] leading-relaxed text-ink-mute">
             We pull the ingredients and method, then you confirm every field before it saves.
           </div>

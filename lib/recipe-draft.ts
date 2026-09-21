@@ -3,6 +3,7 @@
 // no real content typed into it is never persisted, so the drafts list
 // (7g) only ever shows things someone actually started.
 
+import type { ImportedRecipe } from '@/lib/recipe-import';
 import type { Recipe, Visibility } from '@/lib/types';
 
 export type DraftSource = 'manual' | 'link' | 'photo';
@@ -95,6 +96,39 @@ export function draftFromRecipe(recipe: Recipe): RecipeDraft {
   };
 }
 
+// Seeds a composer draft from a parsed import — or, when parsing found
+// nothing, from just whatever partial title/description got recovered
+// (every field can be empty except sourceUrl, which is enough on its own
+// to count as "something worth keeping" — see isDraftEmpty below).
+export function draftFromImport(parsed: Partial<ImportedRecipe>, sourceUrl: string): RecipeDraft {
+  const ingredients = parsed.ingredients ?? [];
+  const steps = parsed.steps ?? [];
+  return {
+    id: crypto.randomUUID(),
+    source: 'link',
+    updatedAt: new Date().toISOString(),
+    title: parsed.title ?? '',
+    subtitle: parsed.subtitle ?? '',
+    intro: parsed.intro ?? '',
+    time: parsed.time ?? '',
+    serves: parsed.serves ?? '',
+    level: 'Easy',
+    sections: [
+      {
+        section: '',
+        items: ingredients.length > 0 ? ingredients.map((i) => ({ q: '', i })) : [{ q: '', i: '' }],
+      },
+    ],
+    steps:
+      steps.length > 0
+        ? steps.map((d, i) => ({ t: `Step ${i + 1}`, d, timer: '' }))
+        : [{ t: '', d: '', timer: '' }],
+    notes: '',
+    tags: parsed.tags ?? [],
+    sourceUrl,
+  };
+}
+
 const KEY = 'ss-recipe-drafts';
 
 function loadAll(): Record<string, RecipeDraft> {
@@ -156,7 +190,9 @@ function isDraftEmpty(draft: RecipeDraft): boolean {
     (s) => s.section.trim() || s.items.some((it) => it.q.trim() || it.i.trim()),
   );
   const hasStep = draft.steps.some((s) => s.t.trim() || s.d.trim() || s.timer.trim());
-  return !hasText && !hasIngredient && !hasStep && draft.tags.length === 0;
+  // A saved source link is content worth keeping on its own — a "just save
+  // the link" import with nothing else recovered shouldn't vanish.
+  return !hasText && !hasIngredient && !hasStep && draft.tags.length === 0 && !draft.sourceUrl;
 }
 
 export function draftCounts(draft: RecipeDraft) {
