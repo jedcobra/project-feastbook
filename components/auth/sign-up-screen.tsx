@@ -68,8 +68,8 @@ export function SignUpScreen() {
         <TopBar title="Create an account" backHref="/account" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
           <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
-            Check <span className="text-ink">{email}</span> for a confirmation link. Tap it to
-            finish creating your account — you&rsquo;ll land signed in.
+            Check <span className="text-ink">{email}</span> for a confirmation link, then come
+            back and sign in.
           </p>
         </div>
       </>
