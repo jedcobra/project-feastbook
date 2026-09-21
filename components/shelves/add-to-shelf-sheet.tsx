@@ -15,9 +15,11 @@ interface AddToShelfSheetProps {
   onSaved: (shelved: boolean) => void;
 }
 
-// What the bookmark button opens now — never a silent save. A recipe can
-// sit on 0..n of the viewer's own shelves; picking any at all is what
-// makes it "saved" (recipe_stats, feed activity, the Saved tab).
+// What the bookmark button opens once a recipe's already saved (a first
+// save is a one-tap default to the "Saved" shelf instead — see
+// quickSaveRecipe). A recipe can sit on 0..n of the viewer's own shelves;
+// picking any at all is what keeps it "saved" (recipe_stats, feed
+// activity, the Saved tab) — unchecking everything unsaves it.
 export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSaved }: AddToShelfSheetProps) {
   const [view, setView] = useState<'shelves' | 'newShelf'>('shelves');
   const [shelves, setShelves] = useState<Shelf[] | null>(null);
@@ -52,7 +54,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
       <div onClick={(e) => e.stopPropagation()} className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4">
         {view === 'shelves' ? (
           <>
-            <h3 className="mb-0.5 font-display text-[19px] font-bold text-ink">Save to a shelf</h3>
+            <h3 className="mb-0.5 font-display text-[19px] font-bold text-ink">Manage shelves</h3>
             <div className="mb-3 truncate font-mono text-[11px] text-ink-mute">{recipeTitle}</div>
 
             {shelves === null ? (

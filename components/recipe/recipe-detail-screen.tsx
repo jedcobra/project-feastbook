@@ -10,7 +10,7 @@ import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { ShareSheet } from '@/components/share/share-sheet';
 import { TopBar } from '@/components/top-bar';
 import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
-import { checkRecipeAccess, fetchRecipeFull, isSaved } from '@/lib/supabase/queries';
+import { checkRecipeAccess, fetchRecipeFull, isSaved, quickSaveRecipe } from '@/lib/supabase/queries';
 import type { Person, Recipe } from '@/lib/types';
 
 export function RecipeDetailScreen({ id }: { id: string }) {
@@ -18,6 +18,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [access, setAccess] = useState<'checking' | 'ok' | 'private'>('checking');
   const [saved, setSavedState] = useState(false);
+  const [quickSaving, setQuickSaving] = useState(false);
   const [ownerSheetOpen, setOwnerSheetOpen] = useState(false);
   const [shelfSheetOpen, setShelfSheetOpen] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -41,6 +42,19 @@ export function RecipeDetailScreen({ id }: { id: string }) {
       setSavedState(false);
     }
   }, [profile, id]);
+
+  // The bookmark button's default action: one tap files it on "Saved"
+  // rather than opening the shelf picker. Once it's saved, the same
+  // button opens "manage shelves" instead, where a different shelf is
+  // still one tap away.
+  const handleQuickSave = async () => {
+    if (!profile || quickSaving) return;
+    setQuickSaving(true);
+    setSavedState(true);
+    const ok = await quickSaveRecipe(profile.id, id);
+    setQuickSaving(false);
+    if (!ok) setSavedState(false);
+  };
 
   if (data === undefined || access === 'checking') {
     return (
@@ -86,8 +100,8 @@ export function RecipeDetailScreen({ id }: { id: string }) {
               <OutlineBox
                 compact
                 filled={saved}
-                aria-label={saved ? 'Manage shelves' : 'Save to a shelf'}
-                onClick={() => setShelfSheetOpen(true)}
+                aria-label={saved ? 'Manage shelves' : 'Save'}
+                onClick={saved ? () => setShelfSheetOpen(true) : handleQuickSave}
               >
                 <BookmarkIcon size={14} />
               </OutlineBox>

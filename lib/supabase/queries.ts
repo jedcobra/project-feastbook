@@ -907,8 +907,8 @@ export async function setShelfArchived(shelfId: string, archived: boolean): Prom
 // Replaces which of the user's own shelves a recipe sits on in one go, and
 // keeps the plain `saves` signal (recipe_stats, feed activity, the Saved
 // tab) in sync with it — filed on any shelf counts as saved, filed on none
-// doesn't. This is what the bookmark button opens now instead of a silent
-// toggle.
+// doesn't. This is what the "manage shelves" sheet writes once a recipe's
+// already saved and you're moving it around.
 export async function setRecipeShelves(userId: string, recipeId: string, shelfIds: string[]) {
   // RLS scopes this delete to shelves the caller owns, so it can't touch
   // other people's placements of the same recipe.
@@ -923,6 +923,50 @@ export async function setRecipeShelves(userId: string, recipeId: string, shelfId
   }
 
   await setSaved(userId, recipeId, shelfIds.length > 0);
+}
+
+// Finds the caller's "Saved" shelf, creating it on first use — and
+// un-archiving it if a past session archived it, since bookmarking
+// something is a fresh use of it. Title match is scoped to this owner
+// only, so it can never collide with anyone else's shelf of the same name.
+async function ensureDefaultShelf(ownerId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('shelves')
+    .select('id, archived_at')
+    .eq('owner_id', ownerId)
+    .eq('title', 'Saved')
+    .order('created_at', { ascending: true })
+    .limit(1);
+  if (error) {
+    console.error('ensureDefaultShelf: lookup', error);
+    return null;
+  }
+  const existing = data?.[0];
+  if (existing) {
+    if (existing.archived_at) await setShelfArchived(existing.id, false);
+    return existing.id as string;
+  }
+  const created = await createShelf(ownerId, 'Saved');
+  return created?.id ?? null;
+}
+
+// The bookmark button's one-tap default: files the recipe on the caller's
+// "Saved" shelf without opening the shelf picker, on top of whatever
+// shelves it's already on (so it never undoes a deliberate choice made
+// via "manage shelves"). Picking a different shelf instead is still one
+// tap away — once saved, the same button opens the shelf picker.
+export async function quickSaveRecipe(ownerId: string, recipeId: string): Promise<boolean> {
+  const defaultShelfId = await ensureDefaultShelf(ownerId);
+  if (!defaultShelfId) return false;
+
+  const [ownShelves, shelfIdsWithRecipe] = await Promise.all([
+    fetchShelvesForOwner(ownerId),
+    fetchShelfIdsForRecipe(recipeId),
+  ]);
+  const current = ownShelves.map((s) => s.id).filter((sid) => shelfIdsWithRecipe.has(sid));
+
+  await setRecipeShelves(ownerId, recipeId, [...new Set([...current, defaultShelfId])]);
+  return true;
 }
 
 export interface ShelfDetail {
