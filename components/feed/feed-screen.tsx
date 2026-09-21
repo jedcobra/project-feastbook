@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ErrorScreen } from '@/components/error-screen';
 import { FeedDateBar } from '@/components/feed/feed-date-bar';
 import { FeedRow } from '@/components/feed/feed-row';
+import { FeedSkeleton } from '@/components/feed/feed-skeleton';
 import { fetchFeed } from '@/lib/supabase/queries';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
 
@@ -13,17 +15,28 @@ const TODAY = new Date()
   .toUpperCase();
 
 export function FeedScreen() {
-  const [entries, setEntries] = useState<FeedEntry[] | null>(null);
+  // undefined = loading, null = fetch failed, [] = genuinely empty.
+  const [entries, setEntries] = useState<FeedEntry[] | null | undefined>(undefined);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setEntries(undefined);
     fetchFeed().then(setEntries);
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (entries === undefined) {
+    return <FeedSkeleton />;
+  }
+
   if (entries === null) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center">
-        <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
-      </div>
+      <ErrorScreen
+        kind={typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'server'}
+        onRetry={load}
+      />
     );
   }
 

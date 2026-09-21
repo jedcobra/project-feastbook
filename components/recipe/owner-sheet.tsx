@@ -41,7 +41,9 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/recipe/${recipeId}`);
+      // /r/[id] is the public share page — readable without an account,
+      // unlike /recipe/[id] which sits behind the sign-in-only tabs shell.
+      await navigator.clipboard.writeText(`${window.location.origin}/r/${recipeId}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -131,7 +133,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
               <span className="min-w-0 flex-1">
                 <span className="block font-mono text-[12.5px] text-ink">Copy link</span>
                 <span className="block truncate font-mono text-[10.5px] text-ink-mute">
-                  {copied ? 'Copied' : `${typeof window !== 'undefined' ? window.location.host : ''}/recipe/${recipeId}`}
+                  {copied ? 'Copied' : `${typeof window !== 'undefined' ? window.location.host : ''}/r/${recipeId}`}
                 </span>
               </span>
             </button>

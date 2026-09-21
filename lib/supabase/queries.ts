@@ -118,6 +118,9 @@ async function mapRecipeRows(rows: RecipeRow[]): Promise<Recipe[]> {
 // ─────────────────────────────────────────────────────────────
 // Feed
 // ─────────────────────────────────────────────────────────────
+// Returns null on a real fetch failure — distinct from an empty array,
+// which means the query succeeded and there's genuinely nothing yet. The
+// two need different copy (an honest error vs. "no activity yet").
 export async function fetchFeed(limit = 20) {
   const { data: activity, error } = await supabase
     .from('feed_activity')
@@ -127,7 +130,7 @@ export async function fetchFeed(limit = 20) {
 
   if (error || !activity) {
     console.error('fetchFeed', error);
-    return [];
+    return null;
   }
 
   const recipeIds = [...new Set(activity.map((a) => a.recipe_id))];
@@ -544,6 +547,21 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
 // ─────────────────────────────────────────────────────────────
 // Writes
 // ─────────────────────────────────────────────────────────────
+// Whether a viewer can actually see a recipe, given its visibility — the
+// column has existed since the visibility migration but nothing ever
+// enforced it beyond the owner sheet's display label. The owner can always
+// see their own; a followers-only recipe also needs a real follow row.
+export async function checkRecipeAccess(
+  visibility: Visibility,
+  authorId: string,
+  viewerId: string | null,
+): Promise<boolean> {
+  if (visibility === 'public') return true;
+  if (viewerId && viewerId === authorId) return true;
+  if (visibility === 'followers' && viewerId) return isFollowing(viewerId, authorId);
+  return false;
+}
+
 export async function isFollowing(followerId: string, followeeId: string) {
   const { data } = await supabase
     .from('follows')

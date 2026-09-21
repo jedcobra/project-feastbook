@@ -4,19 +4,21 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 
-// The whole app is signed-in only. Anyone without a session gets sent to
-// the Landing screen and kept there — including after signing out — until
-// they sign in or create an account.
+// The whole app is signed-in only, with one exception: a shared recipe
+// link (/r/[id]) is meant to be readable by anyone, no account required —
+// that's the whole point of a public share page. Everything else still
+// sends a signed-out visitor to the Landing screen and keeps them there.
 export function AuthGate() {
   const { loading, user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const exempt = pathname.startsWith('/account') || pathname.startsWith('/r/');
 
   useEffect(() => {
-    if (!loading && !user && !pathname.startsWith('/account')) {
+    if (!loading && !user && !exempt) {
       router.replace('/account');
     }
-  }, [loading, user, pathname, router]);
+  }, [loading, user, exempt, router]);
 
   return null;
 }
