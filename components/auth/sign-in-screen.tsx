@@ -36,8 +36,8 @@ export function SignInScreen() {
       <TopBar title="Sign in" backHref="/account" />
       <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-          <ProviderButton provider="google" />
-          <ProviderButton provider="facebook" />
+          <ProviderButton label="Continue with Apple" />
+          <ProviderButton label="Continue with Google" />
 
           <div className="my-4 flex items-center gap-2.5">
             <div className="flex-1 border-t border-dashed border-rule" />
