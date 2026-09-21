@@ -205,11 +205,26 @@ export function TrashIcon(props: StrokeIconProps) {
   );
 }
 
+const GEAR_TOOTH_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+
 export function GearIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 3v2.5M12 18.5V21M21 12h-2.5M5.5 12H3M18.36 5.64l-1.77 1.77M7.41 16.59l-1.77 1.77M18.36 18.36l-1.77-1.77M7.41 7.41L5.64 5.64" />
+      <circle cx="12" cy="12" r="5.5" />
+      <circle cx="12" cy="12" r="2" />
+      {GEAR_TOOTH_ANGLES.map((angle) => (
+        <rect
+          key={angle}
+          x="10.8"
+          y="4.3"
+          width="2.4"
+          height="3.4"
+          rx="0.5"
+          fill="currentColor"
+          stroke="none"
+          transform={`rotate(${angle} 12 12)`}
+        />
+      ))}
     </StrokeIcon>
   );
 }

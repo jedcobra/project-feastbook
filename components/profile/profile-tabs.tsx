@@ -2,16 +2,16 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronIcon, PlusIcon } from '@/components/icons';
+import { BookmarkIcon, ChevronIcon, PlusIcon } from '@/components/icons';
 import { Tag } from '@/components/tag';
 import type { Recipe, Shelf } from '@/lib/types';
 
-type TabId = 'shelves' | 'recipes' | 'saved' | 'cooked';
+type TabId = 'recipes' | 'shelves' | 'cooked';
 
 export function ProfileTabs({
   shelves,
   recipes,
-  savedRecipes,
+  savedRecipes = [],
   cookedRecipes = [],
   firstName,
   isOwn,
@@ -23,14 +23,11 @@ export function ProfileTabs({
   firstName: string;
   isOwn: boolean;
 }) {
-  const [tab, setTab] = useState<TabId>('shelves');
+  const [tab, setTab] = useState<TabId>('recipes');
 
-  // Saved is a personal bookmark list — only shown on your own cookbook,
-  // not a friend's.
   const tabs: { id: TabId; label: string }[] = [
-    { id: 'shelves', label: 'Shelves' },
     { id: 'recipes', label: 'Recipes' },
-    ...(isOwn ? [{ id: 'saved' as const, label: 'Saved' }] : []),
+    { id: 'shelves', label: 'Shelves' },
     { id: 'cooked', label: 'Cooked' },
   ];
 
@@ -53,9 +50,8 @@ export function ProfileTabs({
         ))}
       </div>
 
+      {tab === 'recipes' && <RecipesTab recipes={recipes} savedRecipes={savedRecipes} />}
       {tab === 'shelves' && <ShelvesTab shelves={shelves} isOwn={isOwn} />}
-      {tab === 'recipes' && <RecipesTab recipes={recipes} />}
-      {tab === 'saved' && <SavedTab recipes={savedRecipes ?? []} />}
       {tab === 'cooked' && <CookedTab recipes={cookedRecipes} firstName={firstName} />}
     </div>
   );
@@ -99,45 +95,28 @@ function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
   );
 }
 
-function RecipesTab({ recipes }: { recipes: Recipe[] }) {
-  return (
-    <div className="mx-5 pb-8">
-      {recipes.map((r) => (
-        <Link
-          key={r.id}
-          href={`/recipe/${r.id}`}
-          className="block border-b border-dashed border-rule py-3.5"
-        >
-          <div className="flex items-baseline gap-2.5">
-            <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-            <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>
-          </div>
-          <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
-            <span>{r.time}</span>
-            <span>·</span>
-            <span>{r.madeIt} cooked</span>
-            <span>·</span>
-            <span>{r.difficulty}</span>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
+// Authored recipes and recipes saved from other cooks, in one list — a
+// saved-from-someone-else row carries a bookmark badge with their handle
+// instead of a saves count, rather than living in a separate tab.
+function RecipesTab({ recipes, savedRecipes }: { recipes: Recipe[]; savedRecipes: Recipe[] }) {
+  const rows = [
+    ...recipes.map((r) => ({ recipe: r, saved: false })),
+    ...savedRecipes.map((r) => ({ recipe: r, saved: true })),
+  ];
 
-function SavedTab({ recipes }: { recipes: Recipe[] }) {
-  if (recipes.length === 0) {
+  if (rows.length === 0) {
     return (
       <div className="mx-5 pb-8 pt-6">
         <div className="border border-dashed border-rule p-5 text-center font-mono text-[12px] leading-relaxed text-ink-mute">
-          Recipes you save will show up here.
+          Recipes written or saved here will show up here.
         </div>
       </div>
     );
   }
+
   return (
     <div className="mx-5 pb-8">
-      {recipes.map((r) => (
+      {rows.map(({ recipe: r, saved }) => (
         <Link
           key={r.id}
           href={`/recipe/${r.id}`}
@@ -145,7 +124,13 @@ function SavedTab({ recipes }: { recipes: Recipe[] }) {
         >
           <div className="flex items-baseline gap-2.5">
             <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-            <span className="flex-shrink-0 font-mono text-meta text-ink-mute">@{r.author}</span>
+            {saved ? (
+              <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
+                <BookmarkIcon size={10} />@{r.author}
+              </span>
+            ) : (
+              <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>
+            )}
           </div>
           <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
             <span>{r.time}</span>
