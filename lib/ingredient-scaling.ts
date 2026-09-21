@@ -196,18 +196,17 @@ function formatFractional(n: number): string {
     }
   }
   if (best) return whole > 0 ? `${whole} ${best}` : best;
-  const rounded = Math.round(n * 100) / 100;
-  return trimNumber(rounded);
+  return trimNumber(n, 1);
 }
 
 // Decimal — for metric units, which are never written as fractions.
 function formatDecimal(n: number): string {
-  const rounded = n < 10 ? Math.round(n * 10) / 10 : Math.round(n);
-  return trimNumber(rounded);
+  return n < 10 ? trimNumber(n, 1) : trimNumber(n, 0);
 }
 
-function trimNumber(n: number): string {
-  return String(Math.round(n * 100) / 100);
+function trimNumber(n: number, decimals: number): string {
+  const factor = 10 ** decimals;
+  return String(Math.round(n * factor) / factor);
 }
 
 function formatAmount(n: number, displayUnit: UnitDef | null): string {
@@ -240,4 +239,24 @@ export function scaleIngredientText(q: string, scale: number, system: UnitSystem
   const finalUnit = converted1.unit;
   const unitText = finalUnit ? unitLabel(finalUnit, converted1.amount) : '';
   return [amountText, unitText, parsed.rest].filter(Boolean).join(' ').trim();
+}
+
+// Splits one freeform ingredient line ("200g bucatini", "2 cups flour") into
+// the separate quantity/name fields the composer and this scaler both
+// expect. Used when a line arrives as a single string with no such split
+// already done — the URL importer's schema.org ingredients, for one.
+// Falls back to putting the whole line in `name` when there's no leading
+// number to split on, same honesty rule as everything else here.
+export function splitIngredientLine(line: string): { quantity: string; name: string } {
+  const parsed = parseQuantity(line);
+  if (!parsed) return { quantity: '', name: line.trim() };
+
+  let quantity = formatAmount(parsed.amount, parsed.unit);
+  if (parsed.amount2 != null) {
+    quantity += `-${formatAmount(parsed.amount2, parsed.unit)}`;
+  }
+  if (parsed.unit) {
+    quantity += ` ${unitLabel(parsed.unit, parsed.amount2 ?? parsed.amount)}`;
+  }
+  return { quantity, name: parsed.rest || line.trim() };
 }

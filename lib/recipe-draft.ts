@@ -3,6 +3,7 @@
 // no real content typed into it is never persisted, so the drafts list
 // (7g) only ever shows things someone actually started.
 
+import { splitIngredientLine } from '@/lib/ingredient-scaling';
 import type { ImportedRecipe } from '@/lib/recipe-import';
 import type { Recipe, Visibility } from '@/lib/types';
 
@@ -116,7 +117,13 @@ export function draftFromImport(parsed: Partial<ImportedRecipe>, sourceUrl: stri
     sections: [
       {
         section: '',
-        items: ingredients.length > 0 ? ingredients.map((i) => ({ q: '', i })) : [{ q: '', i: '' }],
+        items:
+          ingredients.length > 0
+            ? ingredients.map((line) => {
+                const { quantity, name } = splitIngredientLine(line);
+                return { q: quantity, i: name };
+              })
+            : [{ q: '', i: '' }],
       },
     ],
     steps:
