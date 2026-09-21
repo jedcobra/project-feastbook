@@ -129,100 +129,98 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
           </OutlineBox>
         }
       />
-      {/*
-        The composer lives inside this same scrollable element (sticky to
-        its bottom) rather than as a separate fixed sibling below it. It
-        was a sibling before, which meant scrolling *this* container to
-        its own bottom left the composer — outside it — wherever the
-        surrounding flex layout happened to put it as the keyboard
-        resized things, which is what let messages end up hidden behind
-        it right as typing started. With the composer inside the same
-        scroll flow, "scrolled to bottom" and "composer visible at the
-        bottom" are the same state by construction.
-      */}
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="px-5 pb-2 pt-2">
-          {messages.length === 0 ? (
-            <div className="mt-6 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
-              Nothing here yet — say hello.
-            </div>
-          ) : (
-            messages.map((m) => {
-              const mine = m.senderId === profile?.id;
-              return (
-                <div key={m.id} className={`mb-2.5 flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex max-w-[78%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
-                    <div
-                      className={`rounded-2xl px-3.5 py-2 font-mono text-[12.5px] leading-[1.45] ${
-                        mine ? 'bg-ink text-cream' : 'border border-ink bg-cream text-ink'
-                      }`}
-                    >
-                      {m.text}
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 px-1">
-                      <span className="font-mono text-[10px] text-ink-mute">{formatRelativeTime(m.createdAt)}</span>
-                      {mine && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteMessage(m.id)}
-                          className="font-mono text-[10px] text-ink-mute underline decoration-dashed underline-offset-2"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {profile && (
-          <div className="sticky bottom-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
-            {blockedByMe ? (
-              <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
-                <span className="flex-1 font-mono text-[11.5px] text-ink-mute">
-                  You&rsquo;ve blocked @{peer.handle}.
-                </span>
-                <OutlineBox compact onClick={toggleBlock}>
-                  Unblock
-                </OutlineBox>
-              </div>
-            ) : (
-              <>
-                {sendError && <div className="mb-2 font-mono text-[11px] text-accent">{sendError}</div>}
-                <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
-                  <textarea
-                    value={draft}
-                    rows={1}
-                    onChange={(e) => setDraft(e.target.value)}
-                    onFocus={scrollToBottom}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                    placeholder="Write a message…"
-                    className="max-h-24 flex-1 resize-none border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSend}
-                    disabled={!draft.trim() || sending}
-                    className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[11px] ${
-                      draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-2">
+        {messages.length === 0 ? (
+          <div className="mt-6 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+            Nothing here yet — say hello.
+          </div>
+        ) : (
+          messages.map((m) => {
+            const mine = m.senderId === profile?.id;
+            return (
+              <div key={m.id} className={`mb-2.5 flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex max-w-[78%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
+                  <div
+                    className={`rounded-2xl px-3.5 py-2 font-mono text-[12.5px] leading-[1.45] ${
+                      mine ? 'bg-ink text-cream' : 'border border-ink bg-cream text-ink'
                     }`}
                   >
-                    Send
-                  </button>
+                    {m.text}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 px-1">
+                    <span className="font-mono text-[10px] text-ink-mute">{formatRelativeTime(m.createdAt)}</span>
+                    {mine && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMessage(m.id)}
+                        className="font-mono text-[10px] text-ink-mute underline decoration-dashed underline-offset-2"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            );
+          })
         )}
       </div>
+
+      {/*
+        A plain flex sibling below the scrollable list, not part of its
+        scroll — that's what keeps it pinned to the very bottom of the
+        screen no matter how short the conversation is (a scroll-anchored
+        composer only sticks once there's enough content to scroll past
+        it, which left it stranded mid-screen on a short thread). The
+        keyboard opening still shrinks the message list above it via the
+        normal flex/dvh layout; scrollToBottom() below just re-syncs the
+        list's scroll position to the list's own new bottom once that
+        happens, without moving the composer itself at all.
+      */}
+      {profile && (
+        <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
+          {blockedByMe ? (
+            <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
+              <span className="flex-1 font-mono text-[11.5px] text-ink-mute">
+                You&rsquo;ve blocked @{peer.handle}.
+              </span>
+              <OutlineBox compact onClick={toggleBlock}>
+                Unblock
+              </OutlineBox>
+            </div>
+          ) : (
+            <>
+              {sendError && <div className="mb-2 font-mono text-[11px] text-accent">{sendError}</div>}
+              <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
+                <textarea
+                  value={draft}
+                  rows={1}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onFocus={scrollToBottom}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder="Write a message…"
+                  className="max-h-24 flex-1 resize-none border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!draft.trim() || sending}
+                  className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[11px] ${
+                    draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
+                  }`}
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {menuOpen && (
         <div
