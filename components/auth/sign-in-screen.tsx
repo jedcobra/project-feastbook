@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { ProviderButton } from '@/components/auth/provider-button';
 import { Field } from '@/components/create/field';
 import { TopBar } from '@/components/top-bar';
 
@@ -35,16 +34,7 @@ export function SignInScreen() {
     <>
       <TopBar title="Sign in" backHref="/account" />
       <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-          <ProviderButton label="Continue with Apple" />
-          <ProviderButton label="Continue with Google" />
-
-          <div className="my-4 flex items-center gap-2.5">
-            <div className="flex-1 border-t border-dashed border-rule" />
-            <span className="font-mono text-[10px] text-ink-mute">or with an email</span>
-            <div className="flex-1 border-t border-dashed border-rule" />
-          </div>
-
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-4">
           <Field
             label="Email"
             type="email"
