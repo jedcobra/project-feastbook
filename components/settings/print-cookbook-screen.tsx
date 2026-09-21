@@ -54,7 +54,7 @@ export function PrintCookbookScreen() {
               )}
               {recipe.ingredients.length > 0 && (
                 <div className="mb-5">
-                  <IngredientsBlock sections={recipe.ingredients} />
+                  <IngredientsBlock sections={recipe.ingredients} servings={recipe.serves} />
                 </div>
               )}
               {recipe.steps.length > 0 && (

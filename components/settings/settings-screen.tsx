@@ -6,8 +6,13 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { Label } from '@/components/label';
 import { SettingRow } from '@/components/settings/setting-row';
 import { TopBar } from '@/components/top-bar';
+import type { UnitSystem } from '@/lib/ingredient-scaling';
 import { getKeepAwake, setKeepAwake } from '@/lib/keep-awake';
 import type { NotificationPrefs } from '@/lib/supabase/types';
+import { getUnitsPreference, setUnitsPreference } from '@/lib/units-preference';
+
+const UNIT_LABEL: Record<UnitSystem, string> = { original: 'As written', metric: 'Metric', imperial: 'Imperial' };
+const NEXT_UNIT: Record<UnitSystem, UnitSystem> = { original: 'metric', metric: 'imperial', imperial: 'original' };
 
 function summarizePrefs(prefs: NotificationPrefs): string {
   const labels: [keyof NotificationPrefs, string][] = [
@@ -29,15 +34,23 @@ export function SettingsScreen() {
   const { profile, signOut } = useAuth();
   const router = useRouter();
   const [awake, setAwake] = useState(true);
+  const [units, setUnits] = useState<UnitSystem>('original');
 
   useEffect(() => {
     setAwake(getKeepAwake());
+    setUnits(getUnitsPreference());
   }, []);
 
   const toggleAwake = () => {
     const next = !awake;
     setAwake(next);
     setKeepAwake(next);
+  };
+
+  const cycleUnits = () => {
+    const next = NEXT_UNIT[units];
+    setUnits(next);
+    setUnitsPreference(next);
   };
 
   if (!profile) return null;
@@ -55,7 +68,7 @@ export function SettingsScreen() {
 
         <div className="mb-[22px]">
           <Label className="mb-0.5 text-[9px] tracking-[0.12em]">Cooking</Label>
-          <SettingRow label="Units" value="As written" first />
+          <SettingRow label="Units" value={UNIT_LABEL[units]} onClick={cycleUnits} first />
           <SettingRow label="Keep screen awake while cooking" value={awake ? 'On' : 'Off'} onClick={toggleAwake} />
           <SettingRow label="Default servings" value="As written" />
         </div>

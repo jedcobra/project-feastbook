@@ -48,7 +48,7 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
 
         {recipe.ingredients.length > 0 && (
           <div className="mb-5">
-            <IngredientsBlock sections={recipe.ingredients} />
+            <IngredientsBlock sections={recipe.ingredients} servings={recipe.serves} />
           </div>
         )}
 
