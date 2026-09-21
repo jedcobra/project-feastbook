@@ -44,16 +44,27 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
     bottomRef.current?.scrollIntoView({ block: 'end' });
   }, [messages]);
 
-  // The keyboard opening shrinks the viewport without moving scroll
-  // position, so the messages you just had in view can end up hidden
-  // behind it — re-anchor to the bottom whenever that happens, so the
-  // most recent messages stay next to the composer while you type.
+  // The keyboard opening (and, a moment later, the predictive-text bar
+  // appearing above it once you start typing) shrinks the viewport in a
+  // couple of steps rather than one — the flex layout already resizes
+  // itself to fit above both, so all this needs to do is nudge scroll
+  // back to the bottom once that's settled. Rescrolling on every single
+  // intermediate step instead produced a visible double-jump right as
+  // typing started, which is the opposite of the smooth resize wanted
+  // here, so this waits for the resizing to quiet down before doing it.
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const rescroll = () => bottomRef.current?.scrollIntoView({ block: 'end' });
+    let timer: ReturnType<typeof setTimeout>;
+    const rescroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => bottomRef.current?.scrollIntoView({ block: 'end' }), 150);
+    };
     vv.addEventListener('resize', rescroll);
-    return () => vv.removeEventListener('resize', rescroll);
+    return () => {
+      clearTimeout(timer);
+      vv.removeEventListener('resize', rescroll);
+    };
   }, []);
 
   const handleSend = async () => {
@@ -180,7 +191,6 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                   value={draft}
                   rows={1}
                   onChange={(e) => setDraft(e.target.value)}
-                  onFocus={() => bottomRef.current?.scrollIntoView({ block: 'end' })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
