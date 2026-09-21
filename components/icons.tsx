@@ -205,6 +205,15 @@ export function TrashIcon(props: StrokeIconProps) {
   );
 }
 
+export function GearIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3v2.5M12 18.5V21M21 12h-2.5M5.5 12H3M18.36 5.64l-1.77 1.77M7.41 16.59l-1.77 1.77M18.36 18.36l-1.77-1.77M7.41 7.41L5.64 5.64" />
+    </StrokeIcon>
+  );
+}
+
 export function MoreIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
