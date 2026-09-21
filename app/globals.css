@@ -17,3 +17,16 @@
     @apply border-b border-dotted border-rule;
   }
 }
+
+/* iOS/Android auto-zoom the page on focus for any text input under 16px —
+   that's the "screen jumps in and cuts things off" behavior. Fields here
+   are intentionally smaller for the mono type scale, so override on
+   narrow (i.e. actual phone) viewports rather than resizing them for
+   everyone; !important is needed since Field sets font-size inline. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
