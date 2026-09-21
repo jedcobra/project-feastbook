@@ -229,6 +229,15 @@ export function GearIcon(props: StrokeIconProps) {
   );
 }
 
+export function HomeIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 11.5L12 4l8 7.5" />
+      <path d="M6 10.5V19a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-8.5" />
+    </StrokeIcon>
+  );
+}
+
 export function MessageIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
