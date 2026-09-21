@@ -4,15 +4,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 
-// The whole app is signed-in only, with one exception: a shared recipe
+// The whole app is signed-in only, with two exceptions: a shared recipe
 // link (/r/[id]) is meant to be readable by anyone, no account required —
-// that's the whole point of a public share page. Everything else still
+// that's the whole point of a public share page — and the email
+// confirmation callback (/auth/callback), which has to run before a
+// session exists yet is the thing that creates one. Everything else still
 // sends a signed-out visitor to the Landing screen and keeps them there.
 export function AuthGate() {
   const { loading, user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const exempt = pathname.startsWith('/account') || pathname.startsWith('/r/');
+  const exempt =
+    pathname.startsWith('/account') || pathname.startsWith('/r/') || pathname.startsWith('/auth/callback');
 
   useEffect(() => {
     if (!loading && !user && !exempt) {

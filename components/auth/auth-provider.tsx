@@ -67,7 +67,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, handle } },
+      options: {
+        data: { name, handle },
+        // Without this, Supabase sends the confirmation link to whatever
+        // Site URL is set in the project dashboard — which may point
+        // nowhere real. Sending people back to a page this app actually
+        // has means the link works regardless of that setting (as long as
+        // this exact origin is also in the dashboard's redirect allow-list).
+        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+      },
     });
     if (error) return { error: error.message, needsEmailConfirmation: false };
     // Set session/profile locally instead of waiting on the onAuthStateChange
