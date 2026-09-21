@@ -11,7 +11,7 @@ import type { Person, Recipe, Shelf } from '@/lib/types';
 
 // The real, auth-backed Cookbook screen.
 export function OwnCookbook() {
-  const { loading, user, profile, signOut } = useAuth();
+  const { loading, user, profile } = useAuth();
   const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
@@ -60,22 +60,9 @@ export function OwnCookbook() {
     );
   }
 
-  const signOutLink = (
-    <div className="mb-5 px-5">
-      <button
-        type="button"
-        onClick={signOut}
-        className="font-mono text-[12px] text-ink-mute underline decoration-dashed underline-offset-[3px]"
-      >
-        Sign out
-      </button>
-    </div>
-  );
-
   if (data.recipes.length === 0 && savedRecipes.length === 0 && cookedRecipes.length === 0) {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {signOutLink}
         <EmptyCookbook name={data.person.name.split(' ')[0]} />
       </div>
     );
@@ -84,7 +71,6 @@ export function OwnCookbook() {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <ProfileHeader person={data.person} />
-      {signOutLink}
       <ProfileTabs
         shelves={data.shelves}
         recipes={data.recipes}
