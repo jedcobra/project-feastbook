@@ -12,9 +12,11 @@ import { deleteAccount, fetchAccountDeleteImpact, fetchMyRecipesFull } from '@/l
 
 // Account — email (read-only; changing it needs a reconfirmation flow this
 // app doesn't have), a real password change, real data export, and real
-// account deletion. No "Connected accounts" row: Google/Apple sign-in are
-// decorative in this app (see MERGE.md's "still engineering, not design"
-// list), so there's nothing true to show there.
+// account deletion. No "Connected accounts" row: Google and Facebook
+// sign-in are real (see components/auth/provider-button.tsx), but nothing
+// here yet lets someone link one to an account they made with a password,
+// or see which one they used — Apple stays decorative (needs a paid
+// developer account for Sign in with Apple).
 export function AccountScreen() {
   const { profile, user, signOut } = useAuth();
   const router = useRouter();

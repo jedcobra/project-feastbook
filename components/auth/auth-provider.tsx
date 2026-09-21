@@ -19,6 +19,7 @@ interface AuthContextValue {
     handle: string;
   }) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   signIn: (args: { email: string; password: string }) => Promise<{ error: string | null }>;
+  signInWithProvider: (provider: 'google' | 'facebook') => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -99,6 +100,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   };
 
+  // Redirects the whole page to the provider's consent screen — there's no
+  // session to set here on return, unlike signIn/signUp above. The
+  // "error" case only ever fires if the redirect itself couldn't start
+  // (e.g. the provider isn't enabled in Supabase); a successful call
+  // navigates away before anything else in the caller would run.
+  const signInWithProvider: AuthContextValue['signInWithProvider'] = async (provider) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/oauth` },
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     router.push('/account');
@@ -114,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshProfile,
         signUp,
         signIn,
+        signInWithProvider,
         signOut,
       }}
     >
