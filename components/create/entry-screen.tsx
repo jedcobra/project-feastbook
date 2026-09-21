@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { CameraIcon, ChevronIcon, ForkIcon, LinkIcon, PencilIcon } from '@/components/icons';
+import { CameraIcon, ChevronIcon, LinkIcon, PencilIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { draftFromImport, listUnstartedDrafts, saveDraft, type DraftSource } from '@/lib/recipe-draft';
@@ -13,7 +13,6 @@ import { importRecipeFromUrl } from '@/lib/recipe-import';
 const SECONDARY_ROWS = [
   { icon: PencilIcon, title: 'Type it out', sub: 'Blank page. Your words, your measurements.', source: 'manual' as DraftSource },
   { icon: CameraIcon, title: 'Photograph a card', sub: 'Handwritten card or a page from a book.', source: 'photo' as DraftSource },
-  { icon: ForkIcon, title: 'Fork a recipe', sub: "Start from someone else's and change it.", source: 'manual' as DraftSource },
 ];
 
 // Entry picker — link paste leads, three secondary routes sit beneath a
