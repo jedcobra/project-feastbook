@@ -3,6 +3,24 @@
 @tailwind utilities;
 
 @layer base {
+  /* Pin the document itself so there's nothing for Safari to scroll. iOS
+     scrolls the whole page to "reveal" a focused input above the
+     keyboard whenever the document is scrollable at all — even with the
+     app shell's own overflow-hidden div, the underlying html/body was
+     still fair game, which is what was carrying the TopBar and every
+     message on the chat thread off the top of the screen the moment the
+     keyboard opened. Every screen already does its own scrolling in a
+     dedicated overflow-y-auto div, so the document itself never needs to
+     move at all. */
+  html,
+  body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   body {
     @apply bg-cream text-ink font-mono text-body antialiased;
   }
@@ -28,5 +46,18 @@
   textarea,
   select {
     font-size: 16px !important;
+  }
+}
+
+/* Printing (the single-recipe and whole-cookbook print views) needs the
+   document to flow normally across as many physical pages as the content
+   takes — the fixed, clipped-to-one-screen body above is a screen-only
+   affordance and would otherwise cut printed output down to one page. */
+@media print {
+  html,
+  body {
+    position: static;
+    height: auto;
+    overflow: visible;
   }
 }
