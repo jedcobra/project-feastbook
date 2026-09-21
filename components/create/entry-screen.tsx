@@ -7,17 +7,26 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { CameraIcon, ChevronIcon, LinkIcon, PencilIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { draftFromImport, listUnstartedDrafts, saveDraft, type DraftSource } from '@/lib/recipe-draft';
+import { draftFromImport, listUnstartedDrafts, saveDraft } from '@/lib/recipe-draft';
 import { importRecipeFromUrl } from '@/lib/recipe-import';
 
 const SECONDARY_ROWS = [
-  { icon: PencilIcon, title: 'Type it out', sub: 'Blank page. Your words, your measurements.', source: 'manual' as DraftSource },
-  { icon: CameraIcon, title: 'Photograph a card', sub: 'Handwritten card or a page from a book.', source: 'photo' as DraftSource },
+  {
+    icon: PencilIcon,
+    title: 'Type it out',
+    sub: 'Blank page. Your words, your measurements.',
+    href: '/new/edit?source=manual',
+  },
+  {
+    icon: CameraIcon,
+    title: 'Photograph a card',
+    sub: 'Handwritten card or a page from a book.',
+    href: '/new/photo',
+  },
 ];
 
-// Entry picker — link paste leads, three secondary routes sit beneath a
-// dashed "or" divider. No parser yet, so every path opens the blank
-// composer for now instead of an import-review screen.
+// Entry picker — link paste leads, two secondary routes sit beneath a
+// dashed "or" divider.
 export function EntryScreen() {
   const router = useRouter();
   const { loading, user } = useAuth();
@@ -30,12 +39,6 @@ export function EntryScreen() {
     setDraftCount(listUnstartedDrafts().length);
   }, []);
 
-  const startComposer = (source: DraftSource, sourceUrl?: string) => {
-    const params = new URLSearchParams({ source });
-    if (sourceUrl) params.set('url', sourceUrl);
-    router.push(`/new/edit?${params.toString()}`);
-  };
-
   const fetchRecipe = async () => {
     const trimmed = url.trim();
     if (!trimmed || importing) return;
@@ -45,7 +48,7 @@ export function EntryScreen() {
     setImporting(false);
 
     if (result.ok) {
-      const draft = draftFromImport(result.recipe, result.sourceUrl);
+      const draft = draftFromImport(result.recipe, 'link', result.sourceUrl);
       saveDraft(draft);
       router.push(`/new/edit?draft=${draft.id}`);
       return;
@@ -65,6 +68,7 @@ export function EntryScreen() {
     // yourself" has somewhere real to land.
     const seeded = draftFromImport(
       { title: result.partial?.title, subtitle: result.partial?.description },
+      'link',
       result.sourceUrl ?? trimmed,
     );
     saveDraft(seeded);
@@ -150,10 +154,9 @@ export function EntryScreen() {
         </div>
 
         {SECONDARY_ROWS.map((row, i) => (
-          <button
+          <Link
             key={row.title}
-            type="button"
-            onClick={() => startComposer(row.source)}
+            href={row.href}
             className={`flex w-full items-center gap-3 border-b border-dashed border-rule py-3.5 text-left ${
               i === 0 ? 'border-t' : ''
             }`}
@@ -166,7 +169,7 @@ export function EntryScreen() {
               <span className="block font-mono text-[11px] text-ink-mute">{row.sub}</span>
             </span>
             <ChevronIcon size={15} className="flex-shrink-0 text-ink-mute" />
-          </button>
+          </Link>
         ))}
       </div>
     </>
