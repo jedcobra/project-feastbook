@@ -97,22 +97,16 @@ export function draftFromRecipe(recipe: Recipe): RecipeDraft {
   };
 }
 
-// Seeds a composer draft from a parsed import — a URL fetch or a
-// photographed card — or, when parsing found nothing, from just whatever
-// partial title/description got recovered (every field can be empty
-// except sourceUrl, which is enough on its own to count as "something
-// worth keeping" — see isDraftEmpty below). `source` records which path
-// it came from; `sourceUrl` only applies to the link path.
-export function draftFromImport(
-  parsed: Partial<ImportedRecipe>,
-  source: DraftSource,
-  sourceUrl?: string,
-): RecipeDraft {
+// Seeds a composer draft from a parsed import — or, when parsing found
+// nothing, from just whatever partial title/description got recovered
+// (every field can be empty except sourceUrl, which is enough on its own
+// to count as "something worth keeping" — see isDraftEmpty below).
+export function draftFromImport(parsed: Partial<ImportedRecipe>, sourceUrl: string): RecipeDraft {
   const ingredients = parsed.ingredients ?? [];
   const steps = parsed.steps ?? [];
   return {
     id: crypto.randomUUID(),
-    source,
+    source: 'link',
     updatedAt: new Date().toISOString(),
     title: parsed.title ?? '',
     subtitle: parsed.subtitle ?? '',
