@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase/client';
 import type { NotificationPrefs } from '@/lib/supabase/types';
 import type {
   AppNotification,
+  ConversationSummary,
+  DirectMessage,
   FeedActivity,
   NotificationKind,
   Person,
@@ -1312,6 +1314,212 @@ export async function markAllNotificationsRead(recipientId: string) {
 export async function markNotificationRead(id: string) {
   const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
   if (error) console.error('markNotificationRead', error);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Messages
+// ─────────────────────────────────────────────────────────────
+interface ConversationRow {
+  id: string;
+  user_a_id: string;
+  user_b_id: string;
+  last_message_at: string;
+}
+
+// Every conversation this person is part of — queried as two separate
+// eq() lookups (one per side of the pair) rather than a combined or()
+// filter, same reasoning as searchAll: keeps the query string free of
+// interpolated values entirely.
+async function fetchMyConversationRows(myId: string): Promise<ConversationRow[]> {
+  const [{ data: asA, error: errA }, { data: asB, error: errB }] = await Promise.all([
+    supabase.from('conversations').select('id, user_a_id, user_b_id, last_message_at').eq('user_a_id', myId),
+    supabase.from('conversations').select('id, user_a_id, user_b_id, last_message_at').eq('user_b_id', myId),
+  ]);
+  if (errA) console.error('fetchMyConversationRows a', errA);
+  if (errB) console.error('fetchMyConversationRows b', errB);
+  return [...((asA ?? []) as ConversationRow[]), ...((asB ?? []) as ConversationRow[])];
+}
+
+async function fetchLastMessageByConversation(conversationIds: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (conversationIds.length === 0) return map;
+  const { data } = await supabase
+    .from('messages')
+    .select('conversation_id, text, created_at')
+    .in('conversation_id', conversationIds)
+    .order('created_at', { ascending: false });
+  for (const m of (data ?? []) as { conversation_id: string; text: string }[]) {
+    if (!map.has(m.conversation_id)) map.set(m.conversation_id, m.text);
+  }
+  return map;
+}
+
+async function fetchUnreadCountByConversation(conversationIds: string[], myId: string): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  if (conversationIds.length === 0) return map;
+  const { data } = await supabase
+    .from('messages')
+    .select('conversation_id')
+    .in('conversation_id', conversationIds)
+    .neq('sender_id', myId)
+    .is('read_at', null);
+  for (const m of (data ?? []) as { conversation_id: string }[]) {
+    map.set(m.conversation_id, (map.get(m.conversation_id) ?? 0) + 1);
+  }
+  return map;
+}
+
+// Finds the one conversation between two people, or starts it — user_a_id
+// is always the lexicographically smaller id, so there's exactly one
+// conversation per pair regardless of who messages whom first.
+export async function getOrCreateConversation(myId: string, otherId: string): Promise<string | null> {
+  const [userA, userB] = myId < otherId ? [myId, otherId] : [otherId, myId];
+  const { data: existing } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('user_a_id', userA)
+    .eq('user_b_id', userB)
+    .maybeSingle();
+  if (existing) return existing.id;
+
+  const { data, error } = await supabase
+    .from('conversations')
+    .insert({ user_a_id: userA, user_b_id: userB })
+    .select('id')
+    .single();
+  if (error || !data) {
+    console.error('getOrCreateConversation', error);
+    return null;
+  }
+  return data.id;
+}
+
+export async function fetchConversations(myId: string): Promise<ConversationSummary[]> {
+  const rows = (await fetchMyConversationRows(myId)).sort((a, b) =>
+    b.last_message_at.localeCompare(a.last_message_at),
+  );
+  if (rows.length === 0) return [];
+
+  const otherIds = rows.map((r) => (r.user_a_id === myId ? r.user_b_id : r.user_a_id));
+  const [{ data: peopleRows }, stats, lastMessages, unreadCounts] = await Promise.all([
+    supabase.from('profiles').select('id, name, handle, bio').in('id', otherIds),
+    fetchProfileStatsByIds(otherIds),
+    fetchLastMessageByConversation(rows.map((r) => r.id)),
+    fetchUnreadCountByConversation(rows.map((r) => r.id), myId),
+  ]);
+  const peopleById = new Map((peopleRows ?? []).map((p: ProfileRow) => [p.id, p]));
+
+  return rows.map((r) => {
+    const otherId = r.user_a_id === myId ? r.user_b_id : r.user_a_id;
+    const personRow = peopleById.get(otherId);
+    return {
+      id: r.id,
+      person: personRow
+        ? mapPerson(personRow, stats.get(otherId))
+        : { id: otherId, name: 'Someone', handle: '', bio: '', recipes: 0, followers: 0, following: 0, seed: 0 },
+      lastMessage: lastMessages.get(r.id) ?? '',
+      lastMessageAt: r.last_message_at,
+      unread: unreadCounts.get(r.id) ?? 0,
+    };
+  });
+}
+
+export async function fetchConversationPeer(conversationId: string, myId: string): Promise<Person | null> {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('user_a_id, user_b_id')
+    .eq('id', conversationId)
+    .maybeSingle();
+  if (error || !data) {
+    console.error('fetchConversationPeer', error);
+    return null;
+  }
+  const otherId = data.user_a_id === myId ? data.user_b_id : data.user_a_id;
+  const [{ data: personRow }, stats] = await Promise.all([
+    supabase.from('profiles').select('id, name, handle, bio').eq('id', otherId).maybeSingle(),
+    fetchProfileStatsByIds([otherId]),
+  ]);
+  if (!personRow) return null;
+  return mapPerson(personRow as ProfileRow, stats.get(otherId));
+}
+
+export async function fetchMessages(conversationId: string): Promise<DirectMessage[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, sender_id, text, created_at, read_at')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+  if (error || !data) {
+    console.error('fetchMessages', error);
+    return [];
+  }
+  return data.map(
+    (m: { id: string; sender_id: string; text: string; created_at: string; read_at: string | null }) => ({
+      id: m.id,
+      senderId: m.sender_id,
+      text: m.text,
+      createdAt: m.created_at,
+      read: !!m.read_at,
+    }),
+  );
+}
+
+export async function sendMessage(
+  conversationId: string,
+  senderId: string,
+  text: string,
+): Promise<DirectMessage | null> {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({ conversation_id: conversationId, sender_id: senderId, text })
+    .select('id, sender_id, text, created_at, read_at')
+    .single();
+  if (error || !data) {
+    console.error('sendMessage', error);
+    return null;
+  }
+  const { error: convError } = await supabase
+    .from('conversations')
+    .update({ last_message_at: data.created_at })
+    .eq('id', conversationId);
+  if (convError) console.error('sendMessage: conversation update', convError);
+
+  return {
+    id: data.id,
+    senderId: data.sender_id,
+    text: data.text,
+    createdAt: data.created_at,
+    read: !!data.read_at,
+  };
+}
+
+export async function markConversationRead(conversationId: string, myId: string): Promise<void> {
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', myId)
+    .is('read_at', null);
+  if (error) console.error('markConversationRead', error);
+}
+
+export async function countUnreadMessages(myId: string): Promise<number> {
+  const rows = await fetchMyConversationRows(myId);
+  if (rows.length === 0) return 0;
+  const { count, error } = await supabase
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .in(
+      'conversation_id',
+      rows.map((r) => r.id),
+    )
+    .neq('sender_id', myId)
+    .is('read_at', null);
+  if (error) {
+    console.error('countUnreadMessages', error);
+    return 0;
+  }
+  return count ?? 0;
 }
 
 // ─────────────────────────────────────────────────────────────

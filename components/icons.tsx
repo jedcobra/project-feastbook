@@ -229,6 +229,14 @@ export function GearIcon(props: StrokeIconProps) {
   );
 }
 
+export function MessageIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 5.5A1.5 1.5 0 015.5 4h13A1.5 1.5 0 0120 5.5v9a1.5 1.5 0 01-1.5 1.5H9l-4 4v-4H5.5A1.5 1.5 0 014 14.5v-9z" />
+    </StrokeIcon>
+  );
+}
+
 export function MoreIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

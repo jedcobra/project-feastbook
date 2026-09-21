@@ -111,3 +111,19 @@ export interface Shelf {
   count: number;
   recipes: ShelfRecipeRef[];
 }
+
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  text: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface ConversationSummary {
+  id: string;
+  person: Person;
+  lastMessage: string;
+  lastMessageAt: string;
+  unread: number;
+}

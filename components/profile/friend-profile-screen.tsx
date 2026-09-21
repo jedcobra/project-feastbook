@@ -60,7 +60,12 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <ProfileHeader person={data.person} />
       {profile ? (
-        <FollowActions following={following} onToggleFollow={toggleFollow} />
+        <FollowActions
+          personId={data.person.id}
+          myId={profile.id}
+          following={following}
+          onToggleFollow={toggleFollow}
+        />
       ) : (
         <div className="px-5 pb-[18px]">
           <Link

@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PlusIcon } from '@/components/icons';
+import { countUnreadMessages } from '@/lib/supabase/queries';
 
 const LEFT_TABS = [
   { id: 'feed', label: 'Feed', href: '/feed' },
@@ -18,8 +20,14 @@ const RIGHT_TABS = [{ id: 'cookbook', label: 'Cookbook', href: '/me' }];
 // when its own section is the active one.
 export function TabBar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const newActive = pathname.startsWith('/new');
+  const messagesActive = pathname.startsWith('/messages');
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    if (profile) countUnreadMessages(profile.id).then(setUnreadMessages);
+  }, [profile, pathname]);
 
   // The whole app is signed-in only (see AuthGate) — nothing to navigate to
   // while signed out, so there's nothing to show here either.
@@ -44,6 +52,15 @@ export function TabBar() {
           New
         </span>
         <span className={`h-1 w-1 rounded-full ${newActive ? 'bg-ink' : 'bg-transparent'}`} />
+      </Link>
+      <Link href="/messages" aria-label="Messages" className="relative flex flex-1 flex-col items-center gap-1 pt-1.5 font-mono">
+        <span className={`text-[12px] ${messagesActive ? 'font-semibold text-ink' : 'font-normal text-ink-mute'}`}>
+          Messages
+        </span>
+        <span className={`h-1 w-1 rounded-full ${messagesActive ? 'bg-ink' : 'bg-transparent'}`} />
+        {unreadMessages > 0 && (
+          <span className="absolute right-[22%] top-0 h-[7px] w-[7px] rounded-full bg-accent" />
+        )}
       </Link>
       {RIGHT_TABS.map((tab) => (
         <TabLink key={tab.id} href={tab.href} label={tab.label} active={pathname === tab.href} />
