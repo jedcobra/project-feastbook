@@ -16,8 +16,7 @@ type Stage = 'pick' | 'reading' | 'failed';
 // review rather than saving straight through.
 export function PhotoImportScreen() {
   const router = useRouter();
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const libraryInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>('pick');
   const [progress, setProgress] = useState(0);
 
@@ -40,26 +39,11 @@ export function PhotoImportScreen() {
     <>
       <TopBar title="Photograph a card" backHref="/new" />
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 text-center">
-        {/* Two separate inputs rather than one with `capture` — on several
-            mobile browsers a captured input jumps straight to the camera
-            with no way to pick an existing photo, so the library needs its
-            own input with no `capture` attribute at all. */}
         <input
-          ref={cameraInputRef}
+          ref={inputRef}
           type="file"
           accept="image/*"
           capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            e.target.value = '';
-            if (file) handleFile(file);
-          }}
-        />
-        <input
-          ref={libraryInputRef}
-          type="file"
-          accept="image/*"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -82,17 +66,10 @@ export function PhotoImportScreen() {
             </div>
             <button
               type="button"
-              onClick={() => cameraInputRef.current?.click()}
-              className="mb-2.5 w-full max-w-[220px] rounded-button border border-ink bg-ink px-[22px] py-3 font-mono text-[12.5px] font-semibold text-cream"
+              onClick={() => inputRef.current?.click()}
+              className="mb-1 inline-block rounded-button border border-ink bg-ink px-[22px] py-3 font-mono text-[12.5px] font-semibold text-cream"
             >
-              Take a photo
-            </button>
-            <button
-              type="button"
-              onClick={() => libraryInputRef.current?.click()}
-              className="w-full max-w-[220px] rounded-button border border-ink bg-transparent px-[22px] py-3 font-mono text-[12.5px] font-semibold text-ink"
-            >
-              Choose from library
+              Take or choose a photo
             </button>
           </>
         )}
@@ -121,7 +98,10 @@ export function PhotoImportScreen() {
             </div>
             <button
               type="button"
-              onClick={() => setStage('pick')}
+              onClick={() => {
+                setStage('pick');
+                inputRef.current?.click();
+              }}
               className="mb-2.5 inline-block rounded-button border border-ink bg-ink px-[22px] py-3 font-mono text-[12.5px] font-semibold text-cream"
             >
               Try another photo
