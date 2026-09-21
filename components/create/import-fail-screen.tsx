@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CameraIcon, ChevronIcon, LinkIcon, PencilIcon } from '@/components/icons';
+import { ChevronIcon, LinkIcon, PencilIcon, WandIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { TopBar } from '@/components/top-bar';
 
@@ -43,10 +43,10 @@ export function ImportFailScreen() {
       onClick: () => router.push(p.draftId ? `/new/edit?draft=${p.draftId}` : '/new/edit?source=link'),
     },
     {
-      icon: CameraIcon,
-      label: 'Screenshot the page instead',
-      sub: 'Photo reading is often better than page reading.',
-      onClick: () => router.push('/new/edit?source=photo'),
+      icon: WandIcon,
+      label: 'Paste the page text instead',
+      sub: 'Select the recipe on the page, copy it, and paste it in.',
+      onClick: () => router.push('/new/paste'),
     },
     {
       icon: LinkIcon,

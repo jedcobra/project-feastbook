@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CameraIcon, LinkIcon, PencilIcon } from '@/components/icons';
+import { CameraIcon, LinkIcon, PencilIcon, WandIcon } from '@/components/icons';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
 import { draftProgress, listUnstartedDrafts, type RecipeDraft } from '@/lib/recipe-draft';
 
-const SOURCE_ICON = { manual: PencilIcon, link: LinkIcon, photo: CameraIcon } as const;
+const SOURCE_ICON = { manual: PencilIcon, link: LinkIcon, photo: CameraIcon, paste: WandIcon } as const;
 
 export function DraftsScreen() {
   const [drafts, setDrafts] = useState<RecipeDraft[] | null>(null);
