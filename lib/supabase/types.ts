@@ -40,7 +40,6 @@ export interface RecipeRow {
   serves: number;
   difficulty: DifficultyRow;
   tags: string[];
-  rating: number | null;
   created_at: string;
 }
 
@@ -123,6 +122,14 @@ export interface MadeItRow {
   caption: string;
   photo_url: string | null;
   created_at: string;
+}
+
+export interface RecipeRatingRow {
+  user_id: string;
+  recipe_id: string;
+  stars: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ShelfRow {

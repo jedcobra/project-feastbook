@@ -78,6 +78,7 @@ export interface Recipe {
   madeIt: number;
   saves: number;
   rating: number;
+  ratingCount: number;
   intro: string;
   visibility: Visibility;
   ingredients: IngredientSection[];

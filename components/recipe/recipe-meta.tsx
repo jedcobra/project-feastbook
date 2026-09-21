@@ -5,7 +5,7 @@ export function RecipeMeta({ recipe }: { recipe: Recipe }) {
     ['Time', recipe.time],
     ['Serves', recipe.serves],
     ['Level', recipe.difficulty],
-    ['Rating', `${recipe.rating} ★`],
+    ['Rating', recipe.ratingCount > 0 ? `${recipe.rating} ★` : '—'],
   ];
 
   return (

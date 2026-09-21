@@ -59,6 +59,8 @@ async function fetchProfileStatsByIds(ids: string[]): Promise<Map<string, Profil
 interface RecipeStats {
   made_it_count: number;
   save_count: number;
+  rating_avg: number | null;
+  rating_count: number;
 }
 
 interface RecipeRow {
@@ -70,7 +72,6 @@ interface RecipeRow {
   serves: number;
   difficulty: Recipe['difficulty'];
   tags: string[];
-  rating: number | null;
   author_id: string;
   visibility: Visibility;
 }
@@ -95,7 +96,8 @@ function mapRecipeSummary(row: RecipeRow, authorHandle: string, stats?: RecipeSt
     tags: row.tags,
     madeIt: stats?.made_it_count ?? 0,
     saves: stats?.save_count ?? 0,
-    rating: row.rating ?? 0,
+    rating: stats?.rating_avg ?? 0,
+    ratingCount: stats?.rating_count ?? 0,
     intro: row.intro,
     visibility: row.visibility,
     ingredients: [],
@@ -733,6 +735,34 @@ export async function setCooked(
   const { error } = await supabase.from('made_it').delete().eq('user_id', userId).eq('recipe_id', recipeId);
   if (error) {
     console.error('setCooked delete', error);
+    return false;
+  }
+  return true;
+}
+
+// The viewer's own star rating for a recipe, or 0 if they haven't rated it.
+export async function fetchMyRating(userId: string, recipeId: string): Promise<number> {
+  const { data } = await supabase
+    .from('recipe_ratings')
+    .select('stars')
+    .eq('user_id', userId)
+    .eq('recipe_id', recipeId)
+    .maybeSingle();
+  return data?.stars ?? 0;
+}
+
+// Sets (or changes) the viewer's own rating — one row per person per
+// recipe, so rating again just overwrites the old value rather than
+// stacking up duplicate ratings.
+export async function rateRecipe(userId: string, recipeId: string, stars: number): Promise<boolean> {
+  const { error } = await supabase
+    .from('recipe_ratings')
+    .upsert(
+      { user_id: userId, recipe_id: recipeId, stars, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,recipe_id' },
+    );
+  if (error) {
+    console.error('rateRecipe', error);
     return false;
   }
   return true;
