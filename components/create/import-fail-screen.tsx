@@ -46,7 +46,7 @@ export function ImportFailScreen() {
       icon: CameraIcon,
       label: 'Screenshot the page instead',
       sub: 'Photo reading is often better than page reading.',
-      onClick: () => router.push('/new/edit?source=photo'),
+      onClick: () => router.push('/new/photo'),
     },
     {
       icon: LinkIcon,
