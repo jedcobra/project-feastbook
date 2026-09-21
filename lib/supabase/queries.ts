@@ -1394,22 +1394,42 @@ export async function getOrCreateConversation(myId: string, otherId: string): Pr
   return data.id;
 }
 
-export async function fetchConversations(myId: string): Promise<ConversationSummary[]> {
-  const rows = (await fetchMyConversationRows(myId)).sort((a, b) =>
-    b.last_message_at.localeCompare(a.last_message_at),
-  );
-  if (rows.length === 0) return [];
+interface ConversationStateRow {
+  conversation_id: string;
+  archived: boolean;
+  deleted_at: string | null;
+}
 
-  const otherIds = rows.map((r) => (r.user_a_id === myId ? r.user_b_id : r.user_a_id));
+async function fetchMyConversationStates(myId: string): Promise<Map<string, ConversationStateRow>> {
+  const { data, error } = await supabase
+    .from('conversation_participant_state')
+    .select('conversation_id, archived, deleted_at')
+    .eq('profile_id', myId);
+  if (error) console.error('fetchMyConversationStates', error);
+  return new Map((data ?? []).map((r: ConversationStateRow) => [r.conversation_id, r]));
+}
+
+async function fetchConversationSummaries(myId: string, which: 'active' | 'archived'): Promise<ConversationSummary[]> {
+  const [rows, states] = await Promise.all([fetchMyConversationRows(myId), fetchMyConversationStates(myId)]);
+  const rowsInView = rows
+    .filter((r) => {
+      const state = states.get(r.id);
+      if (state?.deleted_at) return false;
+      return which === 'archived' ? !!state?.archived : !state?.archived;
+    })
+    .sort((a, b) => b.last_message_at.localeCompare(a.last_message_at));
+  if (rowsInView.length === 0) return [];
+
+  const otherIds = rowsInView.map((r) => (r.user_a_id === myId ? r.user_b_id : r.user_a_id));
   const [{ data: peopleRows }, stats, lastMessages, unreadCounts] = await Promise.all([
     supabase.from('profiles').select('id, name, handle, bio').in('id', otherIds),
     fetchProfileStatsByIds(otherIds),
-    fetchLastMessageByConversation(rows.map((r) => r.id)),
-    fetchUnreadCountByConversation(rows.map((r) => r.id), myId),
+    fetchLastMessageByConversation(rowsInView.map((r) => r.id)),
+    fetchUnreadCountByConversation(rowsInView.map((r) => r.id), myId),
   ]);
   const peopleById = new Map((peopleRows ?? []).map((p: ProfileRow) => [p.id, p]));
 
-  return rows.map((r) => {
+  return rowsInView.map((r) => {
     const otherId = r.user_a_id === myId ? r.user_b_id : r.user_a_id;
     const personRow = peopleById.get(otherId);
     return {
@@ -1422,6 +1442,48 @@ export async function fetchConversations(myId: string): Promise<ConversationSumm
       unread: unreadCounts.get(r.id) ?? 0,
     };
   });
+}
+
+export async function fetchConversations(myId: string): Promise<ConversationSummary[]> {
+  return fetchConversationSummaries(myId, 'active');
+}
+
+export async function fetchArchivedConversations(myId: string): Promise<ConversationSummary[]> {
+  return fetchConversationSummaries(myId, 'archived');
+}
+
+// Archiving and deleting are both just this participant's own view of the
+// conversation — see conversation_participant_state. A new message clears
+// both (via a trigger, since RLS wouldn't let this client-side write
+// reach the *other* participant's row).
+export async function setConversationArchived(
+  conversationId: string,
+  myId: string,
+  archived: boolean,
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('conversation_participant_state')
+    .upsert(
+      { conversation_id: conversationId, profile_id: myId, archived },
+      { onConflict: 'conversation_id,profile_id' },
+    );
+  if (error) {
+    console.error('setConversationArchived', error);
+    return false;
+  }
+  return true;
+}
+
+export async function deleteConversationForMe(conversationId: string, myId: string): Promise<boolean> {
+  const { error } = await supabase.from('conversation_participant_state').upsert(
+    { conversation_id: conversationId, profile_id: myId, deleted_at: new Date().toISOString() },
+    { onConflict: 'conversation_id,profile_id' },
+  );
+  if (error) {
+    console.error('deleteConversationForMe', error);
+    return false;
+  }
+  return true;
 }
 
 export async function fetchConversationPeer(conversationId: string, myId: string): Promise<Person | null> {
