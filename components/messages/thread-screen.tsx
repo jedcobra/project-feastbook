@@ -44,6 +44,18 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
     bottomRef.current?.scrollIntoView({ block: 'end' });
   }, [messages]);
 
+  // The keyboard opening shrinks the viewport without moving scroll
+  // position, so the messages you just had in view can end up hidden
+  // behind it — re-anchor to the bottom whenever that happens, so the
+  // most recent messages stay next to the composer while you type.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const rescroll = () => bottomRef.current?.scrollIntoView({ block: 'end' });
+    vv.addEventListener('resize', rescroll);
+    return () => vv.removeEventListener('resize', rescroll);
+  }, []);
+
   const handleSend = async () => {
     if (!draft.trim() || !profile || sending) return;
     setSending(true);
@@ -168,6 +180,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                   value={draft}
                   rows={1}
                   onChange={(e) => setDraft(e.target.value)}
+                  onFocus={() => bottomRef.current?.scrollIntoView({ block: 'end' })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
