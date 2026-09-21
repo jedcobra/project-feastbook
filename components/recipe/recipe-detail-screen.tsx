@@ -7,6 +7,7 @@ import { BookmarkIcon, MoreIcon, ShareIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { OwnerSheet } from '@/components/recipe/owner-sheet';
+import { ShareSheet } from '@/components/share/share-sheet';
 import { TopBar } from '@/components/top-bar';
 import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
 import { checkRecipeAccess, fetchRecipeFull, isSaved } from '@/lib/supabase/queries';
@@ -17,9 +18,9 @@ export function RecipeDetailScreen({ id }: { id: string }) {
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [access, setAccess] = useState<'checking' | 'ok' | 'private'>('checking');
   const [saved, setSavedState] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [ownerSheetOpen, setOwnerSheetOpen] = useState(false);
   const [shelfSheetOpen, setShelfSheetOpen] = useState(false);
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
 
   useEffect(() => {
     setAccess('checking');
@@ -40,16 +41,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
       setSavedState(false);
     }
   }, [profile, id]);
-
-  const share = async () => {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/r/${id}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard access can be denied — nothing else we can do about it.
-    }
-  };
 
   if (data === undefined || access === 'checking') {
     return (
@@ -101,7 +92,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
                 <BookmarkIcon size={14} />
               </OutlineBox>
             )}
-            <OutlineBox compact aria-label={copied ? 'Link copied' : 'Share'} onClick={share}>
+            <OutlineBox compact aria-label="Share" onClick={() => setShareSheetOpen(true)}>
               <ShareIcon size={14} />
             </OutlineBox>
             {isOwner && (
@@ -113,13 +104,9 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         }
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {copied && (
-          <div className="mx-5 mt-3 rounded-button border border-dashed border-rule px-3 py-1.5 text-center font-mono text-[11px] text-ink-mute">
-            Link copied — anyone can open it, signed in or not
-          </div>
-        )}
         <DocumentDetail recipe={data.recipe} author={data.author} />
       </div>
+      {shareSheetOpen && <ShareSheet recipe={data.recipe} onClose={() => setShareSheetOpen(false)} />}
       {ownerSheetOpen && (
         <OwnerSheet
           recipeId={id}
