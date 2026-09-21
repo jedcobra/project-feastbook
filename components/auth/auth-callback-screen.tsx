@@ -9,9 +9,10 @@ import { supabase } from '@/lib/supabase/client';
 // token itself and redirects here with a fresh session tucked in the URL —
 // the browser client picks it up automatically (detectSessionInUrl). That
 // session is only proof the link was valid, not something to act on: this
-// page drops it right away and points the person at the real sign-in form,
-// rather than quietly logging them in. If the session never shows up (an
-// expired or already-used link), it says so instead of hanging forever.
+// page drops it right away and points the person back at the landing
+// screen to sign in from there, rather than quietly logging them in. If
+// the session never shows up (an expired or already-used link), it says
+// so instead of hanging forever.
 export function AuthCallbackScreen() {
   const { user } = useAuth();
   const [status, setStatus] = useState<'waiting' | 'confirmed' | 'failed'>('waiting');
@@ -33,10 +34,10 @@ export function AuthCallbackScreen() {
           That confirmation link didn&rsquo;t go through — it may have expired or already been used.
         </p>
         <Link
-          href="/account/sign-in"
+          href="/account"
           className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
         >
-          Go to sign in
+          Back to Special Spoon
         </Link>
       </div>
     );
@@ -49,10 +50,10 @@ export function AuthCallbackScreen() {
           Your email is confirmed. Sign in to get started.
         </p>
         <Link
-          href="/account/sign-in"
+          href="/account"
           className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
         >
-          Sign in
+          Continue
         </Link>
       </div>
     );
