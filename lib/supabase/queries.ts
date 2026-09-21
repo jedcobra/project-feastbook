@@ -1656,20 +1656,38 @@ export async function fetchAccountDeleteImpact(
 
 // Deletes the profile row outright — every recipe, shelf, comment, save,
 // made_it entry, follow, and notification cascades from profiles.id, so
-// this one delete is what actually erases someone's content. It doesn't
-// (can't, client-side) delete the underlying auth.users row, so the
-// password is scrambled first to make the old credentials unusable.
+// this one delete is what actually erases someone's content. Deleting the
+// underlying auth.users row (which is what actually frees up the email
+// for a fresh signup) needs the service-role key, so that part happens
+// server-side via /api/account/delete — grab the access token before the
+// profile goes away, since that's what proves to that route who's asking.
 export async function deleteAccount(profileId: string): Promise<boolean> {
-  const { error: passwordError } = await supabase.auth.updateUser({
-    password: `${crypto.randomUUID()}${crypto.randomUUID()}`,
-  });
-  if (passwordError) console.error('deleteAccount: password scramble', passwordError);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { error } = await supabase.from('profiles').delete().eq('id', profileId);
   if (error) {
     console.error('deleteAccount: profile delete', error);
     return false;
   }
+
+  if (session?.access_token) {
+    try {
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) console.error('deleteAccount: auth user delete failed', await res.text());
+    } catch (err) {
+      console.error('deleteAccount: auth user delete request failed', err);
+    }
+  }
+
+  // The profile and everything it owns is already gone either way — that's
+  // the part the person actually asked for and can see. A failure past
+  // this point (no session, the route erroring) leaves a stray auth.users
+  // row behind but shouldn't make the UI report the deletion as failed.
   return true;
 }
 
