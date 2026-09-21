@@ -651,6 +651,44 @@ export async function setFollowing(followerId: string, followeeId: string, follo
   }
 }
 
+export async function hasCooked(userId: string, recipeId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('made_it')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('recipe_id', recipeId)
+    .maybeSingle();
+  return !!data;
+}
+
+// Marks (or unmarks) a recipe as cooked — the same made_it row postComment's
+// "I cooked it" checkbox writes to, so a one-tap mark on the recipe page and
+// a cooked note are the same underlying action. Idempotent: cooking the
+// same recipe again doesn't add a second row or a second notification.
+export async function setCooked(
+  userId: string,
+  recipeId: string,
+  cooked: boolean,
+  recipeAuthorId?: string,
+): Promise<boolean> {
+  if (cooked) {
+    if (await hasCooked(userId, recipeId)) return true;
+    const { error } = await supabase.from('made_it').insert({ user_id: userId, recipe_id: recipeId });
+    if (error) {
+      console.error('setCooked insert', error);
+      return false;
+    }
+    if (recipeAuthorId) await notify(recipeAuthorId, userId, 'cooked', { recipeId });
+    return true;
+  }
+  const { error } = await supabase.from('made_it').delete().eq('user_id', userId).eq('recipe_id', recipeId);
+  if (error) {
+    console.error('setCooked delete', error);
+    return false;
+  }
+  return true;
+}
+
 export async function isSaved(userId: string, recipeId: string) {
   const { data } = await supabase
     .from('saves')
@@ -709,17 +747,7 @@ export async function postComment(
   }
 
   if (opts.cooked) {
-    const { data: existingMadeIt } = await supabase
-      .from('made_it')
-      .select('id')
-      .eq('user_id', authorId)
-      .eq('recipe_id', recipeId)
-      .maybeSingle();
-    if (!existingMadeIt) {
-      const { error: madeItError } = await supabase.from('made_it').insert({ user_id: authorId, recipe_id: recipeId });
-      if (madeItError) console.error('postComment: made_it insert', madeItError);
-    }
-    if (opts.recipeAuthorId) await notify(opts.recipeAuthorId, authorId, 'cooked', { recipeId });
+    await setCooked(authorId, recipeId, true, opts.recipeAuthorId);
   }
 
   return {

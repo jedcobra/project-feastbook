@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { CommentsBlock } from '@/components/recipe/comments-block';
 import { CookButton } from '@/components/recipe/cook-button';
+import { CookedMarker } from '@/components/recipe/cooked-marker';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
 import { Label } from '@/components/label';
 import { MethodBlock } from '@/components/recipe/method-block';
@@ -36,6 +37,8 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
         </Link>
 
         <RecipeMeta recipe={recipe} />
+
+        <CookedMarker recipeId={recipe.id} authorId={author.id} madeIt={recipe.madeIt} />
 
         {recipe.intro && (
           <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">

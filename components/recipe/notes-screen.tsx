@@ -7,7 +7,7 @@ import { Avatar } from '@/components/avatar';
 import { HeartIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { fetchRecipeFull, postComment, toggleCommentLike, deleteComment } from '@/lib/supabase/queries';
+import { fetchRecipeFull, hasCooked, postComment, toggleCommentLike, deleteComment } from '@/lib/supabase/queries';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 type Filter = 'all' | 'cooked' | 'questions';
@@ -21,10 +21,18 @@ export function NotesScreen({ id }: { id: string }) {
   const [draft, setDraft] = useState('');
   const [cookedMark, setCookedMark] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRecipeFull(id, profile?.id ?? null).then(setData);
   }, [id, profile?.id]);
+
+  // Pre-check the box if this recipe's already marked cooked (e.g. from the
+  // one-tap "I cooked it" on the recipe page itself) — otherwise it'd look
+  // unchecked even though the recipe already shows as cooked.
+  useEffect(() => {
+    if (profile) hasCooked(profile.id, id).then(setCookedMark);
+  }, [profile, id]);
 
   if (data === undefined) {
     return (
@@ -74,19 +82,26 @@ export function NotesScreen({ id }: { id: string }) {
   const handlePost = async () => {
     if (!draft.trim() || !profile || posting) return;
     setPosting(true);
-    const comment = await postComment(profile.id, id, draft.trim(), {
-      parentId: replyTo?.id,
-      cooked: !replyTo && cookedMark,
-      recipeAuthorId: data.author.id,
-    });
+    setPostError(null);
+    let comment: RecipeComment | null = null;
+    try {
+      comment = await postComment(profile.id, id, draft.trim(), {
+        parentId: replyTo?.id,
+        cooked: !replyTo && cookedMark,
+        recipeAuthorId: data.author.id,
+      });
+    } catch (err) {
+      console.error('handlePost', err);
+    }
     setPosting(false);
     if (comment) {
       updateComments((comments) =>
-        replyTo ? comments.map((c) => (c.id === replyTo.id ? { ...c, replies: [...c.replies, comment] } : c)) : [comment, ...comments],
+        replyTo ? comments.map((c) => (c.id === replyTo.id ? { ...c, replies: [...c.replies, comment!] } : c)) : [comment!, ...comments],
       );
       setDraft('');
       setReplyTo(null);
-      setCookedMark(false);
+    } else {
+      setPostError("Couldn't post that — check your connection and try again.");
     }
   };
 
@@ -152,6 +167,7 @@ export function NotesScreen({ id }: { id: string }) {
 
       {profile && (
         <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
+          {postError && <div className="mb-2 font-mono text-[11px] text-accent">{postError}</div>}
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] text-ink-mute">
               <span>Replying to {replyTo.by}</span>
