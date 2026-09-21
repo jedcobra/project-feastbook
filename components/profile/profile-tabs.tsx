@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { BookmarkIcon, ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
-import { deleteRecipe, fetchRecipeDeleteImpact } from '@/lib/supabase/queries';
+import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import type { Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
@@ -15,17 +15,23 @@ export function ProfileTabs({
   recipes,
   savedRecipes = [],
   cookedRecipes = [],
+  archivedShelfCount = 0,
   firstName,
   isOwn,
   onRecipeDeleted,
+  onShelfRemoved,
+  onShelfArchived,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
   savedRecipes?: Recipe[];
   cookedRecipes?: Recipe[];
+  archivedShelfCount?: number;
   firstName: string;
   isOwn: boolean;
   onRecipeDeleted?: (recipeId: string) => void;
+  onShelfRemoved?: (shelfId: string) => void;
+  onShelfArchived?: (shelfId: string) => void;
 }) {
   const [tab, setTab] = useState<TabId>('recipes');
 
@@ -62,37 +68,97 @@ export function ProfileTabs({
           onRecipeDeleted={onRecipeDeleted}
         />
       )}
-      {tab === 'shelves' && <ShelvesTab shelves={shelves} isOwn={isOwn} />}
+      {tab === 'shelves' && (
+        <ShelvesTab
+          shelves={shelves}
+          isOwn={isOwn}
+          archivedShelfCount={archivedShelfCount}
+          onShelfRemoved={onShelfRemoved}
+          onShelfArchived={onShelfArchived}
+        />
+      )}
       {tab === 'cooked' && <CookedTab recipes={cookedRecipes} firstName={firstName} />}
     </div>
   );
 }
 
-function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
+// Own shelves can be swiped left to archive (instant, reversible from the
+// Archived list) or delete (a shelf's recipes aren't going anywhere, so a
+// swipe plus one confirm tap is enough — no async impact check needed,
+// unlike a recipe). Someone else's shelves aren't yours to touch here.
+function ShelvesTab({
+  shelves,
+  isOwn,
+  archivedShelfCount,
+  onShelfRemoved,
+  onShelfArchived,
+}: {
+  shelves: Shelf[];
+  isOwn: boolean;
+  archivedShelfCount: number;
+  onShelfRemoved?: (shelfId: string) => void;
+  onShelfArchived?: (shelfId: string) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  const handleArchive = async (shelfId: string) => {
+    onShelfRemoved?.(shelfId);
+    onShelfArchived?.(shelfId);
+    await setShelfArchived(shelfId, true);
+  };
+
+  const confirmingShelf = confirmingId ? shelves.find((s) => s.id === confirmingId) : undefined;
+
   return (
     <div className="mx-5 pb-8">
-      {shelves.map((shelf) => (
-        <Link
-          key={shelf.id}
-          href={`/shelf/${shelf.id}`}
-          className="flex items-start gap-3.5 border-b border-dashed border-rule py-3.5"
-        >
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
-            <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
-            <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
-            <div className="flex flex-wrap gap-1.5">
-              {shelf.recipes.slice(0, 3).map((r) => (
-                <Tag key={r.id}>{r.title}</Tag>
-              ))}
-              {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
+      {isOwn && archivedShelfCount > 0 && (
+        <div className="flex justify-end py-2">
+          <Link href="/archived-shelves" className="font-mono text-[11px] text-ink-mute">
+            Archived ({archivedShelfCount})
+          </Link>
+        </div>
+      )}
+      {shelves.map((shelf) => {
+        const row = (
+          <Link
+            href={`/shelf/${shelf.id}`}
+            className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5"
+          >
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
+              <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
             </div>
-          </div>
-          <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
-        </Link>
-      ))}
+            <div className="min-w-0 flex-1">
+              <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
+              <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
+              <div className="flex flex-wrap gap-1.5">
+                {shelf.recipes.slice(0, 3).map((r) => (
+                  <Tag key={r.id}>{r.title}</Tag>
+                ))}
+                {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
+              </div>
+            </div>
+            <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
+          </Link>
+        );
+
+        if (!isOwn) return <div key={shelf.id}>{row}</div>;
+
+        return (
+          <SwipeableRow
+            key={shelf.id}
+            open={openId === shelf.id}
+            onOpen={() => setOpenId(shelf.id)}
+            onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
+            actions={[
+              { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
+              { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
+            ]}
+          >
+            {row}
+          </SwipeableRow>
+        );
+      })}
       {isOwn && (
         <Link
           href="/new-shelf"
@@ -102,6 +168,75 @@ function ShelvesTab({ shelves, isOwn }: { shelves: Shelf[]; isOwn: boolean }) {
           New shelf
         </Link>
       )}
+
+      {confirmingShelf && (
+        <DeleteShelfConfirm
+          shelf={confirmingShelf}
+          onCancel={() => setConfirmingId(null)}
+          onDeleted={() => {
+            setConfirmingId(null);
+            onShelfRemoved?.(confirmingShelf.id);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Deleting a shelf just un-groups its recipes — they stay in the
+// cookbook — so the confirm copy says that up front rather than making a
+// swipe feel as risky as deleting a recipe outright.
+function DeleteShelfConfirm({
+  shelf,
+  onCancel,
+  onDeleted,
+}: {
+  shelf: Shelf;
+  onCancel: () => void;
+  onDeleted: () => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    const ok = await deleteShelf(shelf.id);
+    setDeleting(false);
+    if (ok) onDeleted();
+  };
+
+  return (
+    <div className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30" onClick={onCancel}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
+      >
+        <h3 className="mb-2 flex items-center gap-2 font-display text-[17px] font-bold text-ink">
+          <TrashIcon size={16} />
+          Delete &ldquo;{shelf.title}&rdquo;?
+        </h3>
+        <div className="mb-3.5 font-mono text-[11.5px] leading-[1.55] text-ink-mute">
+          {shelf.count > 0
+            ? `The ${shelf.count} recipe${shelf.count === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
+            : 'This can’t be undone.'}
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+          >
+            Keep it
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+          >
+            {deleting ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

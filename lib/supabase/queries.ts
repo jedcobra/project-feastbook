@@ -425,36 +425,40 @@ export async function fetchProfileByHandle(handle: string) {
     supabase
       .from('shelves')
       .select('id, title, subtitle, visibility, shelf_recipes(recipe_id, position, recipes(title))')
-      .eq('owner_id', profileRow.id),
+      .eq('owner_id', profileRow.id)
+      .is('archived_at', null),
   ]);
 
   const person = mapPerson(profileRow, stats.get(profileRow.id));
   const recipes = await mapRecipeRows((recipeRows ?? []) as RecipeRow[]);
-
-  const shelves: Shelf[] = (shelfRows ?? []).map(
-    (s: {
-      id: string;
-      title: string;
-      subtitle: string;
-      visibility: ShelfVisibility;
-      shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
-    }) => {
-      const sorted = [...s.shelf_recipes].sort((a, b) => a.position - b.position);
-      return {
-        id: s.id,
-        title: s.title,
-        subtitle: s.subtitle,
-        visibility: s.visibility,
-        count: sorted.length,
-        recipes: sorted.map((sr) => ({
-          id: sr.recipe_id,
-          title: unwrapOne(sr.recipes)?.title ?? '',
-        })),
-      };
-    },
-  );
+  const shelves = mapShelfRows(shelfRows ?? []);
 
   return { person, recipes, shelves };
+}
+
+interface ShelfRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  visibility: ShelfVisibility;
+  shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
+}
+
+function mapShelfRows(rows: ShelfRow[]): Shelf[] {
+  return rows.map((s) => {
+    const sorted = [...s.shelf_recipes].sort((a, b) => a.position - b.position);
+    return {
+      id: s.id,
+      title: s.title,
+      subtitle: s.subtitle,
+      visibility: s.visibility,
+      count: sorted.length,
+      recipes: sorted.map((sr) => ({
+        id: sr.recipe_id,
+        title: unwrapOne(sr.recipes)?.title ?? '',
+      })),
+    };
+  });
 }
 
 // Recipes a user has bookmarked, most recently saved first — these aren't
@@ -855,6 +859,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
     .from('shelves')
     .select('id, title, subtitle, visibility, shelf_recipes(recipe_id)')
     .eq('owner_id', ownerId)
+    .is('archived_at', null)
     .order('created_at', { ascending: true });
   if (error || !data) {
     console.error('fetchShelvesForOwner', error);
@@ -870,6 +875,33 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
       recipes: [],
     }),
   );
+}
+
+// Archived shelves — hidden from the Cookbook's Shelves tab and the
+// add-to-shelf picker, visible only here, restorable from here.
+export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
+  const { data, error } = await supabase
+    .from('shelves')
+    .select('id, title, subtitle, visibility, shelf_recipes(recipe_id, position, recipes(title))')
+    .eq('owner_id', ownerId)
+    .not('archived_at', 'is', null);
+  if (error || !data) {
+    console.error('fetchArchivedShelves', error);
+    return [];
+  }
+  return mapShelfRows(data);
+}
+
+export async function setShelfArchived(shelfId: string, archived: boolean): Promise<boolean> {
+  const { error } = await supabase
+    .from('shelves')
+    .update({ archived_at: archived ? new Date().toISOString() : null })
+    .eq('id', shelfId);
+  if (error) {
+    console.error('setShelfArchived', error);
+    return false;
+  }
+  return true;
 }
 
 // Replaces which of the user's own shelves a recipe sits on in one go, and

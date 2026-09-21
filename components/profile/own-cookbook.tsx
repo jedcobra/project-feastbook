@@ -6,7 +6,12 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { EmptyCookbook } from '@/components/profile/empty-cookbook';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
-import { fetchCookedRecipes, fetchProfileByHandle, fetchSavedRecipes } from '@/lib/supabase/queries';
+import {
+  fetchArchivedShelves,
+  fetchCookedRecipes,
+  fetchProfileByHandle,
+  fetchSavedRecipes,
+} from '@/lib/supabase/queries';
 import type { Person, Recipe, Shelf } from '@/lib/types';
 
 // The real, auth-backed Cookbook screen.
@@ -15,17 +20,20 @@ export function OwnCookbook() {
   const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
+  const [archivedShelfCount, setArchivedShelfCount] = useState(0);
 
   useEffect(() => {
     if (!profile) {
       setData(null);
       setSavedRecipes([]);
       setCookedRecipes([]);
+      setArchivedShelfCount(0);
       return;
     }
     fetchProfileByHandle(profile.handle).then(setData);
     fetchSavedRecipes(profile.id).then(setSavedRecipes);
     fetchCookedRecipes(profile.id).then(setCookedRecipes);
+    fetchArchivedShelves(profile.id).then((rows) => setArchivedShelfCount(rows.length));
   }, [profile]);
 
   if (loading) {
@@ -76,11 +84,16 @@ export function OwnCookbook() {
         recipes={data.recipes}
         savedRecipes={savedRecipes}
         cookedRecipes={cookedRecipes}
+        archivedShelfCount={archivedShelfCount}
         firstName={data.person.name.split(' ')[0]}
         isOwn
         onRecipeDeleted={(recipeId) =>
           setData((cur) => (cur ? { ...cur, recipes: cur.recipes.filter((r) => r.id !== recipeId) } : cur))
         }
+        onShelfRemoved={(shelfId) =>
+          setData((cur) => (cur ? { ...cur, shelves: cur.shelves.filter((s) => s.id !== shelfId) } : cur))
+        }
+        onShelfArchived={() => setArchivedShelfCount((n) => n + 1)}
       />
     </div>
   );
