@@ -1503,6 +1503,55 @@ export async function markConversationRead(conversationId: string, myId: string)
   if (error) console.error('markConversationRead', error);
 }
 
+export async function deleteMessage(messageId: string): Promise<boolean> {
+  const { error } = await supabase.from('messages').delete().eq('id', messageId);
+  if (error) {
+    console.error('deleteMessage', error);
+    return false;
+  }
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Blocking
+// ─────────────────────────────────────────────────────────────
+export async function isBlockedByMe(myId: string, otherId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('blocked_users')
+    .select('blocker_id')
+    .eq('blocker_id', myId)
+    .eq('blocked_id', otherId)
+    .maybeSingle();
+  return !!data;
+}
+
+// Blocking also drops any existing follow between the two of you — RLS
+// only lets each side delete the follow row they can already touch, so
+// this is two deletes, not a mutual "delete anything" grant.
+export async function blockUser(myId: string, otherId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('blocked_users')
+    .upsert({ blocker_id: myId, blocked_id: otherId }, { onConflict: 'blocker_id,blocked_id', ignoreDuplicates: true });
+  if (error) {
+    console.error('blockUser', error);
+    return false;
+  }
+  await Promise.all([
+    supabase.from('follows').delete().eq('follower_id', myId).eq('followee_id', otherId),
+    supabase.from('follows').delete().eq('follower_id', otherId).eq('followee_id', myId),
+  ]);
+  return true;
+}
+
+export async function unblockUser(myId: string, otherId: string): Promise<boolean> {
+  const { error } = await supabase.from('blocked_users').delete().eq('blocker_id', myId).eq('blocked_id', otherId);
+  if (error) {
+    console.error('unblockUser', error);
+    return false;
+  }
+  return true;
+}
+
 export async function countUnreadMessages(myId: string): Promise<number> {
   const rows = await fetchMyConversationRows(myId);
   if (rows.length === 0) return 0;
