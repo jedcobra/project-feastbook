@@ -12,23 +12,23 @@ import type { Recipe } from '@/lib/types';
 // instead of at build time.
 export function CookingScreenLoader({ id }: { id: string }) {
   const router = useRouter();
-  const [recipe, setRecipe] = useState<Recipe | null | undefined>(undefined);
+  const [data, setData] = useState<{ recipe: Recipe; authorId: string } | null | undefined>(undefined);
 
   useEffect(() => {
-    fetchRecipeFull(id).then((data) => {
-      if (!data) {
-        setRecipe(null);
+    fetchRecipeFull(id).then((result) => {
+      if (!result) {
+        setData(null);
         return;
       }
-      if (data.recipe.steps.length === 0) {
+      if (result.recipe.steps.length === 0) {
         router.replace(`/recipe/${id}`);
         return;
       }
-      setRecipe(data.recipe);
+      setData({ recipe: result.recipe, authorId: result.author.id });
     });
   }, [id, router]);
 
-  if (recipe === undefined) {
+  if (data === undefined) {
     return (
       <div className="flex flex-1 items-center justify-center bg-ink">
         <span className="font-mono text-[12px] text-cream/50">Loading…</span>
@@ -36,7 +36,7 @@ export function CookingScreenLoader({ id }: { id: string }) {
     );
   }
 
-  if (recipe === null) {
+  if (data === null) {
     return (
       <div className="flex flex-1 items-center justify-center bg-ink px-8 text-center">
         <span className="font-mono text-[12px] text-cream/50">Recipe not found.</span>
@@ -44,5 +44,5 @@ export function CookingScreenLoader({ id }: { id: string }) {
     );
   }
 
-  return <CookingScreen recipe={recipe} />;
+  return <CookingScreen recipe={data.recipe} authorId={data.authorId} />;
 }

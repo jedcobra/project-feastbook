@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/components/auth/auth-provider';
 import { BackIcon, ChevronIcon, XIcon } from '@/components/icons';
 import { getKeepAwake } from '@/lib/keep-awake';
+import { setCooked } from '@/lib/supabase/queries';
 import type { Recipe } from '@/lib/types';
 
 function formatTime(seconds: number) {
@@ -12,11 +14,13 @@ function formatTime(seconds: number) {
 
 // Full-screen, hands-free step-by-step cooking. Dark indigo, no tab bar —
 // this route lives outside the (tabs) group.
-export function CookingScreen({ recipe }: { recipe: Recipe }) {
+export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: string }) {
   const router = useRouter();
+  const { profile } = useAuth();
   const [step, setStep] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [finishing, setFinishing] = useState(false);
 
   const current = recipe.steps[step];
   const total = recipe.steps.length;
@@ -71,13 +75,27 @@ export function CookingScreen({ recipe }: { recipe: Recipe }) {
     setTimerActive(true);
   };
 
+  // Reaching "Done" on the last step is what actually counts as having
+  // cooked it — backing out early via the close button doesn't. Same
+  // made_it row the one-tap button and a cooked note write to.
+  const finish = async () => {
+    if (finishing) return;
+    if (!profile) {
+      exit();
+      return;
+    }
+    setFinishing(true);
+    await setCooked(profile.id, recipe.id, true, authorId);
+    exit();
+  };
+
   const goNext = () => {
     if (step < total - 1) {
       setStep((s) => s + 1);
       setTimerActive(false);
       setTimeLeft(null);
     } else {
-      exit();
+      finish();
     }
   };
 
@@ -199,9 +217,10 @@ export function CookingScreen({ recipe }: { recipe: Recipe }) {
         <button
           type="button"
           onClick={goNext}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-cream bg-cream py-[13px] font-mono text-[13px] font-semibold text-ink"
+          disabled={finishing}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-cream bg-cream py-[13px] font-mono text-[13px] font-semibold text-ink disabled:opacity-60"
         >
-          {step < total - 1 ? 'Next step' : 'Done'}
+          {step < total - 1 ? 'Next step' : finishing ? 'Marking it cooked…' : 'Done'}
           <ChevronIcon size={16} weight={2} />
         </button>
       </div>
