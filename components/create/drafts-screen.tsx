@@ -2,19 +2,30 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CameraIcon, LinkIcon, PencilIcon, WandIcon } from '@/components/icons';
+import { CameraIcon, LinkIcon, PencilIcon, TrashIcon, WandIcon } from '@/components/icons';
+import { SwipeableRow } from '@/components/swipeable-row';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
-import { draftProgress, listUnstartedDrafts, type RecipeDraft } from '@/lib/recipe-draft';
+import { deleteDraft, draftProgress, listUnstartedDrafts, type RecipeDraft } from '@/lib/recipe-draft';
 
 const SOURCE_ICON = { manual: PencilIcon, link: LinkIcon, photo: CameraIcon, paste: WandIcon } as const;
 
 export function DraftsScreen() {
   const [drafts, setDrafts] = useState<RecipeDraft[] | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     setDrafts(listUnstartedDrafts());
   }, []);
+
+  const confirmingDraft = confirmingId ? (drafts ?? []).find((d) => d.id === confirmingId) : undefined;
+
+  const handleDelete = (id: string) => {
+    deleteDraft(id);
+    setDrafts((ds) => (ds ? ds.filter((d) => d.id !== id) : ds));
+    setConfirmingId(null);
+  };
 
   return (
     <>
@@ -33,11 +44,10 @@ export function DraftsScreen() {
           const Icon = SOURCE_ICON[draft.source];
           const pct = draftProgress(draft);
           const title = draft.title.trim() || 'Untitled recipe';
-          return (
+          const row = (
             <Link
-              key={draft.id}
               href={`/new/edit?draft=${draft.id}`}
-              className={`block border-b border-dashed border-rule py-3.5 ${i === 0 ? 'border-t' : ''}`}
+              className={`block border-b border-dashed border-rule bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
             >
               <div className="mb-1.5 flex items-baseline gap-2">
                 <h4
@@ -59,8 +69,56 @@ export function DraftsScreen() {
               </div>
             </Link>
           );
+
+          return (
+            <SwipeableRow
+              key={draft.id}
+              open={openId === draft.id}
+              onOpen={() => setOpenId(draft.id)}
+              onClose={() => setOpenId((cur) => (cur === draft.id ? null : cur))}
+              actions={[{ label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(draft.id) }]}
+            >
+              {row}
+            </SwipeableRow>
+          );
         })}
       </div>
+
+      {confirmingDraft && (
+        <div
+          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30"
+          onClick={() => setConfirmingId(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
+          >
+            <h3 className="mb-2 flex items-center gap-2 font-display text-[17px] font-bold text-ink">
+              <TrashIcon size={16} />
+              Discard &ldquo;{confirmingDraft.title.trim() || 'Untitled recipe'}&rdquo;?
+            </h3>
+            <div className="mb-3.5 font-mono text-[11.5px] leading-[1.55] text-ink-mute">
+              This can&rsquo;t be undone — everything typed into it goes with it.
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmingId(null)}
+                className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(confirmingDraft.id)}
+                className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
