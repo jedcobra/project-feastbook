@@ -7,6 +7,7 @@ import { CookRow } from '@/components/discover/cooks-to-follow';
 import { ChevronIcon, SearchIcon, XIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { Tag } from '@/components/tag';
+import { parseDurationMinutes } from '@/lib/format';
 import { addRecentSearch, clearRecentSearches, listRecentSearches, removeRecentSearch } from '@/lib/search-history';
 import { searchAll, type SearchResults } from '@/lib/supabase/queries';
 
@@ -55,8 +56,8 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
 
   const recipes = results.recipes.filter((r) => {
     if (filters.has('under30')) {
-      const mins = parseInt(r.time, 10);
-      if (!(Number.isFinite(mins) && mins <= 30)) return false;
+      const mins = parseDurationMinutes(r.time);
+      if (!(mins > 0 && mins <= 30)) return false;
     }
     if (filters.has('easy') && r.difficulty !== 'Easy') return false;
     return true;

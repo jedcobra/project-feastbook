@@ -1,4 +1,4 @@
-import { formatRelativeTime } from '@/lib/format';
+import { formatRelativeTime, MAX_SERVINGS } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
 import type { NotificationPrefs } from '@/lib/supabase/types';
@@ -1037,7 +1037,7 @@ function recipeFields(draft: RecipeDraft, visibility: Visibility) {
     subtitle: draft.subtitle.trim(),
     intro: draft.intro.trim(),
     time: draft.time.trim(),
-    serves: parseInt(draft.serves, 10) || 1,
+    serves: Math.min(MAX_SERVINGS, Math.max(1, parseInt(draft.serves, 10) || 1)),
     difficulty: draft.level,
     tags: draft.tags,
     visibility,
@@ -1082,7 +1082,7 @@ async function insertRecipeContent(recipeId: string, draft: Pick<RecipeDraft, 's
         recipe_id: recipeId,
         position: i,
         title: s.t.trim(),
-        description: s.d.trim(),
+        description: s.d.trim().slice(0, 300),
         timer_minutes: s.timer.trim() ? parseInt(s.timer, 10) || null : null,
       })),
     );

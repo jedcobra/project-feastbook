@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { ChevronIcon, TrashIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
+import { parseDurationMinutes } from '@/lib/format';
 import { deleteShelf, fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
 import { shelfVisibilityLabel } from '@/lib/visibility';
 
@@ -35,7 +36,10 @@ export function ShelfDetailScreen({ id }: { id: string }) {
   const sorted = useMemo(() => {
     if (!shelf) return [];
     if (sort === 'title') return [...shelf.recipes].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === 'time') return [...shelf.recipes].sort((a, b) => (parseInt(a.time) || 999) - (parseInt(b.time) || 999));
+    if (sort === 'time')
+      return [...shelf.recipes].sort(
+        (a, b) => (parseDurationMinutes(a.time) || 999) - (parseDurationMinutes(b.time) || 999),
+      );
     return shelf.recipes;
   }, [shelf, sort]);
 

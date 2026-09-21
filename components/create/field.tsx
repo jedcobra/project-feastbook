@@ -12,6 +12,9 @@ interface FieldProps {
   hint?: string;
   type?: string;
   autoComplete?: string;
+  min?: number;
+  max?: number;
+  maxLength?: number;
 }
 
 // Underline field — real input, no border box. The composer's signature
@@ -28,6 +31,9 @@ export function Field({
   hint,
   type = 'text',
   autoComplete,
+  min,
+  max,
+  maxLength,
 }: FieldProps) {
   const inputClassName = `block w-full resize-none border-none bg-transparent py-1.5 outline-none ${
     mono ? 'font-mono' : 'font-display'
@@ -52,6 +58,9 @@ export function Field({
         <input
           type={type}
           autoComplete={autoComplete}
+          min={min}
+          max={max}
+          maxLength={maxLength}
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}

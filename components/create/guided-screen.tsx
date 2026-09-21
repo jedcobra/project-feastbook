@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Field } from '@/components/create/field';
+import { TimeField } from '@/components/create/time-field';
 import { ChevronIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
+import { clampServingsInput } from '@/lib/format';
 import { createDraft, loadDraft, saveDraft, type RecipeDraft } from '@/lib/recipe-draft';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
@@ -249,8 +251,16 @@ export function GuidedScreen() {
 
         {cur.key === 'meta' ? (
           <div>
-            <Field label="Time" value={values.time} onChange={(v) => set('time', v)} placeholder="25 min" />
-            <Field label="Serves" value={values.serves} onChange={(v) => set('serves', v)} placeholder="2" />
+            <TimeField value={values.time} onChange={(v) => set('time', v)} />
+            <Field
+              label="Serves"
+              type="number"
+              min={1}
+              max={20}
+              value={values.serves}
+              onChange={(v) => set('serves', clampServingsInput(v))}
+              placeholder="2"
+            />
             <div>
               <Label className="mb-1.5 text-[9px]">Level</Label>
               <div className="flex gap-1.5">

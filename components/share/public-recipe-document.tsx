@@ -60,7 +60,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
               {section.items.map((item, i) => (
                 <div key={i} className="flex gap-2.5 border-t border-dotted border-rule py-1.5">
                   <span className="w-16 flex-shrink-0 font-mono text-[11px] text-ink-mute">{item.q}</span>
-                  <span className="font-mono text-[12px] text-ink">{item.i}</span>
+                  <span className="min-w-0 flex-1 break-words font-mono text-[12px] text-ink">{item.i}</span>
                 </div>
               ))}
             </div>

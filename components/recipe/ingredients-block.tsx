@@ -96,7 +96,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
                   {displayQuantity}
                 </span>
                 <span
-                  className={`flex-1 font-mono text-[12px] leading-snug text-ink ${
+                  className={`min-w-0 flex-1 break-words font-mono text-[12px] leading-snug text-ink ${
                     done ? 'line-through' : ''
                   }`}
                 >

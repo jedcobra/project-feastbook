@@ -190,7 +190,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
             {allIngredients.slice(0, 4).map((item, i) => (
               <div key={i} className="flex gap-2.5 py-1 font-mono text-[12px]">
                 <span className="w-[60px] flex-shrink-0 text-cream/35">{item.q}</span>
-                <span className="text-cream/70">{item.i}</span>
+                <span className="min-w-0 flex-1 break-words text-cream/70">{item.i}</span>
               </div>
             ))}
             {allIngredients.length > 4 && (

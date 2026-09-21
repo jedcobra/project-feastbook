@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Field } from '@/components/create/field';
+import { TimeField } from '@/components/create/time-field';
 import { DragIcon, SaveIcon, TimerIcon, WandIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
+import { clampServingsInput } from '@/lib/format';
 import {
   createDraft,
   draftFromRecipe,
@@ -23,6 +25,7 @@ import { fetchRecipeFull } from '@/lib/supabase/queries';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
+const STEP_DESCRIPTION_LIMIT = 300;
 
 export function ComposerScreen() {
   const router = useRouter();
@@ -160,11 +163,14 @@ export function ComposerScreen() {
         />
 
         <div className="mb-1.5 grid grid-cols-3 gap-2.5">
-          <Field label="Time" value={draft.time} onChange={(v) => update({ time: v })} placeholder="25 min" size={12} />
+          <TimeField value={draft.time} onChange={(v) => update({ time: v })} />
           <Field
             label="Serves"
+            type="number"
+            min={1}
+            max={20}
             value={draft.serves}
-            onChange={(v) => update({ serves: v })}
+            onChange={(v) => update({ serves: clampServingsInput(v) })}
             placeholder="2"
             size={12}
           />
@@ -261,10 +267,16 @@ export function ComposerScreen() {
                   <textarea
                     value={step.d}
                     rows={2}
+                    maxLength={STEP_DESCRIPTION_LIMIT}
                     onChange={(e) => setStep(i, 'd', e.target.value)}
                     placeholder="What to do, and what it should look like when it's right."
                     className="block w-full resize-none border-none bg-transparent p-0 font-mono text-[12px] leading-[1.55] text-ink-mute outline-none"
                   />
+                  {step.d.length >= STEP_DESCRIPTION_LIMIT - 40 && (
+                    <div className="text-right font-mono text-[9px] text-ink-mute">
+                      {step.d.length}/{STEP_DESCRIPTION_LIMIT}
+                    </div>
+                  )}
                   <div className="mt-1 flex items-center gap-1.5">
                     <TimerIcon size={11} className="text-ink-mute" />
                     <input
