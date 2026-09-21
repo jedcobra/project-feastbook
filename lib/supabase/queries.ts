@@ -898,6 +898,18 @@ export async function removeRecipeFromShelf(shelfId: string, recipeId: string) {
   if (error) console.error('removeRecipeFromShelf', error);
 }
 
+// Deletes the shelf itself — shelf_recipes links cascade via their FK, but
+// the recipes on it are untouched, just no longer filed here (same as
+// removeRecipeFromShelf, this doesn't re-sync the separate `saves` table).
+export async function deleteShelf(shelfId: string): Promise<boolean> {
+  const { error } = await supabase.from('shelves').delete().eq('id', shelfId);
+  if (error) {
+    console.error('deleteShelf', error);
+    return false;
+  }
+  return true;
+}
+
 function recipeFields(draft: RecipeDraft, visibility: Visibility) {
   return {
     title: draft.title.trim() || 'Untitled recipe',

@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { ChevronIcon } from '@/components/icons';
+import { ChevronIcon, TrashIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
+import { deleteShelf, fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
 import { shelfVisibilityLabel } from '@/lib/visibility';
 
 type SortKey = 'added' | 'title' | 'time';
@@ -17,10 +18,13 @@ const SORTS: { key: SortKey; label: string }[] = [
 ];
 
 export function ShelfDetailScreen({ id }: { id: string }) {
+  const router = useRouter();
   const { profile } = useAuth();
   const [shelf, setShelf] = useState<ShelfDetail | null | undefined>(undefined);
   const [sort, setSort] = useState<SortKey>('added');
   const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchShelfDetail(id).then(setShelf);
@@ -38,6 +42,16 @@ export function ShelfDetailScreen({ id }: { id: string }) {
   const handleRemove = async (recipeId: string) => {
     setShelf((s) => (s ? { ...s, recipes: s.recipes.filter((r) => r.id !== recipeId) } : s));
     await removeRecipeFromShelf(id, recipeId);
+  };
+
+  const handleDeleteShelf = async () => {
+    setDeleting(true);
+    const ok = await deleteShelf(id);
+    if (ok) {
+      router.push('/me');
+    } else {
+      setDeleting(false);
+    }
   };
 
   if (shelf === undefined) {
@@ -132,6 +146,47 @@ export function ShelfDetailScreen({ id }: { id: string }) {
             <div className="font-mono text-[12px] leading-[1.5] text-ink-mute">
               Save a recipe and file it here, or move things over from another shelf.
             </div>
+          </div>
+        )}
+
+        {editing && isOwner && (
+          <div className="mt-5 border-t border-dashed border-rule pt-4">
+            {!confirmingDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(true)}
+                className="flex items-center gap-2.5 font-mono text-[12.5px] text-accent"
+              >
+                <TrashIcon size={16} />
+                Delete shelf
+              </button>
+            ) : (
+              <div className="border border-accent p-3">
+                <div className="mb-2.5 font-mono text-[11.5px] leading-[1.55] text-ink">
+                  Delete &ldquo;{shelf.title}&rdquo;?{' '}
+                  {shelf.recipes.length > 0
+                    ? `The ${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
+                    : 'This can’t be undone.'}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(false)}
+                    className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteShelf}
+                    disabled={deleting}
+                    className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+                  >
+                    {deleting ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
