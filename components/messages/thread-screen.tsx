@@ -49,17 +49,21 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
     scrollToBottom();
   }, [messages]);
 
-  // Re-affirm the scroll position as the keyboard opens (and, a moment
-  // later, as the predictive-text bar appears above it once typing
-  // starts) — each shrinks the container's visible height further, which
-  // on its own can leave scroll short of the new true bottom. Since this
-  // just clamps to scrollHeight rather than computing an alignment, doing
-  // it more than once is harmless — it always lands on the same spot.
+  // Re-affirm the scroll position whenever the list's own box actually
+  // changes height — the keyboard opening (and, a moment later, the
+  // predictive-text bar appearing above it once typing starts) shrinks
+  // it via the normal flex/dvh layout, which on its own can leave scroll
+  // short of the new true bottom. A ResizeObserver on the element itself
+  // catches that reliably regardless of which viewport API a given
+  // mobile browser does or doesn't fire events for; since this just
+  // clamps to scrollHeight rather than computing an alignment, doing it
+  // more than once is harmless — it always lands on the same spot.
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    vv.addEventListener('resize', scrollToBottom);
-    return () => vv.removeEventListener('resize', scrollToBottom);
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(scrollToBottom);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const handleSend = async () => {
