@@ -196,6 +196,49 @@ export async function fetchDiscoverPeople(excludeProfileId: string | null, limit
   return rows.map((r) => mapPerson(r, stats.get(r.id)));
 }
 
+// People who follow this profile, most recently followed first.
+export async function fetchFollowers(profileId: string): Promise<Person[]> {
+  const { data: followRows, error } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('followee_id', profileId)
+    .order('created_at', { ascending: false });
+  if (error || !followRows) {
+    console.error('fetchFollowers', error);
+    return [];
+  }
+  return mapPeopleInOrder(followRows.map((f: { follower_id: string }) => f.follower_id));
+}
+
+// People this profile follows, most recently followed first.
+export async function fetchFollowing(profileId: string): Promise<Person[]> {
+  const { data: followRows, error } = await supabase
+    .from('follows')
+    .select('followee_id')
+    .eq('follower_id', profileId)
+    .order('created_at', { ascending: false });
+  if (error || !followRows) {
+    console.error('fetchFollowing', error);
+    return [];
+  }
+  return mapPeopleInOrder(followRows.map((f: { followee_id: string }) => f.followee_id));
+}
+
+// Fetches profile rows + stats for a list of ids and maps them to Person[],
+// preserving the given order — `.in()` doesn't guarantee it matches input order.
+async function mapPeopleInOrder(ids: string[]): Promise<Person[]> {
+  if (ids.length === 0) return [];
+  const [{ data: rows }, stats] = await Promise.all([
+    supabase.from('profiles').select('id, name, handle, bio').in('id', ids),
+    fetchProfileStatsByIds(ids),
+  ]);
+  const byId = new Map((rows ?? []).map((r: ProfileRow) => [r.id, r]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((r): r is ProfileRow => !!r)
+    .map((r) => mapPerson(r, stats.get(r.id)));
+}
+
 export async function fetchEditorsPicks(limit = 5) {
   const { data, error } = await supabase
     .from('recipes')
