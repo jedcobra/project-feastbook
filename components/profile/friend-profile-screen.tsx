@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { FollowActions } from '@/components/profile/follow-actions';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
-import { fetchProfileByHandle, isFollowing, setFollowing } from '@/lib/supabase/queries';
+import { fetchCookedRecipes, fetchProfileByHandle, isFollowing, setFollowing } from '@/lib/supabase/queries';
 import type { Person, Recipe, Shelf } from '@/lib/types';
 
 export function FriendProfileScreen({ handle }: { handle: string }) {
@@ -15,10 +15,15 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     { person: Person; recipes: Recipe[]; shelves: Shelf[] } | null | undefined
   >(undefined);
   const [following, setFollowingState] = useState(false);
+  const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
     fetchProfileByHandle(handle).then(setData);
   }, [handle]);
+
+  useEffect(() => {
+    if (data) fetchCookedRecipes(data.person.id).then(setCookedRecipes);
+  }, [data]);
 
   useEffect(() => {
     if (profile && data) {
@@ -69,6 +74,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
       <ProfileTabs
         shelves={data.shelves}
         recipes={data.recipes}
+        cookedRecipes={cookedRecipes}
         firstName={data.person.name.split(' ')[0]}
         isOwn={false}
       />

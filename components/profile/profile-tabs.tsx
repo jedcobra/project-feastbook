@@ -12,12 +12,14 @@ export function ProfileTabs({
   shelves,
   recipes,
   savedRecipes,
+  cookedRecipes = [],
   firstName,
   isOwn,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
   savedRecipes?: Recipe[];
+  cookedRecipes?: Recipe[];
   firstName: string;
   isOwn: boolean;
 }) {
@@ -54,7 +56,7 @@ export function ProfileTabs({
       {tab === 'shelves' && <ShelvesTab shelves={shelves} isOwn={isOwn} />}
       {tab === 'recipes' && <RecipesTab recipes={recipes} />}
       {tab === 'saved' && <SavedTab recipes={savedRecipes ?? []} />}
-      {tab === 'cooked' && <CookedTab firstName={firstName} />}
+      {tab === 'cooked' && <CookedTab recipes={cookedRecipes} firstName={firstName} />}
     </div>
   );
 }
@@ -158,14 +160,39 @@ function SavedTab({ recipes }: { recipes: Recipe[] }) {
   );
 }
 
-function CookedTab({ firstName }: { firstName: string }) {
-  return (
-    <div className="mx-5 pb-8 pt-6">
-      <div className="border border-dashed border-rule p-5 text-center font-mono text-[12px] leading-relaxed text-ink-mute">
-        Recipes {firstName} has cooked
-        <br />
-        will appear here.
+function CookedTab({ recipes, firstName }: { recipes: Recipe[]; firstName: string }) {
+  if (recipes.length === 0) {
+    return (
+      <div className="mx-5 pb-8 pt-6">
+        <div className="border border-dashed border-rule p-5 text-center font-mono text-[12px] leading-relaxed text-ink-mute">
+          Recipes {firstName} has cooked
+          <br />
+          will appear here.
+        </div>
       </div>
+    );
+  }
+  return (
+    <div className="mx-5 pb-8">
+      {recipes.map((r) => (
+        <Link
+          key={r.id}
+          href={`/recipe/${r.id}`}
+          className="block border-b border-dashed border-rule py-3.5"
+        >
+          <div className="flex items-baseline gap-2.5">
+            <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
+            <span className="flex-shrink-0 font-mono text-meta text-ink-mute">@{r.author}</span>
+          </div>
+          <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
+            <span>{r.time}</span>
+            <span>·</span>
+            <span>{r.madeIt} cooked</span>
+            <span>·</span>
+            <span>{r.difficulty}</span>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }

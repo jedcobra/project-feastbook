@@ -433,6 +433,30 @@ export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
   return saveRows.map((s) => recipeById.get(s.recipe_id)).filter((r): r is Recipe => !!r);
 }
 
+// Recipes a user has marked "I cooked it" on (see postComment's `cooked`
+// option) — the made_it table this reads has existed since the first
+// schema migration, but nothing read from it until now. Most recently
+// cooked first; a repeat cook doesn't duplicate since made_it is one row
+// per user+recipe.
+export async function fetchCookedRecipes(userId: string): Promise<Recipe[]> {
+  const { data: madeItRows, error } = await supabase
+    .from('made_it')
+    .select('recipe_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error || !madeItRows) {
+    console.error('fetchCookedRecipes', error);
+    return [];
+  }
+
+  const { data: recipeRows } = await supabase
+    .from('recipes')
+    .select('*')
+    .in('id', madeItRows.map((m) => m.recipe_id));
+  const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
+  return madeItRows.map((m) => recipeById.get(m.recipe_id)).filter((r): r is Recipe => !!r);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Recipe detail
 // ─────────────────────────────────────────────────────────────

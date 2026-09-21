@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { EmptyCookbook } from '@/components/profile/empty-cookbook';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
-import { fetchProfileByHandle, fetchSavedRecipes } from '@/lib/supabase/queries';
+import { fetchCookedRecipes, fetchProfileByHandle, fetchSavedRecipes } from '@/lib/supabase/queries';
 import type { Person, Recipe, Shelf } from '@/lib/types';
 
 // The real, auth-backed Cookbook screen.
@@ -14,15 +14,18 @@ export function OwnCookbook() {
   const { loading, user, profile, signOut } = useAuth();
   const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
+  const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
     if (!profile) {
       setData(null);
       setSavedRecipes([]);
+      setCookedRecipes([]);
       return;
     }
     fetchProfileByHandle(profile.handle).then(setData);
     fetchSavedRecipes(profile.id).then(setSavedRecipes);
+    fetchCookedRecipes(profile.id).then(setCookedRecipes);
   }, [profile]);
 
   if (loading) {
@@ -69,7 +72,7 @@ export function OwnCookbook() {
     </div>
   );
 
-  if (data.recipes.length === 0 && savedRecipes.length === 0) {
+  if (data.recipes.length === 0 && savedRecipes.length === 0 && cookedRecipes.length === 0) {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto">
         {signOutLink}
@@ -86,6 +89,7 @@ export function OwnCookbook() {
         shelves={data.shelves}
         recipes={data.recipes}
         savedRecipes={savedRecipes}
+        cookedRecipes={cookedRecipes}
         firstName={data.person.name.split(' ')[0]}
         isOwn
       />
