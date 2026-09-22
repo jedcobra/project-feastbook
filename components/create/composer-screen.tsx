@@ -11,6 +11,7 @@ import { Label } from '@/components/label';
 import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
+import { useBackNav } from '@/lib/back-nav';
 import { clampServingsInput } from '@/lib/format';
 import {
   createDraft,
@@ -29,6 +30,7 @@ const STEP_DESCRIPTION_LIMIT = 300;
 
 export function ComposerScreen() {
   const router = useRouter();
+  const goBack = useBackNav();
   const { loading, user } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
 
@@ -334,7 +336,7 @@ export function ComposerScreen() {
       </div>
 
       <div className="flex flex-shrink-0 gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
-        <OutlineBox onClick={() => router.push(closeHref)} aria-label="Save and close">
+        <OutlineBox onClick={() => goBack(closeHref)} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>
         <button

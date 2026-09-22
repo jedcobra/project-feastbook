@@ -10,6 +10,7 @@ import { ChevronIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
+import { useBackNav } from '@/lib/back-nav';
 import { clampServingsInput } from '@/lib/format';
 import { createDraft, loadDraft, saveDraft, type RecipeDraft } from '@/lib/recipe-draft';
 
@@ -157,6 +158,7 @@ function applyValues(draft: RecipeDraft, v: WizardValues): RecipeDraft {
 // "Long page" always escapes back to it — nothing here is ever forced.
 export function GuidedScreen() {
   const router = useRouter();
+  const backNav = useBackNav();
   const { loading, user } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
   const [values, setValues] = useState<WizardValues | null>(null);
@@ -219,7 +221,7 @@ export function GuidedScreen() {
   const goBack = () => {
     commit();
     if (i === 0) {
-      router.push(longPageHref);
+      backNav(longPageHref);
     } else {
       setI(i - 1);
     }

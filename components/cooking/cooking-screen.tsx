@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { BackIcon, ChevronIcon, XIcon } from '@/components/icons';
+import { useBackNav } from '@/lib/back-nav';
 import { getKeepAwake } from '@/lib/keep-awake';
 import { setCooked } from '@/lib/supabase/queries';
 import type { Recipe } from '@/lib/types';
@@ -15,7 +15,7 @@ function formatTime(seconds: number) {
 // Full-screen, hands-free step-by-step cooking. Dark indigo, no tab bar —
 // this route lives outside the (tabs) group.
 export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: string }) {
-  const router = useRouter();
+  const goBack = useBackNav();
   const { profile } = useAuth();
   const [step, setStep] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
@@ -67,7 +67,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
     return () => clearTimeout(id);
   }, [timerActive, timeLeft]);
 
-  const exit = () => router.push(`/recipe/${recipe.id}`);
+  const exit = () => goBack(`/recipe/${recipe.id}`);
 
   const startTimer = () => {
     if (!current.timer) return;
