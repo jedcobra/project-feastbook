@@ -122,33 +122,15 @@ async function mapRecipeRows(rows: RecipeRow[]): Promise<Recipe[]> {
 // ─────────────────────────────────────────────────────────────
 // Feed
 // ─────────────────────────────────────────────────────────────
-export type FeedScope = 'for-you' | 'following';
-
 // Returns null on a real fetch failure — distinct from an empty array,
 // which means the query succeeded and there's genuinely nothing yet. The
 // two need different copy (an honest error vs. "no activity yet").
-// 'following' narrows to activity from people the viewer follows (plus
-// their own) — recipe visibility itself is still enforced by RLS on
-// `recipes`, so a followers-only recipe from someone not followed simply
-// won't resolve below and gets dropped, same as 'for-you'.
-export async function fetchFeed(scope: FeedScope, viewerId: string | null, limit = 20) {
-  let query = supabase.from('feed_activity').select('*').order('happened_at', { ascending: false }).limit(limit);
-
-  if (scope === 'following') {
-    if (!viewerId) return [];
-    const { data: followRows, error: followError } = await supabase
-      .from('follows')
-      .select('followee_id')
-      .eq('follower_id', viewerId);
-    if (followError) {
-      console.error('fetchFeed: follows', followError);
-      return null;
-    }
-    const followingIds = [...new Set([...followRows.map((f: { followee_id: string }) => f.followee_id), viewerId])];
-    query = query.in('who_id', followingIds);
-  }
-
-  const { data: activity, error } = await query;
+export async function fetchFeed(limit = 20) {
+  const { data: activity, error } = await supabase
+    .from('feed_activity')
+    .select('*')
+    .order('happened_at', { ascending: false })
+    .limit(limit);
 
   if (error || !activity) {
     console.error('fetchFeed', error);
