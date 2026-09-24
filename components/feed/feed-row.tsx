@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
+import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
 
@@ -33,11 +34,9 @@ export function FeedRow({
         <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
       </div>
 
-      <Link
-        href={`/recipe/${recipe.id}`}
-        className="block px-5 pb-1 pt-2 font-display text-feed-title font-bold text-ink"
-      >
-        {recipe.title}
+      <Link href={`/recipe/${recipe.id}`} className="flex items-start gap-2.5 px-5 pb-1 pt-2">
+        {recipe.coverPhotoUrl && <RecipeThumbnail src={recipe.coverPhotoUrl} alt={recipe.title} />}
+        <span className="min-w-0 flex-1 font-display text-feed-title font-bold text-ink">{recipe.title}</span>
       </Link>
 
       {item.caption && (

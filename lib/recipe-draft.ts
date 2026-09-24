@@ -23,6 +23,7 @@ export interface DraftStep {
   t: string;
   d: string;
   timer: string;
+  photoUrl: string;
 }
 
 export interface RecipeDraft {
@@ -35,6 +36,7 @@ export interface RecipeDraft {
   time: string;
   serves: string;
   level: 'Easy' | 'Medium' | 'Hard';
+  coverPhotoUrl: string;
   sections: DraftIngredientSection[];
   steps: DraftStep[];
   notes: string;
@@ -59,8 +61,9 @@ export function createDraft(source: DraftSource = 'manual', sourceUrl?: string):
     time: '',
     serves: '',
     level: 'Easy',
+    coverPhotoUrl: '',
     sections: [{ section: '', items: [{ q: '', i: '' }] }],
-    steps: [{ t: '', d: '', timer: '' }],
+    steps: [{ t: '', d: '', timer: '', photoUrl: '' }],
     notes: '',
     tags: [],
     sourceUrl,
@@ -79,6 +82,7 @@ export function draftFromRecipe(recipe: Recipe): RecipeDraft {
     time: recipe.time,
     serves: String(recipe.serves),
     level: recipe.difficulty,
+    coverPhotoUrl: recipe.coverPhotoUrl ?? '',
     sections:
       recipe.ingredients.length > 0
         ? recipe.ingredients.map((s) => ({
@@ -88,8 +92,13 @@ export function draftFromRecipe(recipe: Recipe): RecipeDraft {
         : [{ section: '', items: [{ q: '', i: '' }] }],
     steps:
       recipe.steps.length > 0
-        ? recipe.steps.map((s) => ({ t: s.t, d: s.d, timer: s.timer != null ? String(s.timer) : '' }))
-        : [{ t: '', d: '', timer: '' }],
+        ? recipe.steps.map((s) => ({
+            t: s.t,
+            d: s.d,
+            timer: s.timer != null ? String(s.timer) : '',
+            photoUrl: s.photoUrl ?? '',
+          }))
+        : [{ t: '', d: '', timer: '', photoUrl: '' }],
     notes: recipe.notes.map((n) => n.text).join('\n'),
     tags: recipe.tags,
     editId: recipe.id,
@@ -120,6 +129,7 @@ export function draftFromImport(
     time: parsed.time ?? '',
     serves: parsed.serves ?? '',
     level: 'Easy',
+    coverPhotoUrl: '',
     sections: [
       {
         section: '',
@@ -134,8 +144,8 @@ export function draftFromImport(
     ],
     steps:
       steps.length > 0
-        ? steps.map((d, i) => ({ t: `Step ${i + 1}`, d, timer: '' }))
-        : [{ t: '', d: '', timer: '' }],
+        ? steps.map((d, i) => ({ t: `Step ${i + 1}`, d, timer: '', photoUrl: '' }))
+        : [{ t: '', d: '', timer: '', photoUrl: '' }],
     notes: '',
     tags: parsed.tags ?? [],
     sourceUrl,
@@ -202,10 +212,17 @@ function isDraftEmpty(draft: RecipeDraft): boolean {
   const hasIngredient = draft.sections.some(
     (s) => s.section.trim() || s.items.some((it) => it.q.trim() || it.i.trim()),
   );
-  const hasStep = draft.steps.some((s) => s.t.trim() || s.d.trim() || s.timer.trim());
+  const hasStep = draft.steps.some((s) => s.t.trim() || s.d.trim() || s.timer.trim() || s.photoUrl.trim());
   // A saved source link is content worth keeping on its own — a "just save
   // the link" import with nothing else recovered shouldn't vanish.
-  return !hasText && !hasIngredient && !hasStep && draft.tags.length === 0 && !draft.sourceUrl;
+  return (
+    !hasText &&
+    !hasIngredient &&
+    !hasStep &&
+    !draft.coverPhotoUrl.trim() &&
+    draft.tags.length === 0 &&
+    !draft.sourceUrl
+  );
 }
 
 export function draftCounts(draft: RecipeDraft) {

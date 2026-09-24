@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Field } from '@/components/create/field';
+import { PhotoField } from '@/components/create/photo-field';
 import { TimeField } from '@/components/create/time-field';
 import { DragIcon, SaveIcon, TimerIcon, WandIcon } from '@/components/icons';
 import { Label } from '@/components/label';
@@ -31,7 +32,7 @@ const STEP_DESCRIPTION_LIMIT = 300;
 export function ComposerScreen() {
   const router = useRouter();
   const goBack = useBackNav();
-  const { loading, user } = useAuth();
+  const { loading, user, profile } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export function ComposerScreen() {
     );
   }
 
-  if (!user) {
+  if (!user || !profile) {
     return (
       <>
         <TopBar title="Write it out" backHref="/new" />
@@ -122,9 +123,10 @@ export function ComposerScreen() {
   const addSection = () =>
     setDraft((d) => (d ? { ...d, sections: [...d.sections, { section: '', items: [{ q: '', i: '' }] }] } : d));
 
-  const setStep = (i: number, key: 't' | 'd' | 'timer', value: string) =>
+  const setStep = (i: number, key: 't' | 'd' | 'timer' | 'photoUrl', value: string) =>
     setDraft((d) => (d ? { ...d, steps: d.steps.map((s, j) => (j !== i ? s : { ...s, [key]: value })) } : d));
-  const addStep = () => setDraft((d) => (d ? { ...d, steps: [...d.steps, { t: '', d: '', timer: '' }] } : d));
+  const addStep = () =>
+    setDraft((d) => (d ? { ...d, steps: [...d.steps, { t: '', d: '', timer: '', photoUrl: '' }] } : d));
 
   const toggleTag = (tag: string) =>
     setDraft((d) =>
@@ -162,6 +164,14 @@ export function ComposerScreen() {
           value={draft.subtitle}
           onChange={(v) => update({ subtitle: v })}
           placeholder="A 20-minute dinner that tastes like a two-hour one."
+        />
+
+        <PhotoField
+          label="Cover photo"
+          photoUrl={draft.coverPhotoUrl}
+          onChange={(url) => update({ coverPhotoUrl: url })}
+          profileId={profile.id}
+          kind="recipe-cover"
         />
 
         <div className="mb-1.5 grid grid-cols-3 gap-2.5">
@@ -286,6 +296,16 @@ export function ComposerScreen() {
                       onChange={(e) => setStep(i, 'timer', e.target.value)}
                       placeholder="timer (min)"
                       className="w-[90px] border-none bg-transparent p-0 font-mono text-[10px] text-ink-mute outline-none"
+                    />
+                  </div>
+                  <div className="mt-1.5">
+                    <PhotoField
+                      label="Step photo"
+                      photoUrl={step.photoUrl}
+                      onChange={(url) => setStep(i, 'photoUrl', url)}
+                      profileId={profile.id}
+                      kind="recipe-step"
+                      size={56}
                     />
                   </div>
                 </div>

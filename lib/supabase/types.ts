@@ -40,6 +40,7 @@ export interface RecipeRow {
   serves: number;
   difficulty: DifficultyRow;
   tags: string[];
+  cover_photo_url: string | null;
   created_at: string;
 }
 
@@ -65,6 +66,7 @@ export interface RecipeStepRow {
   title: string;
   description: string;
   timer_minutes: number | null;
+  photo_url: string | null;
 }
 
 export interface RecipeNoteRow {
@@ -82,6 +84,7 @@ export interface CommentRow {
   text: string;
   likes: number;
   cooked: boolean;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -120,7 +123,6 @@ export interface MadeItRow {
   user_id: string;
   recipe_id: string;
   caption: string;
-  photo_url: string | null;
   created_at: string;
 }
 

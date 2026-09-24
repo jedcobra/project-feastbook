@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ChevronIcon, TrashIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
+import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { TopBar } from '@/components/top-bar';
 import { parseDurationMinutes } from '@/lib/format';
 import { deleteShelf, fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
@@ -114,6 +115,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
 
         {sorted.map((r) => (
           <div key={r.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-3">
+            {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
             {editing ? (
               <>
                 <div className="min-w-0 flex-1">

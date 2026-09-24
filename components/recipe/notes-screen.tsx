@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
-import { HeartIcon } from '@/components/icons';
+import { CameraIcon, HeartIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { fetchRecipeFull, hasCooked, postComment, toggleCommentLike, deleteComment } from '@/lib/supabase/queries';
+import { uploadPhoto } from '@/lib/supabase/storage';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 type Filter = 'all' | 'cooked' | 'questions';
@@ -22,6 +23,9 @@ export function NotesScreen({ id }: { id: string }) {
   const [cookedMark, setCookedMark] = useState(false);
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchRecipeFull(id, profile?.id ?? null).then(setData);
@@ -89,6 +93,7 @@ export function NotesScreen({ id }: { id: string }) {
         parentId: replyTo?.id,
         cooked: !replyTo && cookedMark,
         recipeAuthorId: data.author.id,
+        photoUrl: !replyTo && cookedMark ? photoUrl || undefined : undefined,
       });
     } catch (err) {
       console.error('handlePost', err);
@@ -100,9 +105,23 @@ export function NotesScreen({ id }: { id: string }) {
       );
       setDraft('');
       setReplyTo(null);
+      setPhotoUrl('');
     } else {
       setPostError("Couldn't post that — check your connection and try again.");
     }
+  };
+
+  const handlePhotoFile = async (file: File | undefined) => {
+    if (!file || !profile) return;
+    setPostError(null);
+    setPhotoUploading(true);
+    const result = await uploadPhoto(profile.id, file, 'cooked');
+    setPhotoUploading(false);
+    if ('error' in result) {
+      setPostError(result.error);
+      return;
+    }
+    setPhotoUrl(result.url);
   };
 
   return (
@@ -176,6 +195,44 @@ export function NotesScreen({ id }: { id: string }) {
               </button>
             </div>
           )}
+          {!replyTo && cookedMark && (
+            <div className="mb-2 flex items-center gap-2">
+              {photoUrl ? (
+                <div className="relative h-11 w-11 flex-shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl('')}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-ink bg-cream text-ink"
+                  >
+                    <XIcon size={8} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading}
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-ink-mute disabled:opacity-60"
+                >
+                  <CameraIcon size={13} />
+                  {photoUploading ? 'Uploading…' : 'Add a photo of it'}
+                </button>
+              )}
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  void handlePhotoFile(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </div>
+          )}
           <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
             <textarea
               value={draft}
@@ -247,6 +304,16 @@ function NoteRow({
         <div className={`mb-1.5 font-mono text-[12.5px] leading-[1.55] text-ink ${depth ? '' : 'pl-[26px]'}`}>
           {comment.text}
         </div>
+        {comment.photoUrl && (
+          <div className={depth ? 'mb-1.5' : 'mb-1.5 pl-[26px]'}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={comment.photoUrl}
+              alt=""
+              className="h-20 w-20 rounded-button border border-rule object-cover"
+            />
+          </div>
+        )}
         <div className={`flex items-center gap-3.5 ${depth ? '' : 'pl-[26px]'}`}>
           <button
             type="button"

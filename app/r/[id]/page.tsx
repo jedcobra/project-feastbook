@@ -23,11 +23,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       description,
       siteName: 'Special Spoon',
       type: 'article',
+      images: recipe.coverPhotoUrl ? [recipe.coverPhotoUrl] : undefined,
     },
     twitter: {
-      card: 'summary',
+      card: recipe.coverPhotoUrl ? 'summary_large_image' : 'summary',
       title: recipe.title,
       description,
+      images: recipe.coverPhotoUrl ? [recipe.coverPhotoUrl] : undefined,
     },
   };
 }

@@ -26,6 +26,7 @@ export interface RecipeStep {
   t: string;
   d: string;
   timer?: number; // minutes
+  photoUrl?: string;
 }
 
 export interface RecipeNote {
@@ -44,6 +45,7 @@ export interface RecipeComment {
   likedByMe: boolean;
   cooked: boolean;
   isQuestion: boolean;
+  photoUrl?: string;
   replies: RecipeComment[];
 }
 
@@ -79,6 +81,7 @@ export interface Recipe {
   saves: number;
   rating: number;
   ratingCount: number;
+  coverPhotoUrl?: string;
   intro: string;
   visibility: Visibility;
   ingredients: IngredientSection[];

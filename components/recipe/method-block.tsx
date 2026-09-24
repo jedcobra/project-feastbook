@@ -36,6 +36,14 @@ export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
                     {step.d}
                   </div>
                 )}
+                {isActive && step.photoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={step.photoUrl}
+                    alt=""
+                    className="mt-2 h-28 w-28 rounded-button border border-rule object-cover"
+                  />
+                )}
               </div>
               {step.timer && (
                 <span className="flex-shrink-0 rounded-[3px] border border-accent px-[5px] py-0.5 font-mono text-[10px] text-accent">

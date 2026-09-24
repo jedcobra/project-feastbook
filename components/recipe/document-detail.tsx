@@ -29,6 +29,15 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
           {recipe.subtitle}
         </div>
 
+        {recipe.coverPhotoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={recipe.coverPhotoUrl}
+            alt=""
+            className="mb-4 h-48 w-full rounded-button border border-rule object-cover"
+          />
+        )}
+
         <Link href={`/${author.handle}`} className="flex items-center gap-2">
           <Avatar name={author.name} size={24} />
           <span className="font-mono text-[13px] text-ink underline decoration-dashed underline-offset-[3px]">

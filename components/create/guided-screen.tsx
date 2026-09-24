@@ -149,7 +149,7 @@ function applyValues(draft: RecipeDraft, v: WizardValues): RecipeDraft {
     level: v.level,
     intro: v.intro,
     sections: ingredientLines.length > 0 ? [{ section: '', items: ingredientLines.map(parseIngredientLine) }] : draft.sections,
-    steps: stepLines.length > 0 ? stepLines.map((t) => ({ t, d: '', timer: '' })) : draft.steps,
+    steps: stepLines.length > 0 ? stepLines.map((t) => ({ t, d: '', timer: '', photoUrl: '' })) : draft.steps,
   };
 }
 

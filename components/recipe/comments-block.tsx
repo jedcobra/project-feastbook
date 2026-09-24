@@ -31,6 +31,14 @@ export function CommentsBlock({ recipeId, comments }: { recipeId: string; commen
             {comment.likes > 0 && <span className="font-mono text-meta text-ink-mute">· {comment.likes} ♥</span>}
           </div>
           <div className="pl-6 font-mono text-[12px] leading-relaxed text-ink-mute">{comment.text}</div>
+          {comment.photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={comment.photoUrl}
+              alt=""
+              className="ml-6 mt-1.5 h-14 w-14 rounded-button border border-rule object-cover"
+            />
+          )}
         </div>
       ))}
       <Link

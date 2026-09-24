@@ -72,6 +72,7 @@ interface RecipeRow {
   serves: number;
   difficulty: Recipe['difficulty'];
   tags: string[];
+  cover_photo_url: string | null;
   author_id: string;
   visibility: Visibility;
 }
@@ -98,6 +99,7 @@ function mapRecipeSummary(row: RecipeRow, authorHandle: string, stats?: RecipeSt
     saves: stats?.save_count ?? 0,
     rating: stats?.rating_avg ?? 0,
     ratingCount: stats?.rating_count ?? 0,
+    coverPhotoUrl: row.cover_photo_url ?? undefined,
     intro: row.intro,
     visibility: row.visibility,
     ingredients: [],
@@ -520,6 +522,7 @@ async function mapCommentRows(
     parent_id: string | null;
     text: string;
     cooked: boolean;
+    photo_url: string | null;
     created_at: string;
     author: { id: string; name: string; handle: string } | { id: string; name: string; handle: string }[] | null;
   }[],
@@ -549,6 +552,7 @@ async function mapCommentRows(
       likedByMe: likedByViewer.has(r.id),
       cooked: r.cooked,
       isQuestion: r.text.trim().endsWith('?'),
+      photoUrl: r.photo_url ?? undefined,
       replies: [],
     });
   }
@@ -584,7 +588,7 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
       supabase.from('recipe_notes').select('*').eq('recipe_id', id).order('position'),
       supabase
         .from('comments')
-        .select('id, parent_id, text, cooked, created_at, author:profiles(id, name, handle)')
+        .select('id, parent_id, text, cooked, photo_url, created_at, author:profiles(id, name, handle)')
         .eq('recipe_id', id)
         .order('created_at'),
       supabase.from('profiles').select('id, name, handle, bio').eq('id', recipeRow.author_id).maybeSingle(),
@@ -605,11 +609,14 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
         .map((i) => ({ q: i.quantity, i: i.name })),
     }),
   );
-  recipe.steps = (steps ?? []).map((s: { title: string; description: string; timer_minutes: number | null }) => ({
-    t: s.title,
-    d: s.description,
-    timer: s.timer_minutes ?? undefined,
-  }));
+  recipe.steps = (steps ?? []).map(
+    (s: { title: string; description: string; timer_minutes: number | null; photo_url: string | null }) => ({
+      t: s.title,
+      d: s.description,
+      timer: s.timer_minutes ?? undefined,
+      photoUrl: s.photo_url ?? undefined,
+    }),
+  );
   recipe.notes = (notes ?? []).map((n: { text: string }) => ({ by: '', text: n.text }));
   recipe.comments = await mapCommentRows(
     (commentRows ?? []) as Parameters<typeof mapCommentRows>[0],
@@ -799,7 +806,7 @@ export async function postComment(
   authorId: string,
   recipeId: string,
   text: string,
-  opts: { parentId?: string; cooked?: boolean; recipeAuthorId?: string } = {},
+  opts: { parentId?: string; cooked?: boolean; recipeAuthorId?: string; photoUrl?: string } = {},
 ): Promise<RecipeComment | null> {
   const { data, error } = await supabase
     .from('comments')
@@ -809,6 +816,7 @@ export async function postComment(
       text,
       parent_id: opts.parentId ?? null,
       cooked: !!opts.cooked,
+      photo_url: opts.cooked ? (opts.photoUrl ?? null) : null,
     })
     .select('*, author:profiles(id, name, handle)')
     .single();
@@ -840,6 +848,7 @@ export async function postComment(
     likedByMe: false,
     cooked: data.cooked,
     isQuestion: text.trim().endsWith('?'),
+    photoUrl: data.photo_url ?? undefined,
     replies: [],
   };
 }
@@ -1070,6 +1079,7 @@ function recipeFields(draft: RecipeDraft, visibility: Visibility) {
     serves: Math.min(MAX_SERVINGS, Math.max(1, parseInt(draft.serves, 10) || 1)),
     difficulty: draft.level,
     tags: draft.tags,
+    cover_photo_url: draft.coverPhotoUrl.trim() || null,
     visibility,
   };
 }
@@ -1114,6 +1124,7 @@ async function insertRecipeContent(recipeId: string, draft: Pick<RecipeDraft, 's
         title: s.t.trim(),
         description: s.d.trim().slice(0, 300),
         timer_minutes: s.timer.trim() ? parseInt(s.timer, 10) || null : null,
+        photo_url: s.photoUrl.trim() || null,
       })),
     );
     if (stepsError) console.error('insertRecipeContents: steps insert', stepsError);
@@ -1175,6 +1186,7 @@ interface RevisionSnapshot {
   serves: number;
   difficulty: Recipe['difficulty'];
   tags: string[];
+  coverPhotoUrl?: string;
   ingredients: Recipe['ingredients'];
   steps: Recipe['steps'];
   notes: Recipe['notes'];
@@ -1192,6 +1204,7 @@ async function saveRevisionSnapshot(recipeId: string) {
     serves: recipe.serves,
     difficulty: recipe.difficulty,
     tags: recipe.tags,
+    coverPhotoUrl: recipe.coverPhotoUrl,
     ingredients: recipe.ingredients,
     steps: recipe.steps,
     notes: recipe.notes,
@@ -1203,7 +1216,12 @@ async function saveRevisionSnapshot(recipeId: string) {
 function draftFromSnapshot(snapshot: RevisionSnapshot): Pick<RecipeDraft, 'sections' | 'steps' | 'notes'> {
   return {
     sections: snapshot.ingredients.map((s) => ({ section: s.section ?? '', items: s.items })),
-    steps: snapshot.steps.map((s) => ({ t: s.t, d: s.d, timer: s.timer != null ? String(s.timer) : '' })),
+    steps: snapshot.steps.map((s) => ({
+      t: s.t,
+      d: s.d,
+      timer: s.timer != null ? String(s.timer) : '',
+      photoUrl: s.photoUrl ?? '',
+    })),
     notes: snapshot.notes.map((n) => n.text).join('\n'),
   };
 }
@@ -1303,6 +1321,7 @@ export async function restoreRevision(recipeId: string, revisionId: string): Pro
       serves: snapshot.serves,
       difficulty: snapshot.difficulty,
       tags: snapshot.tags,
+      cover_photo_url: snapshot.coverPhotoUrl ?? null,
     })
     .eq('id', recipeId);
   if (recipeError) {

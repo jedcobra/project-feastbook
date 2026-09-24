@@ -6,6 +6,7 @@ import { BackButton } from '@/components/back-button';
 import { CookRow } from '@/components/discover/cooks-to-follow';
 import { ChevronIcon, SearchIcon, XIcon } from '@/components/icons';
 import { Label } from '@/components/label';
+import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import { parseDurationMinutes } from '@/lib/format';
 import { addRecentSearch, clearRecentSearches, listRecentSearches, removeRecentSearch } from '@/lib/search-history';
@@ -201,8 +202,9 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                   <Link
                     key={r.id}
                     href={`/recipe/${r.id}`}
-                    className={`flex items-baseline gap-2.5 border-t border-dashed border-rule py-[11px] ${i === 0 ? '' : ''}`}
+                    className={`flex items-center gap-2.5 border-t border-dashed border-rule py-[11px] ${i === 0 ? '' : ''}`}
                   >
+                    {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} size={36} />}
                     <div className="min-w-0 flex-1">
                       <h3 className="mb-0.5 font-display text-[15.5px] font-bold text-ink">{r.title}</h3>
                       <div className="font-mono text-[10.5px] text-ink-mute">

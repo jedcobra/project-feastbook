@@ -22,6 +22,15 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
         <div className="mb-3.5 font-mono text-[13px] leading-relaxed text-ink-mute">{recipe.subtitle}</div>
       )}
 
+      {recipe.coverPhotoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={recipe.coverPhotoUrl}
+          alt=""
+          className="mb-3.5 h-48 w-full rounded-button border border-rule object-cover"
+        />
+      )}
+
       <div className="mb-3.5 flex items-center gap-2">
         <Avatar name={author.name} size={24} />
         <span className="font-mono text-[13px] text-ink">{author.name}</span>
@@ -79,6 +88,14 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
               <div className="flex-1">
                 <div className="mb-0.5 font-display text-[15px] font-bold text-ink">{step.t}</div>
                 <div className="font-mono text-[11.5px] leading-[1.55] text-ink-mute">{step.d}</div>
+                {step.photoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={step.photoUrl}
+                    alt=""
+                    className="mt-1.5 h-20 w-20 rounded-button border border-rule object-cover"
+                  />
+                )}
               </div>
             </div>
           ))}
