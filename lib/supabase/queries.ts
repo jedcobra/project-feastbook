@@ -1470,11 +1470,11 @@ async function fetchLastMessageByConversation(conversationIds: string[]): Promis
   if (conversationIds.length === 0) return map;
   const { data } = await supabase
     .from('messages')
-    .select('conversation_id, text, created_at')
+    .select('conversation_id, text, photo_url, created_at')
     .in('conversation_id', conversationIds)
     .order('created_at', { ascending: false });
-  for (const m of (data ?? []) as { conversation_id: string; text: string }[]) {
-    if (!map.has(m.conversation_id)) map.set(m.conversation_id, m.text);
+  for (const m of (data ?? []) as { conversation_id: string; text: string; photo_url: string | null }[]) {
+    if (!map.has(m.conversation_id)) map.set(m.conversation_id, m.text || (m.photo_url ? '📷 Photo' : ''));
   }
   return map;
 }
@@ -1633,7 +1633,7 @@ export async function fetchConversationPeer(conversationId: string, myId: string
 export async function fetchMessages(conversationId: string): Promise<DirectMessage[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, sender_id, text, created_at, read_at')
+    .select('id, sender_id, text, photo_url, created_at, read_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
   if (error || !data) {
@@ -1641,10 +1641,18 @@ export async function fetchMessages(conversationId: string): Promise<DirectMessa
     return [];
   }
   return data.map(
-    (m: { id: string; sender_id: string; text: string; created_at: string; read_at: string | null }) => ({
+    (m: {
+      id: string;
+      sender_id: string;
+      text: string;
+      photo_url: string | null;
+      created_at: string;
+      read_at: string | null;
+    }) => ({
       id: m.id,
       senderId: m.sender_id,
       text: m.text,
+      photoUrl: m.photo_url ?? undefined,
       createdAt: m.created_at,
       read: !!m.read_at,
     }),
@@ -1655,11 +1663,12 @@ export async function sendMessage(
   conversationId: string,
   senderId: string,
   text: string,
+  photoUrl?: string,
 ): Promise<DirectMessage | null> {
   const { data, error } = await supabase
     .from('messages')
-    .insert({ conversation_id: conversationId, sender_id: senderId, text })
-    .select('id, sender_id, text, created_at, read_at')
+    .insert({ conversation_id: conversationId, sender_id: senderId, text, photo_url: photoUrl ?? null })
+    .select('id, sender_id, text, photo_url, created_at, read_at')
     .single();
   if (error || !data) {
     console.error('sendMessage', error);
@@ -1675,6 +1684,7 @@ export async function sendMessage(
     id: data.id,
     senderId: data.sender_id,
     text: data.text,
+    photoUrl: data.photo_url ?? undefined,
     createdAt: data.created_at,
     read: !!data.read_at,
   };

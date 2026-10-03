@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { MoreIcon } from '@/components/icons';
+import { CameraIcon, MoreIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
@@ -16,6 +16,7 @@ import {
   sendMessage,
   unblockUser,
 } from '@/lib/supabase/queries';
+import { uploadPhoto } from '@/lib/supabase/storage';
 import type { DirectMessage, Person } from '@/lib/types';
 
 export function ThreadScreen({ conversationId }: { conversationId: string }) {
@@ -27,7 +28,10 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   const [sendError, setSendError] = useState<string | null>(null);
   const [blockedByMe, setBlockedByMe] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     const el = scrollRef.current;
@@ -67,19 +71,35 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   }, []);
 
   const handleSend = async () => {
-    if (!draft.trim() || !profile || sending) return;
+    if ((!draft.trim() && !photoUrl) || !profile || sending) return;
     setSending(true);
     setSendError(null);
     const text = draft.trim();
+    const photo = photoUrl;
     setDraft('');
-    const message = await sendMessage(conversationId, profile.id, text);
+    setPhotoUrl('');
+    const message = await sendMessage(conversationId, profile.id, text, photo || undefined);
     setSending(false);
     if (message) {
       setMessages((m) => (m ? [...m, message] : [message]));
     } else {
       setDraft(text);
+      setPhotoUrl(photo);
       setSendError('Couldn’t send that. Try again in a moment.');
     }
+  };
+
+  const handlePhotoFile = async (file: File | undefined) => {
+    if (!file || !profile) return;
+    setSendError(null);
+    setPhotoUploading(true);
+    const result = await uploadPhoto(profile.id, file, 'message');
+    setPhotoUploading(false);
+    if ('error' in result) {
+      setSendError(result.error);
+      return;
+    }
+    setPhotoUrl(result.url);
   };
 
   const handleDeleteMessage = async (id: string) => {
@@ -144,13 +164,23 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             return (
               <div key={m.id} className={`mb-2.5 flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`flex max-w-[78%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
-                  <div
-                    className={`rounded-2xl px-3.5 py-2 font-mono text-[12.5px] leading-[1.45] ${
-                      mine ? 'bg-ink text-cream' : 'border border-ink bg-cream text-ink'
-                    }`}
-                  >
-                    {m.text}
-                  </div>
+                  {m.photoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={m.photoUrl}
+                      alt=""
+                      className={`h-44 w-44 rounded-2xl border border-ink object-cover ${m.text ? 'mb-1' : ''}`}
+                    />
+                  )}
+                  {m.text && (
+                    <div
+                      className={`rounded-2xl px-3.5 py-2 font-mono text-[12.5px] leading-[1.45] ${
+                        mine ? 'bg-ink text-cream' : 'border border-ink bg-cream text-ink'
+                      }`}
+                    >
+                      {m.text}
+                    </div>
+                  )}
                   <div className="mt-1 flex items-center gap-2 px-1">
                     <span className="font-mono text-[10px] text-ink-mute">{formatRelativeTime(m.createdAt)}</span>
                     {mine && (
@@ -195,7 +225,40 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
           ) : (
             <>
               {sendError && <div className="mb-2 font-mono text-[11px] text-accent">{sendError}</div>}
+              {photoUrl && (
+                <div className="relative mb-2 h-16 w-16">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setPhotoUrl('')}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ink bg-cream text-ink"
+                  >
+                    <XIcon size={10} />
+                  </button>
+                </div>
+              )}
               <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading}
+                  aria-label="Attach a photo"
+                  className="flex-shrink-0 pb-1 text-ink-mute disabled:opacity-60"
+                >
+                  <CameraIcon size={16} />
+                </button>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    void handlePhotoFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
                 <textarea
                   value={draft}
                   rows={1}
@@ -207,15 +270,15 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                       handleSend();
                     }
                   }}
-                  placeholder="Write a message…"
+                  placeholder={photoUploading ? 'Uploading photo…' : 'Write a message…'}
                   className="max-h-24 flex-1 resize-none border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleSend}
-                  disabled={!draft.trim() || sending}
+                  disabled={(!draft.trim() && !photoUrl) || sending}
                   className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[11px] ${
-                    draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
+                    draft.trim() || photoUrl ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
                   }`}
                 >
                   Send

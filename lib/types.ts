@@ -120,6 +120,7 @@ export interface DirectMessage {
   id: string;
   senderId: string;
   text: string;
+  photoUrl?: string;
   createdAt: string;
   read: boolean;
 }
