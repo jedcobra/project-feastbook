@@ -41,7 +41,7 @@ export function FeedRow({
           </span>
         </Link>
         <span className="flex items-center gap-1 font-mono text-meta text-ink-mute">
-          <VerbIcon size={10} />
+          <VerbIcon size={16} />
           {VERB[item.kind]}
         </span>
         <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
