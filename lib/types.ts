@@ -117,11 +117,18 @@ export interface Shelf {
   recipes: ShelfRecipeRef[];
 }
 
+export interface SharedRecipeRef {
+  id: string;
+  title: string;
+  coverPhotoUrl?: string;
+}
+
 export interface DirectMessage {
   id: string;
   senderId: string;
   text: string;
   photoUrl?: string;
+  sharedRecipe?: SharedRecipeRef;
   createdAt: string;
   read: boolean;
 }

@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { CameraIcon, MoreIcon, XIcon } from '@/components/icons';
+import { BookIcon, CameraIcon, MoreIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
@@ -177,6 +178,33 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             return (
               <div key={m.id} className={`mb-2.5 flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`flex max-w-[78%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
+                  {m.sharedRecipe && (
+                    <Link
+                      href={`/recipe/${m.sharedRecipe.id}`}
+                      className={`flex w-56 items-center gap-2.5 rounded-2xl border border-ink bg-cream p-2.5 ${
+                        m.text || m.photoUrl ? 'mb-1' : ''
+                      }`}
+                    >
+                      {m.sharedRecipe.coverPhotoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={m.sharedRecipe.coverPhotoUrl}
+                          alt=""
+                          className="h-12 w-12 flex-shrink-0 rounded-button object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-button border border-ink text-ink">
+                          <BookIcon size={16} />
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-mono text-[10.5px] text-ink-mute">Recipe</span>
+                        <span className="block truncate font-mono text-[12.5px] font-semibold text-ink">
+                          {m.sharedRecipe.title}
+                        </span>
+                      </span>
+                    </Link>
+                  )}
                   {m.photoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

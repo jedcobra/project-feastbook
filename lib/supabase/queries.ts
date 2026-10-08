@@ -1535,11 +1535,18 @@ async function fetchLastMessageByConversation(conversationIds: string[]): Promis
   if (conversationIds.length === 0) return map;
   const { data } = await supabase
     .from('messages')
-    .select('conversation_id, text, photo_url, created_at')
+    .select('conversation_id, text, photo_url, recipe:recipes(title), created_at')
     .in('conversation_id', conversationIds)
     .order('created_at', { ascending: false });
-  for (const m of (data ?? []) as { conversation_id: string; text: string; photo_url: string | null }[]) {
-    if (!map.has(m.conversation_id)) map.set(m.conversation_id, m.text || (m.photo_url ? '📷 Photo' : ''));
+  for (const m of (data ?? []) as unknown as {
+    conversation_id: string;
+    text: string;
+    photo_url: string | null;
+    recipe: { title: string } | null;
+  }[]) {
+    if (!map.has(m.conversation_id)) {
+      map.set(m.conversation_id, m.text || (m.photo_url ? '📷 Photo' : m.recipe ? `📖 ${m.recipe.title}` : ''));
+    }
   }
   return map;
 }
@@ -1695,33 +1702,43 @@ export async function fetchConversationPeer(conversationId: string, myId: string
   return mapPerson(personRow as ProfileRow, stats.get(otherId));
 }
 
+interface MessageSelectRow {
+  id: string;
+  sender_id: string;
+  text: string;
+  photo_url: string | null;
+  recipe: { id: string; title: string; cover_photo_url: string | null } | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+function mapMessageRow(m: MessageSelectRow): DirectMessage {
+  return {
+    id: m.id,
+    senderId: m.sender_id,
+    text: m.text,
+    photoUrl: m.photo_url ?? undefined,
+    sharedRecipe: m.recipe
+      ? { id: m.recipe.id, title: m.recipe.title, coverPhotoUrl: m.recipe.cover_photo_url ?? undefined }
+      : undefined,
+    createdAt: m.created_at,
+    read: !!m.read_at,
+  };
+}
+
+const MESSAGE_SELECT = 'id, sender_id, text, photo_url, recipe:recipes(id, title, cover_photo_url), created_at, read_at';
+
 export async function fetchMessages(conversationId: string): Promise<DirectMessage[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, sender_id, text, photo_url, created_at, read_at')
+    .select(MESSAGE_SELECT)
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
   if (error || !data) {
     console.error('fetchMessages', error);
     return [];
   }
-  return data.map(
-    (m: {
-      id: string;
-      sender_id: string;
-      text: string;
-      photo_url: string | null;
-      created_at: string;
-      read_at: string | null;
-    }) => ({
-      id: m.id,
-      senderId: m.sender_id,
-      text: m.text,
-      photoUrl: m.photo_url ?? undefined,
-      createdAt: m.created_at,
-      read: !!m.read_at,
-    }),
-  );
+  return (data as unknown as MessageSelectRow[]).map(mapMessageRow);
 }
 
 export async function sendMessage(
@@ -1730,35 +1747,30 @@ export async function sendMessage(
   recipientId: string,
   text: string,
   photoUrl?: string,
+  recipeId?: string,
 ): Promise<DirectMessage | null> {
   const { data, error } = await supabase
     .from('messages')
-    .insert({ conversation_id: conversationId, sender_id: senderId, text, photo_url: photoUrl ?? null })
-    .select('id, sender_id, text, photo_url, created_at, read_at')
+    .insert({ conversation_id: conversationId, sender_id: senderId, text, photo_url: photoUrl ?? null, recipe_id: recipeId ?? null })
+    .select(MESSAGE_SELECT)
     .single();
   if (error || !data) {
     console.error('sendMessage', error);
     return null;
   }
+  const row = data as unknown as MessageSelectRow;
   const { error: convError } = await supabase
     .from('conversations')
-    .update({ last_message_at: data.created_at })
+    .update({ last_message_at: row.created_at })
     .eq('id', conversationId);
   if (convError) console.error('sendMessage: conversation update', convError);
 
   await notify(recipientId, senderId, 'message', {
     conversationId,
-    excerpt: text || (photoUrl ? '📷 Photo' : ''),
+    excerpt: text || (photoUrl ? '📷 Photo' : row.recipe ? `📖 ${row.recipe.title}` : ''),
   });
 
-  return {
-    id: data.id,
-    senderId: data.sender_id,
-    text: data.text,
-    photoUrl: data.photo_url ?? undefined,
-    createdAt: data.created_at,
-    read: !!data.read_at,
-  };
+  return mapMessageRow(row);
 }
 
 export async function markConversationRead(conversationId: string, myId: string): Promise<void> {
