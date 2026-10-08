@@ -7,6 +7,14 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Special Spoon',
   description: 'A personal online recipe book — create, curate, and share what you cook.',
+  // iOS only treats a site as an installable app (the prerequisite for Web
+  // Push on iPhone — see lib/push-subscribe.ts) once it carries these
+  // apple-mobile-web-app-* tags and gets added to the Home Screen from there.
+  appleWebApp: {
+    capable: true,
+    title: 'Special Spoon',
+    statusBarStyle: 'default',
+  },
 };
 
 export default function RootLayout({
