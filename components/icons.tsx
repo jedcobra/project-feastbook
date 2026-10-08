@@ -14,11 +14,13 @@ function StrokeIcon({
   className,
   children,
 }: StrokeIconProps & { children: React.ReactNode }) {
+  // Every call site passes its own `size`, so scaling up 10% here — rather
+  // than at each of them — is the one place that reaches all of them.
   return (
     <svg
       viewBox="0 0 24 24"
-      width={size}
-      height={size}
+      width={size * 1.1}
+      height={size * 1.1}
       fill="none"
       stroke="currentColor"
       strokeWidth={weight}
