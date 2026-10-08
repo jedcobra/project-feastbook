@@ -683,15 +683,67 @@ async function notify(
   const prefs = recipient?.notification_prefs as NotificationPrefs | undefined;
   if (prefs && !prefs[PREF_KEY[kind]]) return;
 
-  const { error } = await supabase.from('notifications').insert({
-    recipient_id: recipientId,
-    actor_id: actorId,
-    kind,
-    recipe_id: extra.recipeId ?? null,
-    comment_id: extra.commentId ?? null,
-    excerpt: extra.excerpt ?? null,
-  });
-  if (error) console.error('notify', error);
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert({
+      recipient_id: recipientId,
+      actor_id: actorId,
+      kind,
+      recipe_id: extra.recipeId ?? null,
+      comment_id: extra.commentId ?? null,
+      excerpt: extra.excerpt ?? null,
+    })
+    .select('id')
+    .single();
+  if (error || !data) {
+    console.error('notify', error);
+    return;
+  }
+  // Best-effort and fire-and-forget — a push notification is a bonus on
+  // top of the in-app one just written above, never something the
+  // triggering action (following someone, posting a note, ...) should
+  // wait on or fail over.
+  void triggerPush(data.id);
+}
+
+async function triggerPush(notificationId: string) {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return;
+    await fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ notificationId }),
+    });
+  } catch (err) {
+    console.error('triggerPush', err);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Push subscriptions
+// ─────────────────────────────────────────────────────────────
+export async function savePushSubscription(
+  profileId: string,
+  subscription: { endpoint: string; p256dh: string; auth: string },
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .upsert(
+      { user_id: profileId, endpoint: subscription.endpoint, p256dh: subscription.p256dh, auth: subscription.auth },
+      { onConflict: 'endpoint' },
+    );
+  if (error) {
+    console.error('savePushSubscription', error);
+    return false;
+  }
+  return true;
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  const { error } = await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+  if (error) console.error('deletePushSubscription', error);
 }
 
 export async function setFollowing(followerId: string, followeeId: string, follow: boolean) {
