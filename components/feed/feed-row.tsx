@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
+import { BookmarkIcon, CookIcon, PlusIcon } from '@/components/icons';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
@@ -8,6 +9,14 @@ const VERB: Record<FeedActivity['kind'], string> = {
   new: 'added',
   madeit: 'cooked',
   saved: 'saved',
+};
+
+// Same glyphs those actions use elsewhere (New tab, Start cooking, Save) —
+// a quick visual tell for which kind of activity this is, at a glance.
+const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => React.ReactElement> = {
+  new: PlusIcon,
+  madeit: CookIcon,
+  saved: BookmarkIcon,
 };
 
 // Index feed row — noods-style activity line: author + verb, title, optional
@@ -21,6 +30,7 @@ export function FeedRow({
   recipe: Recipe;
   author: Person;
 }) {
+  const VerbIcon = VERB_ICON[item.kind];
   return (
     <div className="rule-y">
       <div className="flex items-center gap-2 px-5 pt-3">
@@ -30,7 +40,10 @@ export function FeedRow({
             {author.name}
           </span>
         </Link>
-        <span className="font-mono text-meta text-ink-mute">{VERB[item.kind]}</span>
+        <span className="flex items-center gap-1 font-mono text-meta text-ink-mute">
+          <VerbIcon size={10} />
+          {VERB[item.kind]}
+        </span>
         <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
       </div>
 
