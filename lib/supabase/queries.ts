@@ -408,6 +408,13 @@ export async function updateNotificationPrefs(profileId: string, prefs: Notifica
   if (error) console.error('updateNotificationPrefs', error);
 }
 
+// null means "ask each time" — Publish still shows all three options and
+// still lets this be overridden per recipe either way.
+export async function updateDefaultVisibility(profileId: string, visibility: Visibility | null) {
+  const { error } = await supabase.from('profiles').update({ default_visibility: visibility }).eq('id', profileId);
+  if (error) console.error('updateDefaultVisibility', error);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Profile (own + friend)
 // ─────────────────────────────────────────────────────────────

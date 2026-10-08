@@ -1,5 +1,7 @@
 // Hand-written row types matching supabase/migrations/0001_init.sql.
 
+import type { Visibility } from '@/lib/types';
+
 export interface NotificationPrefs {
   notes: boolean;
   follows: boolean;
@@ -20,6 +22,7 @@ export interface ProfileRow {
   taste_tags: string[];
   link: string;
   notification_prefs: NotificationPrefs;
+  default_visibility: Visibility | null;
 }
 
 export interface ProfileStatsRow {

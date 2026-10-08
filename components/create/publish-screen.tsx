@@ -47,6 +47,14 @@ export function PublishScreen() {
     fetchShelfIdsForRecipe(draft.editId).then(setSelectedShelves);
   }, [draft]);
 
+  // A new recipe (not editing): pre-select Settings' "default privacy for
+  // new recipes" if one's set, same as a real default would — still just
+  // a starting point, not a lock; every option stays tappable below.
+  useEffect(() => {
+    if (draft?.editId || !profile?.default_visibility) return;
+    setVisibility(profile.default_visibility);
+  }, [draft, profile]);
+
   const toggleShelf = (id: string) =>
     setSelectedShelves((s) => {
       const next = new Set(s);
