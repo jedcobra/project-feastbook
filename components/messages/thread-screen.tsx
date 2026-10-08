@@ -32,6 +32,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   const [photoUploading, setPhotoUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     const el = scrollRef.current;
@@ -52,6 +53,18 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Grows the textarea to fit what's typed, up to the CSS max-height cap
+  // (beyond that it scrolls internally instead) — resetting to 'auto'
+  // first is what lets it shrink back down too, e.g. after deleting a
+  // line or sending. The message list's own ResizeObserver (above)
+  // re-syncs the scroll position whenever this changes its height.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draft]);
 
   // Re-affirm the scroll position whenever the list's own box actually
   // changes height — the keyboard opening (and, a moment later, the
@@ -260,6 +273,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                   }}
                 />
                 <textarea
+                  ref={textareaRef}
                   value={draft}
                   rows={1}
                   onChange={(e) => setDraft(e.target.value)}
@@ -271,7 +285,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                     }
                   }}
                   placeholder={photoUploading ? 'Uploading photo…' : 'Write a message…'}
-                  className="max-h-24 flex-1 resize-none border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
+                  className="max-h-40 flex-1 resize-none overflow-y-auto border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
                 />
                 <button
                   type="button"
