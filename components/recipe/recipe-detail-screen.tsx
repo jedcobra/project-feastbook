@@ -118,7 +118,13 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         }
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <DocumentDetail recipe={data.recipe} author={data.author} />
+        <DocumentDetail
+          recipe={data.recipe}
+          author={data.author}
+          onCommentPosted={(comment) =>
+            setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: [comment, ...d.recipe.comments] } } : d))
+          }
+        />
       </div>
       {shareSheetOpen && <ShareSheet recipe={data.recipe} onClose={() => setShareSheetOpen(false)} />}
       {ownerSheetOpen && (

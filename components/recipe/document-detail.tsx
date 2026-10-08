@@ -9,10 +9,18 @@ import { MethodBlock } from '@/components/recipe/method-block';
 import { RatingWidget } from '@/components/recipe/rating-widget';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { Tag } from '@/components/tag';
-import type { Person, Recipe } from '@/lib/types';
+import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 // The default Recipe Detail layout — a single scrolling document, noods-style.
-export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Person }) {
+export function DocumentDetail({
+  recipe,
+  author,
+  onCommentPosted,
+}: {
+  recipe: Recipe;
+  author: Person;
+  onCommentPosted: (comment: RecipeComment) => void;
+}) {
   return (
     <>
       <div className="flex-1 px-5">
@@ -81,7 +89,7 @@ export function DocumentDetail({ recipe, author }: { recipe: Recipe; author: Per
           </div>
         )}
 
-        <CommentsBlock recipeId={recipe.id} comments={recipe.comments} />
+        <CommentsBlock recipeId={recipe.id} authorId={author.id} comments={recipe.comments} onPosted={onCommentPosted} />
       </div>
       <CookButton recipeId={recipe.id} hasSteps={recipe.steps.length > 0} />
     </>
