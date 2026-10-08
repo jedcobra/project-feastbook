@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { ChevronIcon, TrashIcon } from '@/components/icons';
+import { ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
+import { AddRecipesToShelfSheet } from '@/components/shelves/add-recipes-to-shelf-sheet';
 import { TopBar } from '@/components/top-bar';
 import { parseDurationMinutes } from '@/lib/format';
 import { deleteShelf, fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
+import type { Recipe } from '@/lib/types';
 import { shelfVisibilityLabel } from '@/lib/visibility';
 
 type SortKey = 'added' | 'title' | 'time';
@@ -27,6 +29,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [addSheetOpen, setAddSheetOpen] = useState(false);
 
   useEffect(() => {
     fetchShelfDetail(id).then(setShelf);
@@ -47,6 +50,10 @@ export function ShelfDetailScreen({ id }: { id: string }) {
   const handleRemove = async (recipeId: string) => {
     setShelf((s) => (s ? { ...s, recipes: s.recipes.filter((r) => r.id !== recipeId) } : s));
     await removeRecipeFromShelf(id, recipeId);
+  };
+
+  const handleRecipesAdded = (added: Recipe[]) => {
+    setShelf((s) => (s ? { ...s, recipes: [...added, ...s.recipes] } : s));
   };
 
   const handleDeleteShelf = async () => {
@@ -149,9 +156,15 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         {sorted.length === 0 && (
           <div className="mt-2.5 border border-dashed border-rule p-[26px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">Empty shelf</div>
-            <div className="font-mono text-[12px] leading-[1.5] text-ink-mute">
+            <div className="mb-3.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
               Save a recipe and file it here, or move things over from another shelf.
             </div>
+            {isOwner && (
+              <OutlineBox onClick={() => setAddSheetOpen(true)}>
+                <PlusIcon size={13} />
+                Add recipes
+              </OutlineBox>
+            )}
           </div>
         )}
 
@@ -196,6 +209,15 @@ export function ShelfDetailScreen({ id }: { id: string }) {
           </div>
         )}
       </div>
+      {addSheetOpen && (
+        <AddRecipesToShelfSheet
+          ownerId={shelf.ownerId}
+          shelfId={id}
+          existingRecipeIds={new Set(shelf.recipes.map((r) => r.id))}
+          onAdded={handleRecipesAdded}
+          onClose={() => setAddSheetOpen(false)}
+        />
+      )}
     </>
   );
 }

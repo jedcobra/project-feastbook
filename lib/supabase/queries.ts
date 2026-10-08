@@ -1069,6 +1069,24 @@ export async function quickSaveRecipe(ownerId: string, recipeId: string): Promis
   return true;
 }
 
+// Files recipes already in the caller's cookbook (their own, or saved)
+// onto a shelf, on top of whatever other shelves each one is already on —
+// same "union, don't replace" rule quickSaveRecipe uses for the bookmark
+// button. Intersecting with the caller's own shelves before the union
+// matters here: fetchShelfIdsForRecipe can include another owner's shelf
+// if that recipe happens to be saved there too, and setRecipeShelves'
+// insert must never be handed a shelf id that isn't the caller's own.
+export async function addRecipesToShelf(ownerId: string, shelfId: string, recipeIds: string[]): Promise<void> {
+  const ownShelfIds = new Set((await fetchShelvesForOwner(ownerId)).map((s) => s.id));
+  await Promise.all(
+    recipeIds.map(async (recipeId) => {
+      const shelfIdsWithRecipe = await fetchShelfIdsForRecipe(recipeId);
+      const current = [...shelfIdsWithRecipe].filter((sid) => ownShelfIds.has(sid));
+      await setRecipeShelves(ownerId, recipeId, [...new Set([...current, shelfId])]);
+    }),
+  );
+}
+
 export interface ShelfDetail {
   id: string;
   title: string;
