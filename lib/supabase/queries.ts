@@ -595,7 +595,7 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
       supabase.from('recipe_notes').select('*').eq('recipe_id', id).order('position'),
       supabase
         .from('comments')
-        .select('id, parent_id, text, cooked, photo_url, created_at, author:profiles(id, name, handle)')
+        .select('id, parent_id, text, cooked, photo_url, created_at, author:profiles!comments_author_id_fkey(id, name, handle)')
         .eq('recipe_id', id)
         .order('created_at'),
       supabase.from('profiles').select('id, name, handle, bio').eq('id', recipeRow.author_id).maybeSingle(),
@@ -879,7 +879,7 @@ export async function postComment(
       cooked: !!opts.cooked,
       photo_url: opts.cooked ? (opts.photoUrl ?? null) : null,
     })
-    .select('*, author:profiles(id, name, handle)')
+    .select('*, author:profiles!comments_author_id_fkey(id, name, handle)')
     .single();
   if (error || !data) {
     console.error('postComment', error);
