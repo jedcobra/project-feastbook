@@ -5,6 +5,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { ErrorScreen } from '@/components/error-screen';
 import { BookmarkIcon, MoreIcon, ShareIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
+import { CookButton } from '@/components/recipe/cook-button';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { ShareSheet } from '@/components/share/share-sheet';
@@ -117,7 +118,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
           </>
         }
       />
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <DocumentDetail
           recipe={data.recipe}
           author={data.author}
@@ -126,6 +127,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
           }
         />
       </div>
+      <CookButton recipeId={id} hasSteps={data.recipe.steps.length > 0} />
       {shareSheetOpen && <ShareSheet recipe={data.recipe} onClose={() => setShareSheetOpen(false)} />}
       {ownerSheetOpen && (
         <OwnerSheet
