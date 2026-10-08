@@ -12,13 +12,6 @@ interface ShareSheetProps {
   onClose: () => void;
 }
 
-const SOCIAL_LINKS = (url: string, text: string) => [
-  { label: 'X (Twitter)', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}` },
-  { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` },
-  { label: 'WhatsApp', href: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}` },
-  { label: 'Email', href: `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(url)}`, mailto: true },
-];
-
 // The Share button's menu: copy the public /r/[id] link, hand off to the
 // device's own share sheet when one exists, or go straight to a specific
 // platform. No brand-colored logos here — the design's palette is ink and
@@ -143,34 +136,6 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
                   </span>
                 </span>
               </button>
-            )}
-
-            <div className="mb-0.5 mt-3 border-t border-dashed border-rule pt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-mute">
-              Or share to
-            </div>
-            {SOCIAL_LINKS(url, text).map((s) =>
-              s.mailto ? (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  onClick={onClose}
-                  className="block border-t border-dotted border-rule py-2.5 font-mono text-[12.5px] text-ink"
-                >
-                  {s.label}
-                </a>
-              ) : (
-                <button
-                  key={s.label}
-                  type="button"
-                  onClick={() => {
-                    window.open(s.href, '_blank', 'noopener,noreferrer');
-                    onClose();
-                  }}
-                  className="block w-full border-t border-dotted border-rule py-2.5 text-left font-mono text-[12.5px] text-ink"
-                >
-                  {s.label}
-                </button>
-              ),
             )}
           </>
         ) : (

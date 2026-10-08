@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ErrorScreen } from '@/components/error-screen';
-import { BookmarkIcon, MoreIcon, ShareIcon } from '@/components/icons';
+import { BookmarkIcon, MoreIcon, SendIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { CookButton } from '@/components/recipe/cook-button';
 import { DocumentDetail } from '@/components/recipe/document-detail';
@@ -108,7 +108,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
               </OutlineBox>
             )}
             <OutlineBox compact aria-label="Share" onClick={() => setShareSheetOpen(true)}>
-              <ShareIcon size={14} />
+              <SendIcon size={14} />
             </OutlineBox>
             {isOwner && (
               <OutlineBox compact aria-label="Recipe options" onClick={() => setOwnerSheetOpen(true)}>

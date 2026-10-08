@@ -70,6 +70,14 @@ export function ShareIcon(props: StrokeIconProps) {
   );
 }
 
+export function SendIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M21 3L11 13M21 3l-7 18-4-8-8-4 19-6z" />
+    </StrokeIcon>
+  );
+}
+
 export function CookIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
