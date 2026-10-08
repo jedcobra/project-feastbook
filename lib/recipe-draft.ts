@@ -41,6 +41,9 @@ export interface RecipeDraft {
   steps: DraftStep[];
   notes: string;
   tags: string[];
+  // Tags the source page suggested (its own keywords/category) — offered as
+  // pickable suggestions in the composer rather than applied automatically.
+  suggestedTags?: string[];
   sourceUrl?: string;
   // Set when this draft is editing an already-published recipe (7i) rather
   // than composing a new one — Publish updates that recipe instead of
@@ -147,7 +150,8 @@ export function draftFromImport(
         ? steps.map((d, i) => ({ t: `Step ${i + 1}`, d, timer: '', photoUrl: '' }))
         : [{ t: '', d: '', timer: '', photoUrl: '' }],
     notes: '',
-    tags: parsed.tags ?? [],
+    tags: [],
+    suggestedTags: parsed.tags ?? [],
     sourceUrl,
   };
 }

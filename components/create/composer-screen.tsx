@@ -338,8 +338,9 @@ export function ComposerScreen() {
                 {t}
               </Tag>
             ))}
-            {SUGGESTED_TAGS.filter((t) => !draft.tags.includes(t))
-              .slice(0, 3)
+            {[...new Set([...(draft.suggestedTags ?? []), ...SUGGESTED_TAGS])]
+              .filter((t) => !draft.tags.includes(t))
+              .slice(0, 6)
               .map((t) => (
                 <button
                   key={t}
