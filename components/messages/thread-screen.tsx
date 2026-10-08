@@ -84,14 +84,14 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   }, []);
 
   const handleSend = async () => {
-    if ((!draft.trim() && !photoUrl) || !profile || sending) return;
+    if ((!draft.trim() && !photoUrl) || !profile || !peer || sending) return;
     setSending(true);
     setSendError(null);
     const text = draft.trim();
     const photo = photoUrl;
     setDraft('');
     setPhotoUrl('');
-    const message = await sendMessage(conversationId, profile.id, text, photo || undefined);
+    const message = await sendMessage(conversationId, profile.id, peer.id, text, photo || undefined);
     setSending(false);
     if (message) {
       setMessages((m) => (m ? [...m, message] : [message]));

@@ -8,11 +8,12 @@ import type { NotificationPrefs } from '@/lib/supabase/types';
 const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'notes', label: 'Someone notes on your recipe', sub: 'Including answers to your questions' },
   { key: 'follows', label: 'Someone follows you', sub: '' },
+  { key: 'messages', label: 'Someone sends you a message', sub: '' },
   { key: 'cooked', label: 'Someone cooks your recipe', sub: 'Can get busy if a recipe takes off' },
   { key: 'digest', label: 'Weekly: what your people cooked', sub: 'One message, Sunday morning' },
 ];
 
-const ALL_OFF: NotificationPrefs = { notes: false, follows: false, cooked: false, digest: false };
+const ALL_OFF: NotificationPrefs = { notes: false, follows: false, messages: false, cooked: false, digest: false };
 
 // Step 4 of 4 — these persist for real, to profiles.notification_prefs
 // (Settings > Notifications reads and writes the same row).
@@ -23,7 +24,13 @@ export function NotifyStep({
   onNext: (prefs: NotificationPrefs) => void;
   onSkip: (prefs: NotificationPrefs) => void;
 }) {
-  const [on, setOn] = useState<NotificationPrefs>({ notes: true, follows: true, cooked: false, digest: false });
+  const [on, setOn] = useState<NotificationPrefs>({
+    notes: true,
+    follows: true,
+    messages: true,
+    cooked: false,
+    digest: false,
+  });
 
   return (
     <OnboardStep

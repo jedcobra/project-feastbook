@@ -11,6 +11,7 @@ const KIND_VERB: Record<string, string> = {
   cooked: 'cooked',
   follow: 'started following you',
   digest: 'sent you a weekly digest',
+  message: 'sent you a message',
 };
 
 function unwrapOne<T>(value: T | T[] | null | undefined): T | undefined {
@@ -60,7 +61,9 @@ export async function POST(request: Request) {
 
   const { data: notifRow, error: notifError } = await admin
     .from('notifications')
-    .select('recipient_id, actor_id, kind, recipe_id, actor:profiles!actor_id(name), recipe:recipes(title)')
+    .select(
+      'recipient_id, actor_id, kind, recipe_id, conversation_id, actor:profiles!actor_id(name), recipe:recipes(title)',
+    )
     .eq('id', notificationId)
     .maybeSingle();
   if (notifError || !notifRow) {
@@ -94,7 +97,11 @@ export async function POST(request: Request) {
   const recipeTitle = unwrapOne(notifRow.recipe as { title: string } | { title: string }[] | null)?.title;
   const verb = KIND_VERB[notifRow.kind] ?? 'did something on';
   const body = recipeTitle ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;
-  const url = notifRow.recipe_id ? `/recipe/${notifRow.recipe_id}` : '/notifications';
+  const url = notifRow.conversation_id
+    ? `/messages/${notifRow.conversation_id}`
+    : notifRow.recipe_id
+      ? `/recipe/${notifRow.recipe_id}`
+      : '/notifications';
   const payload = JSON.stringify({ title: 'Special Spoon', body, url });
 
   let sent = 0;

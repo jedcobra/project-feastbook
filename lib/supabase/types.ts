@@ -5,6 +5,7 @@ export interface NotificationPrefs {
   follows: boolean;
   cooked: boolean;
   digest: boolean;
+  messages: boolean;
 }
 
 export interface ProfileRow {
@@ -98,9 +99,10 @@ export interface NotificationRow {
   id: string;
   recipient_id: string;
   actor_id: string | null;
-  kind: 'note' | 'reply' | 'follow' | 'cooked' | 'digest';
+  kind: 'note' | 'reply' | 'follow' | 'cooked' | 'digest' | 'message';
   recipe_id: string | null;
   comment_id: string | null;
+  conversation_id: string | null;
   excerpt: string | null;
   created_at: string;
   read_at: string | null;

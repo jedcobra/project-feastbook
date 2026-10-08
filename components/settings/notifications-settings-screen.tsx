@@ -18,6 +18,7 @@ import type { NotificationPrefs } from '@/lib/supabase/types';
 const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'notes', label: 'Someone notes on your recipe', sub: 'Including replies to your own notes' },
   { key: 'follows', label: 'Someone follows you', sub: '' },
+  { key: 'messages', label: 'Someone sends you a message', sub: '' },
   { key: 'cooked', label: 'Someone cooks your recipe', sub: 'Can get busy if a recipe takes off' },
   { key: 'digest', label: 'Weekly: what your people cooked', sub: 'Not sent yet — saved for when it is' },
 ];

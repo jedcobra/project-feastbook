@@ -663,6 +663,7 @@ const PREF_KEY: Record<NotificationKind, keyof NotificationPrefs> = {
   follow: 'follows',
   cooked: 'cooked',
   digest: 'digest',
+  message: 'messages',
 };
 
 // Writes a notification for someone else's inbox. Never for your own —
@@ -672,7 +673,7 @@ async function notify(
   recipientId: string,
   actorId: string,
   kind: NotificationKind,
-  extra: { recipeId?: string; commentId?: string; excerpt?: string } = {},
+  extra: { recipeId?: string; commentId?: string; conversationId?: string; excerpt?: string } = {},
 ) {
   if (recipientId === actorId) return;
   const { data: recipient } = await supabase
@@ -691,6 +692,7 @@ async function notify(
       kind,
       recipe_id: extra.recipeId ?? null,
       comment_id: extra.commentId ?? null,
+      conversation_id: extra.conversationId ?? null,
       excerpt: extra.excerpt ?? null,
     })
     .select('id')
@@ -1431,7 +1433,9 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
     // `notifications` has two FKs into `profiles` (recipient_id, actor_id),
     // so the embed must name which column to join on — otherwise it's
     // ambiguous to PostgREST and silently resolves to nothing.
-    .select('id, kind, excerpt, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)')
+    .select(
+      'id, kind, excerpt, conversation_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)',
+    )
     .eq('recipient_id', recipientId)
     .order('created_at', { ascending: false })
     .limit(100);
@@ -1444,6 +1448,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
       id: string;
       kind: AppNotification['kind'];
       excerpt: string | null;
+      conversation_id: string | null;
       created_at: string;
       read_at: string | null;
       actor: { name: string; handle: string } | { name: string; handle: string }[] | null;
@@ -1458,6 +1463,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
         actorHandle: actor?.handle ?? null,
         recipeId: recipe?.id ?? null,
         recipeTitle: recipe?.title ?? null,
+        conversationId: n.conversation_id,
         excerpt: n.excerpt,
         createdAt: n.created_at,
         read: !!n.read_at,
@@ -1714,6 +1720,7 @@ export async function fetchMessages(conversationId: string): Promise<DirectMessa
 export async function sendMessage(
   conversationId: string,
   senderId: string,
+  recipientId: string,
   text: string,
   photoUrl?: string,
 ): Promise<DirectMessage | null> {
@@ -1731,6 +1738,11 @@ export async function sendMessage(
     .update({ last_message_at: data.created_at })
     .eq('id', conversationId);
   if (convError) console.error('sendMessage: conversation update', convError);
+
+  await notify(recipientId, senderId, 'message', {
+    conversationId,
+    excerpt: text || (photoUrl ? '📷 Photo' : ''),
+  });
 
   return {
     id: data.id,

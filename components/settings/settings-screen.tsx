@@ -18,6 +18,7 @@ function summarizePrefs(prefs: NotificationPrefs): string {
   const labels: [keyof NotificationPrefs, string][] = [
     ['notes', 'Notes'],
     ['follows', 'Follows'],
+    ['messages', 'Messages'],
     ['cooked', 'Cooked'],
     ['digest', 'Digest'],
   ];
