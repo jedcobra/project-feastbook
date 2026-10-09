@@ -760,20 +760,21 @@ async function notify(
   const prefs = recipient?.notification_prefs as NotificationPrefs | undefined;
   if (prefs && !prefs[PREF_KEY[kind]]) return;
 
-  const { data, error } = await supabase
-    .from('notifications')
-    .insert({
-      recipient_id: recipientId,
-      actor_id: actorId,
-      kind,
-      recipe_id: extra.recipeId ?? null,
-      comment_id: extra.commentId ?? null,
-      conversation_id: extra.conversationId ?? null,
-      excerpt: extra.excerpt ?? null,
-    })
-    .select('id')
-    .single();
-  if (error || !data) {
+  // The id is minted here rather than read back with .select(): the row
+  // belongs to the recipient, and RLS only lets the recipient SELECT it,
+  // so an insert-returning from the actor's session fails and rolls back.
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from('notifications').insert({
+    id,
+    recipient_id: recipientId,
+    actor_id: actorId,
+    kind,
+    recipe_id: extra.recipeId ?? null,
+    comment_id: extra.commentId ?? null,
+    conversation_id: extra.conversationId ?? null,
+    excerpt: extra.excerpt ?? null,
+  });
+  if (error) {
     console.error('notify', error);
     return;
   }
@@ -781,7 +782,7 @@ async function notify(
   // top of the in-app one just written above, never something the
   // triggering action (following someone, posting a note, ...) should
   // wait on or fail over.
-  void triggerPush(data.id);
+  void triggerPush(id);
 }
 
 async function triggerPush(notificationId: string) {
