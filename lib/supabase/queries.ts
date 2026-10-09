@@ -273,35 +273,45 @@ export async function fetchTrendingTags(limit = 8): Promise<string[]> {
     .map(([tag]) => tag);
 }
 
-// Recipes with a cover photo lead, most recent first — a photoless row
-// still reads fine in a plain list, but it's a weak first impression for a
-// featured pick. Two queries (rather than one pool fetched and sorted
-// client-side) so a genuinely recent photo'd recipe can never get bumped
-// out by an arbitrary pool cutoff; the photoless query only runs at all if
-// the photo'd one didn't fill the limit on its own.
+// Ranked by real engagement, not recency — saves and cooks count equally
+// as direct signals, and a rating is weighted by how many people gave one
+// (rating_avg * rating_count), so one 5-star vote doesn't outrank a recipe
+// dozens of people actually saved or cooked. RLS already scopes the fetch
+// to whatever this viewer is allowed to see (public, their own, or
+// followers-only from someone they follow), same as any other recipe read.
+// Recomputed from live recipe_stats on every call — nothing here is a
+// fixed or cached list.
 export async function fetchTrendingRecipes(limit = 5) {
-  const { data: withPhoto, error: photoError } = await supabase
+  const { data, error } = await supabase
     .from('recipes')
     .select('*')
-    .not('cover_photo_url', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-  if (photoError) console.error('fetchTrendingRecipes (with photo)', photoError);
-
-  const remaining = limit - (withPhoto?.length ?? 0);
-  let withoutPhoto: RecipeRow[] = [];
-  if (remaining > 0) {
-    const { data, error: noPhotoError } = await supabase
-      .from('recipes')
-      .select('*')
-      .is('cover_photo_url', null)
-      .order('created_at', { ascending: false })
-      .limit(remaining);
-    if (noPhotoError) console.error('fetchTrendingRecipes (without photo)', noPhotoError);
-    withoutPhoto = (data ?? []) as RecipeRow[];
+    .order('created_at', { ascending: false });
+  if (error || !data) {
+    console.error('fetchTrendingRecipes', error);
+    return [];
   }
 
-  return mapRecipeRows([...((withPhoto ?? []) as RecipeRow[]), ...withoutPhoto]);
+  const rows = data as RecipeRow[];
+  const statsById = await fetchRecipeStatsByIds(rows.map((r) => r.id));
+
+  const scored = rows.map((row) => {
+    const stats = statsById.get(row.id);
+    const saves = stats?.save_count ?? 0;
+    const cooked = stats?.made_it_count ?? 0;
+    const ratingWeight = (stats?.rating_avg ?? 0) * (stats?.rating_count ?? 0);
+    return { row, stats, score: saves + cooked + ratingWeight, hasPhoto: !!row.cover_photo_url };
+  });
+
+  // Ties (most often all-zero engagement) fall back to "has a photo" and
+  // then, via the stable sort preserving the query's own order, recency.
+  scored.sort((a, b) => b.score - a.score || Number(b.hasPhoto) - Number(a.hasPhoto));
+  const top = scored.slice(0, limit);
+
+  const authorIds = [...new Set(top.map((s) => s.row.author_id))];
+  const { data: authors } = await supabase.from('profiles').select('id, handle').in('id', authorIds);
+  const handleById = new Map((authors ?? []).map((a: { id: string; handle: string }) => [a.id, a.handle]));
+
+  return top.map(({ row, stats }) => mapRecipeSummary(row, handleById.get(row.author_id) ?? '', stats));
 }
 
 // ─────────────────────────────────────────────────────────────
