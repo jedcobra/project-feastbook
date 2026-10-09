@@ -33,6 +33,7 @@ export function ComposerScreen() {
   const goBack = useBackNav();
   const { loading, user, profile } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
+  const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -131,6 +132,13 @@ export function ComposerScreen() {
     setDraft((d) =>
       d ? { ...d, tags: d.tags.includes(tag) ? d.tags.filter((t) => t !== tag) : [...d.tags, tag] } : d,
     );
+
+  const addCustomTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    setTagInput('');
+    if (!tag) return;
+    setDraft((d) => (d && !d.tags.includes(tag) ? { ...d, tags: [...d.tags, tag] } : d));
+  };
 
   return (
     <>
@@ -344,6 +352,19 @@ export function ComposerScreen() {
                   + {t}
                 </button>
               ))}
+            <input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addCustomTag();
+                }
+              }}
+              onBlur={addCustomTag}
+              placeholder="Add a tag…"
+              className="w-[108px] min-w-0 flex-shrink-0 rounded-tag border border-dashed border-rule bg-transparent px-2 py-[3px] font-mono text-meta text-ink outline-none placeholder:text-ink-mute focus:border-ink"
+            />
           </div>
         </div>
 
