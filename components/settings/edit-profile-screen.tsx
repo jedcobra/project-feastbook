@@ -55,7 +55,7 @@ export function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    const trimmedHandle = handle.trim().replace(/^@/, '');
+    const trimmedHandle = handle.trim().replace(/^@/, '').toLowerCase();
     if (!trimmedHandle) {
       setError('Handle can’t be empty.');
       return;
@@ -145,7 +145,12 @@ export function EditProfileScreen() {
         </div>
         {error && <div className="mb-3.5 font-mono text-[11.5px] text-accent">{error}</div>}
         <Field label="Name" value={name} onChange={touch(setName)} mono={false} size={20} />
-        <Field label="Handle" value={handle} onChange={touch(setHandle)} hint={`specialspoon.app/@${handle || 'you'}`} />
+        <Field
+          label="Handle"
+          value={handle}
+          onChange={touch((v: string) => setHandle(v.toLowerCase()))}
+          hint={`specialspoon.app/@${handle || 'you'}`}
+        />
         <Field
           label="Bio"
           value={bio}

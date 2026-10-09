@@ -362,7 +362,7 @@ export async function searchAll(query: string): Promise<SearchResults> {
 // Auth / onboarding
 // ─────────────────────────────────────────────────────────────
 export async function checkHandleAvailable(handle: string, excludeProfileId?: string): Promise<boolean> {
-  let query = supabase.from('profiles').select('id').eq('handle', handle);
+  let query = supabase.from('profiles').select('id').eq('handle', handle.trim().toLowerCase());
   if (excludeProfileId) query = query.neq('id', excludeProfileId);
   const { data, error } = await query.maybeSingle();
   if (error) {
@@ -393,7 +393,7 @@ export async function updateProfile(
     .from('profiles')
     .update({
       name: fields.name.trim(),
-      handle: fields.handle.trim(),
+      handle: fields.handle.trim().toLowerCase(),
       bio: fields.bio.trim(),
       link: fields.link.trim(),
       ...(fields.avatarUrl !== undefined ? { avatar_url: fields.avatarUrl || null } : {}),
@@ -425,7 +425,7 @@ export async function fetchProfileByHandle(handle: string) {
   const { data: profileRow, error } = await supabase
     .from('profiles')
     .select('id, name, handle, bio, avatar_url')
-    .eq('handle', handle)
+    .eq('handle', handle.trim().toLowerCase())
     .maybeSingle();
 
   if (error || !profileRow) {
