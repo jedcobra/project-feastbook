@@ -37,12 +37,15 @@ const SECONDARY_ROWS = [
   },
 ];
 
-// Entry picker — link paste leads, three secondary routes sit beneath a
-// dashed "or" divider. Photographing a card still just opens the blank
-// composer (its OCR parser didn't read well enough and was pulled).
+// Entry picker — one flat list of ways in. "Import from a link" starts
+// collapsed like every other row; tapping it swaps the row for the URL
+// field in place, rather than showing that field expanded by default.
+// Photographing a card still just opens the blank composer (its OCR
+// parser didn't read well enough and was pulled).
 export function EntryScreen() {
   const router = useRouter();
   const { loading, user } = useAuth();
+  const [linkOpen, setLinkOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [draftCount, setDraftCount] = useState(0);
   const [importing, setImporting] = useState(false);
@@ -132,45 +135,63 @@ export function EntryScreen() {
         }
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <div className="mb-[18px] border border-ink p-4">
-          <div className="mb-2 font-display text-caps font-bold uppercase text-ink">
-            Import from a link
+        {linkOpen ? (
+          <div className="mb-[18px] border border-ink p-4">
+            <button
+              type="button"
+              onClick={() => setLinkOpen(false)}
+              className="mb-2 flex items-center gap-1.5 font-display text-caps font-bold uppercase text-ink"
+            >
+              Import from a link
+            </button>
+            <div className="mb-3 flex items-center gap-2 border-b border-dashed border-rule pb-2">
+              <LinkIcon size={14} className="flex-shrink-0 text-ink-mute" />
+              <input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Paste a recipe URL…"
+                autoFocus
+                className="min-w-0 flex-1 border-none bg-transparent font-mono text-[12px] text-ink placeholder:text-ink-mute focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={fetchRecipe}
+              disabled={!url.trim() || importing}
+              className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[13px] font-semibold text-cream disabled:opacity-50"
+            >
+              {importing ? 'Fetching…' : 'Fetch recipe'}
+            </button>
+            {importError && <div className="mt-2 font-mono text-[11px] text-accent">{importError}</div>}
+            <div className="mt-2 font-mono text-[10px] leading-relaxed text-ink-mute">
+              We pull the ingredients and method, then you confirm every field before it saves.
+            </div>
           </div>
-          <div className="mb-3 flex items-center gap-2 border-b border-dashed border-rule pb-2">
-            <LinkIcon size={14} className="flex-shrink-0 text-ink-mute" />
-            <input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste a recipe URL…"
-              className="min-w-0 flex-1 border-none bg-transparent font-mono text-[12px] text-ink placeholder:text-ink-mute focus:outline-none"
-            />
-          </div>
+        ) : (
           <button
             type="button"
-            onClick={fetchRecipe}
-            disabled={!url.trim() || importing}
-            className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[13px] font-semibold text-cream disabled:opacity-50"
+            onClick={() => setLinkOpen(true)}
+            className="flex w-full items-center gap-3 border-b border-t border-dashed border-rule py-3.5 text-left"
           >
-            {importing ? 'Fetching…' : 'Fetch recipe'}
+            <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center border border-ink">
+              <LinkIcon size={16} className="text-ink" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="mb-px block font-display text-[15px] font-bold text-ink">Import from a link</span>
+              <span className="block font-mono text-[11px] text-ink-mute">
+                Paste a URL — we pull the ingredients and method.
+              </span>
+            </span>
+            <ChevronIcon size={15} className="flex-shrink-0 text-ink-mute" />
           </button>
-          {importError && <div className="mt-2 font-mono text-[11px] text-accent">{importError}</div>}
-          <div className="mt-2 font-mono text-[10px] leading-relaxed text-ink-mute">
-            We pull the ingredients and method, then you confirm every field before it saves.
-          </div>
-        </div>
-
-        <div className="mb-4 flex items-center gap-2.5">
-          <div className="flex-1 border-t border-dashed border-rule" />
-          <span className="font-mono text-[10px] text-ink-mute">or</span>
-          <div className="flex-1 border-t border-dashed border-rule" />
-        </div>
+        )}
 
         {SECONDARY_ROWS.map((row, i) => (
           <Link
             key={row.title}
             href={row.href}
             className={`flex w-full items-center gap-3 border-b border-dashed border-rule py-3.5 text-left ${
-              i === 0 ? 'border-t' : ''
+              i === 0 && linkOpen ? 'border-t' : ''
             }`}
           >
             <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center border border-ink">
