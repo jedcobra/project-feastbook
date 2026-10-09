@@ -72,7 +72,7 @@ export function ComposerScreen() {
   if (loading || !draft) {
     return (
       <>
-        <TopBar title="Write it out" backHref="/new" />
+        <TopBar title="Type it out" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
         </div>
@@ -83,7 +83,7 @@ export function ComposerScreen() {
   if (!user || !profile) {
     return (
       <>
-        <TopBar title="Write it out" backHref="/new" />
+        <TopBar title="Type it out" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
           <span className="font-mono text-[12px] text-ink-mute">Sign in to write a recipe.</span>
         </div>
@@ -143,7 +143,7 @@ export function ComposerScreen() {
   return (
     <>
       <TopBar
-        title={isEdit ? 'Edit recipe' : 'Write it out'}
+        title={isEdit ? 'Edit recipe' : 'Type it out'}
         backHref={closeHref}
         subtitle={`${pct}% · draft saved`}
       />

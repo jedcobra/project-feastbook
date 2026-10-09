@@ -88,7 +88,7 @@ export function AccountScreen() {
 
   return (
     <>
-      <TopBar title="Account" backHref="/settings" />
+      <TopBar title="Account and password" backHref="/settings" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-9">
         <div className="mb-[22px]">
           <Label className="mb-0.5 text-[9px] tracking-[0.12em]">Sign in</Label>

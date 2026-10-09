@@ -140,7 +140,7 @@ export function EntryScreen() {
             <button
               type="button"
               onClick={() => setLinkOpen(false)}
-              className="mb-2 flex items-center gap-1.5 font-display text-caps font-bold uppercase text-ink"
+              className="mb-2 flex items-center gap-1.5 font-display text-[15px] font-bold text-ink"
             >
               Import from a link
             </button>

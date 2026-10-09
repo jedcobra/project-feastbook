@@ -193,7 +193,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
           </>
         ) : (
           <>
-            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">Who can see it</h3>
+            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">Change who can see it</h3>
             {VISIBILITY_OPTIONS.map((o, i) => {
               const on = visibility === o.id;
               return (
