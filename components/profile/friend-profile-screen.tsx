@@ -37,7 +37,8 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     if (!profile || !data) return;
     const next = !following;
     setFollowingState(next);
-    await setFollowing(profile.id, data.person.id, next);
+    const ok = await setFollowing(profile.id, data.person.id, next);
+    if (!ok) setFollowingState(!next);
   };
 
   if (data === undefined) {

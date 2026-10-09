@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
 import { suggestSubstitution, type DietMode } from '@/lib/diet-substitutions';
 import { scaleIngredientText, type UnitSystem } from '@/lib/ingredient-scaling';
+import { getServingsPreference } from '@/lib/servings-preference';
 import type { IngredientSection } from '@/lib/types';
 import { getUnitsPreference } from '@/lib/units-preference';
 
@@ -21,9 +22,9 @@ const DIET_OPTIONS: { id: DietMode; label: string }[] = [
 ];
 
 // Scaling, unit conversion, and diet substitutions only ever touch the
-// displayed text — never the stored recipe. All three reset to "as
-// published" every time you open the recipe again; only the units default
-// (Settings > Units) carries over.
+// displayed text — never the stored recipe. Diet mode resets to "as
+// published" every time you open the recipe again; units and servings
+// each have a Settings default that carries over instead.
 export function IngredientsBlock({ sections, servings }: { sections: IngredientSection[]; servings: number }) {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [targetServings, setTargetServings] = useState(servings);
@@ -32,6 +33,8 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
 
   useEffect(() => {
     setUnitSystem(getUnitsPreference());
+    const defaultServings = getServingsPreference();
+    if (defaultServings) setTargetServings(defaultServings);
   }, []);
 
   const toggle = (key: string) => setChecked((c) => ({ ...c, [key]: !c[key] }));

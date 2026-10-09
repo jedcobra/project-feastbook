@@ -444,6 +444,13 @@ export async function updateDefaultVisibility(profileId: string, visibility: Vis
   if (error) console.error('updateDefaultVisibility', error);
 }
 
+// 'no_one' only stops new follows — RLS enforces it on the follows insert
+// itself (see 0022_who_can_follow.sql), existing followers aren't removed.
+export async function updateWhoCanFollow(profileId: string, value: 'anyone' | 'no_one') {
+  const { error } = await supabase.from('profiles').update({ who_can_follow: value }).eq('id', profileId);
+  if (error) console.error('updateWhoCanFollow', error);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Profile (own + friend)
 // ─────────────────────────────────────────────────────────────
@@ -789,19 +796,31 @@ export async function deletePushSubscription(endpoint: string): Promise<void> {
   if (error) console.error('deletePushSubscription', error);
 }
 
-export async function setFollowing(followerId: string, followeeId: string, follow: boolean) {
+// Returns whether the write actually landed — an insert can be rejected by
+// RLS (the followee set "who can follow you" to no one, or either side
+// blocked the other), and the caller needs to know so it can roll back its
+// optimistic UI update rather than show "Following" for a follow that
+// didn't happen.
+export async function setFollowing(followerId: string, followeeId: string, follow: boolean): Promise<boolean> {
   if (follow) {
     const { error } = await supabase.from('follows').insert({ follower_id: followerId, followee_id: followeeId });
-    if (error) console.error('setFollowing insert', error);
-    else await notify(followeeId, followerId, 'follow');
-  } else {
-    const { error } = await supabase
-      .from('follows')
-      .delete()
-      .eq('follower_id', followerId)
-      .eq('followee_id', followeeId);
-    if (error) console.error('setFollowing delete', error);
+    if (error) {
+      console.error('setFollowing insert', error);
+      return false;
+    }
+    await notify(followeeId, followerId, 'follow');
+    return true;
   }
+  const { error } = await supabase
+    .from('follows')
+    .delete()
+    .eq('follower_id', followerId)
+    .eq('followee_id', followeeId);
+  if (error) {
+    console.error('setFollowing delete', error);
+    return false;
+  }
+  return true;
 }
 
 export async function hasCooked(userId: string, recipeId: string): Promise<boolean> {

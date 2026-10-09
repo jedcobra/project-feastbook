@@ -33,7 +33,15 @@ export function FollowStep({
       else s.delete(personId);
       return s;
     });
-    await setFollowing(profileId, personId, next);
+    const ok = await setFollowing(profileId, personId, next);
+    if (!ok) {
+      setFollowingState((f) => {
+        const s = new Set(f);
+        if (next) s.delete(personId);
+        else s.add(personId);
+        return s;
+      });
+    }
   };
 
   return (

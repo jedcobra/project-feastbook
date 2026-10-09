@@ -33,7 +33,8 @@ export function CookRow({ person, first }: { person: Person; first: boolean }) {
     if (!profile) return;
     const next = !following;
     setFollowingState(next);
-    await setFollowing(profile.id, person.id, next);
+    const ok = await setFollowing(profile.id, person.id, next);
+    if (!ok) setFollowingState(!next);
   };
 
   return (

@@ -23,6 +23,7 @@ export interface ProfileRow {
   link: string;
   notification_prefs: NotificationPrefs;
   default_visibility: Visibility | null;
+  who_can_follow: 'anyone' | 'no_one';
 }
 
 export interface ProfileStatsRow {
