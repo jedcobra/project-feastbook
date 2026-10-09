@@ -1,11 +1,13 @@
 import Link from 'next/link';
+import { PencilIcon } from '@/components/icons';
 import { formatCount } from '@/lib/format';
 import type { Person } from '@/lib/types';
 
 // Bordered profile card — banner + overlapping avatar, name, handle, bio,
 // stats grid. Followers and Following open the actual list; Recipes has
-// no separate list of its own (that's just the Recipes tab below).
-export function ProfileHeader({ person }: { person: Person }) {
+// no separate list of its own (that's just the Recipes tab below). Only
+// your own card gets the pencil — editing is a thing you do to yourself.
+export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn?: boolean }) {
   const stats: [string, string, string | null][] = [
     ['Recipes', String(person.recipes), null],
     ['Followers', formatCount(person.followers), `/${person.handle}/followers`],
@@ -16,8 +18,19 @@ export function ProfileHeader({ person }: { person: Person }) {
     <div className="mx-5 mb-5">
       <div className="h-16 rounded-t-lg border border-b-0 border-ink bg-gradient-to-r from-ink to-ink-soft" />
       <div className="border border-ink px-[18px] pb-3.5 pt-0">
-        <div className="-mt-7 mb-2.5 flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-cream bg-highlight font-display text-[22px] font-bold text-ink">
-          {person.name[0]?.toUpperCase()}
+        <div className="-mt-7 mb-2.5 flex items-end justify-between">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-cream bg-highlight font-display text-[22px] font-bold text-ink">
+            {person.name[0]?.toUpperCase()}
+          </div>
+          {isOwn && (
+            <Link
+              href="/settings/profile"
+              aria-label="Edit profile"
+              className="mb-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-ink bg-cream text-ink"
+            >
+              <PencilIcon size={12} />
+            </Link>
+          )}
         </div>
         <h1 className="mb-0.5 font-display text-profile-name font-bold text-ink">{person.name}</h1>
         <div className="mb-2.5 font-mono text-meta text-ink-mute">@{person.handle}</div>

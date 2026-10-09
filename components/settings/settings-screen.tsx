@@ -71,8 +71,7 @@ export function SettingsScreen() {
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-9">
         <div className="mb-[22px]">
           <Label className="mb-0.5 text-[9px] tracking-[0.12em]">You</Label>
-          <SettingRow label="Edit profile" value={`${profile.name} · @${profile.handle}`} onClick={() => router.push('/settings/profile')} first />
-          <SettingRow label="Account and password" onClick={() => router.push('/settings/account')} />
+          <SettingRow label="Account and password" onClick={() => router.push('/settings/account')} first />
           <SettingRow label="Who can follow you" value="Anyone" />
         </div>
 

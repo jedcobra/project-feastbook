@@ -78,7 +78,7 @@ export function OwnCookbook() {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <ProfileHeader person={data.person} />
+      <ProfileHeader person={data.person} isOwn />
       <ProfileTabs
         shelves={data.shelves}
         recipes={data.recipes}
