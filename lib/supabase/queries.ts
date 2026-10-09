@@ -165,6 +165,9 @@ export async function fetchFeed(limit = 20) {
       const recipe = recipeById.get(a.recipe_id);
       const author = personById.get(a.who_id);
       if (!recipe || !author) return null;
+      // "X saved their own recipe" isn't activity worth seeing — saving
+      // your own recipe to a shelf is a filing action, not a cook finding it.
+      if (a.kind === 'saved' && recipe.author === author.handle) return null;
       return {
         activity: {
           kind: a.kind,
