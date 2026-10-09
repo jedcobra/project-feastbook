@@ -10,12 +10,11 @@ import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import { parseDurationMinutes } from '@/lib/format';
 import { addRecentSearch, clearRecentSearches, listRecentSearches, removeRecentSearch } from '@/lib/search-history';
-import { searchAll, type SearchResults } from '@/lib/supabase/queries';
+import { fetchTrendingTags, searchAll, type SearchResults } from '@/lib/supabase/queries';
 
 type Scope = 'all' | 'recipes' | 'people' | 'shelves';
 type QuickFilter = 'under30' | 'easy';
 
-const TRY_TAGS = ['weeknight', 'sourdough', 'one-pot', 'vegan', 'dessert', 'preserves'];
 const EMPTY: SearchResults = { recipes: [], people: [], shelves: [] };
 
 export function SearchScreen({ initial = '' }: { initial?: string }) {
@@ -25,9 +24,11 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
   const [scope, setScope] = useState<Scope>('all');
   const [filters, setFilters] = useState<Set<QuickFilter>>(new Set());
   const [recent, setRecent] = useState<string[]>([]);
+  const [trendingTags, setTrendingTags] = useState<string[]>([]);
 
   useEffect(() => {
     setRecent(listRecentSearches());
+    fetchTrendingTags().then(setTrendingTags);
   }, []);
 
   useEffect(() => {
@@ -170,16 +171,18 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                 </button>
               </div>
             ))}
-            <div className="mt-6">
-              <Label className="mb-2.5">Try</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {TRY_TAGS.map((t) => (
-                  <button key={t} type="button" onClick={() => setQ(t)}>
-                    <Tag>{t}</Tag>
-                  </button>
-                ))}
+            {trendingTags.length > 0 && (
+              <div className="mt-6">
+                <Label className="mb-2.5">Trending tags</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {trendingTags.map((t) => (
+                    <button key={t} type="button" onClick={() => setQ(t)}>
+                      <Tag>{t}</Tag>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </>
         ) : loading ? (
           <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Searching…</div>

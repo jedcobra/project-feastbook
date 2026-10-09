@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
-import { Label } from '@/components/label';
 import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { formatCount } from '@/lib/format';
 import { isFollowing, setFollowing } from '@/lib/supabase/queries';
@@ -13,7 +12,7 @@ import type { Person } from '@/lib/types';
 export function CooksToFollow({ people }: { people: Person[] }) {
   return (
     <div className="mb-6">
-      <Label className="mb-2.5">Cooks to follow</Label>
+      <h2 className="mb-2.5 font-display text-[15px] font-bold text-ink">Cooks to follow</h2>
       {people.map((person, i) => (
         <CookRow key={person.id} person={person} first={i === 0} />
       ))}

@@ -1,13 +1,12 @@
 import Link from 'next/link';
-import { Label } from '@/components/label';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { Recipe } from '@/lib/types';
 
 export function EditorsPicks({ recipes }: { recipes: Recipe[] }) {
   return (
-    <div>
-      <Label className="mb-2.5">Editor&rsquo;s picks</Label>
+    <div className="mb-6">
+      <h2 className="mb-2.5 font-display text-[15px] font-bold text-ink">Editor&rsquo;s choice</h2>
       {recipes.map((recipe, i) => (
         <Link
           key={recipe.id}
