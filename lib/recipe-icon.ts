@@ -3,10 +3,10 @@ import {
   BowlIcon,
   CakeIcon,
   CupIcon,
-  DrumstickIcon,
   FishIcon,
   ForkIcon,
   LeafIcon,
+  MeatIcon,
   PigIcon,
   WheatIcon,
 } from '@/components/icons';
@@ -43,7 +43,7 @@ const KEYWORDS: [RecipeIconCategory, string[]][] = [
 export const RECIPE_ICON_BY_CATEGORY: Record<RecipeIconCategory, typeof ForkIcon> = {
   fish: FishIcon,
   pork: PigIcon,
-  meat: DrumstickIcon,
+  meat: MeatIcon,
   sauce: BottleIcon,
   dessert: CakeIcon,
   bread: WheatIcon,
