@@ -16,7 +16,7 @@ export function EditorsPicks({ recipes }: { recipes: Recipe[] }) {
             i === 0 ? 'border-t' : ''
           }`}
         >
-          {recipe.coverPhotoUrl && <RecipeThumbnail src={recipe.coverPhotoUrl} alt={recipe.title} />}
+          <RecipeThumbnail recipe={recipe} />
           <div className="min-w-0 flex-1">
             <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{recipe.title}</h3>
             <div className="font-mono text-meta text-ink-mute">

@@ -122,7 +122,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
 
         {sorted.map((r) => (
           <div key={r.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-3">
-            {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
+            <RecipeThumbnail recipe={r} />
             {editing ? (
               <>
                 <div className="min-w-0 flex-1">

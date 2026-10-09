@@ -148,6 +148,94 @@ export function ForkIcon(props: StrokeIconProps) {
   );
 }
 
+// Recipe-category icons — the no-photo fallback picks one of these based
+// on the recipe's title/tags (see lib/recipe-icon.ts).
+export function FishIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M2 12s4-7 12-7c4 0 7 3 8 7-1 4-4 7-8 7-8 0-12-7-12-7z" />
+      <path d="M14 9l2-3M14 15l2 3M2 12h4" />
+    </StrokeIcon>
+  );
+}
+
+export function PigIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M8.5 7.5L7 5M15.5 7.5L17 5" />
+      <ellipse cx="12" cy="15" rx="3.2" ry="2.2" />
+      <circle cx="10.5" cy="15" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="13.5" cy="15" r="0.6" fill="currentColor" stroke="none" />
+    </StrokeIcon>
+  );
+}
+
+export function LeafIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 20C4 10 12 4 20 4c0 8-6 16-16 16z" />
+      <path d="M6 18C10 14 14 10 18 6" />
+    </StrokeIcon>
+  );
+}
+
+export function BottleIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M10 2h4v4l2 3v11a2 2 0 01-2 2h-4a2 2 0 01-2-2V9l2-3V2z" />
+      <path d="M9 9h6" />
+    </StrokeIcon>
+  );
+}
+
+export function DrumstickIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M13 3c3 0 6 3 6 6s-2 5-4 6l-6 6a2 2 0 01-3-3l6-6c-1-2-1-5 1-7 0 0 0-1 0-2z" />
+    </StrokeIcon>
+  );
+}
+
+export function WheatIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 2v20" />
+      <path d="M12 4c-2 0-3 1-3 3s1 3 3 3M12 4c2 0 3 1 3 3s-1 3-3 3" />
+      <path d="M12 10c-2 0-3 1-3 3s1 3 3 3M12 10c2 0 3 1 3 3s-1 3-3 3" />
+      <path d="M12 16c-2 0-3 1-3 3s1 2 3 2" />
+    </StrokeIcon>
+  );
+}
+
+export function CakeIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 20v-7l8-7 8 7v7z" />
+      <path d="M4 16h16" />
+      <circle cx="12" cy="6" r="1" fill="currentColor" stroke="none" />
+    </StrokeIcon>
+  );
+}
+
+export function BowlIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M3 11h18a9 6 0 01-18 0z" />
+      <path d="M12 11V8M9 9l1-2M15 9l-1-2" />
+    </StrokeIcon>
+  );
+}
+
+export function CupIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 3h10l-1 15a2 2 0 01-2 2H8a2 2 0 01-2-2L5 3z" />
+      <path d="M15 7h2a2 2 0 010 4h-2" />
+    </StrokeIcon>
+  );
+}
+
 export function DragIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

@@ -48,7 +48,7 @@ export function FeedRow({
       </div>
 
       <Link href={`/recipe/${recipe.id}`} className="flex items-start gap-2.5 px-5 pb-1 pt-2">
-        {recipe.coverPhotoUrl && <RecipeThumbnail src={recipe.coverPhotoUrl} alt={recipe.title} />}
+        <RecipeThumbnail recipe={recipe} />
         <span className="min-w-0 flex-1 font-display text-feed-title font-bold text-ink">{recipe.title}</span>
       </Link>
 
