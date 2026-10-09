@@ -119,7 +119,7 @@ export function SettingsScreen() {
 
         <div className="mb-[22px]">
           <Label className="mb-0.5 text-[9px] tracking-[0.12em]">About</Label>
-          <SettingRow label="Version" value="1.0" first />
+          <SettingRow label="Version" value="Beta" first />
         </div>
 
         <div className="mb-[22px]">
