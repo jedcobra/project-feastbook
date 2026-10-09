@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { CameraIcon, ChevronIcon, LinkIcon, PencilIcon, WandIcon } from '@/components/icons';
+import { CameraIcon, ChevronIcon, LinkIcon, PencilIcon, SaveIcon, WandIcon } from '@/components/icons';
 import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { draftFromImport, listUnstartedDrafts, saveDraft } from '@/lib/recipe-draft';
@@ -19,6 +19,12 @@ const SECONDARY_ROWS = [
   },
   {
     icon: WandIcon,
+    title: 'Guide me',
+    sub: 'One question at a time — we build it with you.',
+    href: '/new/guided',
+  },
+  {
+    icon: SaveIcon,
     title: 'Paste a recipe',
     sub: 'Copied from a note, an email, anywhere — we sort it out.',
     href: '/new/paste',
