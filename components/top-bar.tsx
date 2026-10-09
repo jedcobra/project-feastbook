@@ -15,7 +15,7 @@ interface TopBarProps {
 // on either side, instead of centering only between whatever's there.
 export function TopBar({ title, subtitle, trailing, backHref, onBack }: TopBarProps) {
   return (
-    <div className="grid flex-shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 px-5 pb-3.5 pt-6">
+    <div className="grid min-h-[67px] flex-shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 px-5 pb-3.5 pt-6">
       <div className="flex justify-start">
         {(backHref || onBack) && (
           <span className="print:hidden">
