@@ -279,14 +279,14 @@ export async function fetchTrendingTags(limit = 8): Promise<string[]> {
 // client-side) so a genuinely recent photo'd recipe can never get bumped
 // out by an arbitrary pool cutoff; the photoless query only runs at all if
 // the photo'd one didn't fill the limit on its own.
-export async function fetchEditorsPicks(limit = 5) {
+export async function fetchTrendingRecipes(limit = 5) {
   const { data: withPhoto, error: photoError } = await supabase
     .from('recipes')
     .select('*')
     .not('cover_photo_url', 'is', null)
     .order('created_at', { ascending: false })
     .limit(limit);
-  if (photoError) console.error('fetchEditorsPicks (with photo)', photoError);
+  if (photoError) console.error('fetchTrendingRecipes (with photo)', photoError);
 
   const remaining = limit - (withPhoto?.length ?? 0);
   let withoutPhoto: RecipeRow[] = [];
@@ -297,7 +297,7 @@ export async function fetchEditorsPicks(limit = 5) {
       .is('cover_photo_url', null)
       .order('created_at', { ascending: false })
       .limit(remaining);
-    if (noPhotoError) console.error('fetchEditorsPicks (without photo)', noPhotoError);
+    if (noPhotoError) console.error('fetchTrendingRecipes (without photo)', noPhotoError);
     withoutPhoto = (data ?? []) as RecipeRow[];
   }
 
