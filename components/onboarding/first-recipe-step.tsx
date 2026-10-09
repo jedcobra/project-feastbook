@@ -10,7 +10,7 @@ const WAYS: { icon: typeof LinkIcon; label: string; sub: string; source: DraftSo
   { icon: PencilIcon, label: 'Type it out', sub: 'The one you know by heart.', source: 'manual' },
 ];
 
-// Step 3 of 4 — picking a way in exits onboarding straight into the
+// Step 4 of 5 — picking a way in exits onboarding straight into the
 // composer rather than making you finish the last step first.
 export function FirstRecipeStep({
   onImport,
@@ -21,8 +21,8 @@ export function FirstRecipeStep({
 }) {
   return (
     <OnboardStep
-      step={2}
-      total={4}
+      step={3}
+      total={5}
       title="Put one recipe in"
       blurb="A cookbook with nothing in it is just a feed. Start with the thing you cooked last week."
       cta="Add it now"

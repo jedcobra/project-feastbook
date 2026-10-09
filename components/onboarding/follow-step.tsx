@@ -6,7 +6,7 @@ import { OnboardStep } from '@/components/onboarding/onboard-step';
 import { fetchDiscoverPeople, setFollowing } from '@/lib/supabase/queries';
 import type { Person } from '@/lib/types';
 
-// Step 2 of 4 — a feed needs people in it. Follows are written immediately
+// Step 3 of 5 — a feed needs people in it. Follows are written immediately
 // as you tap, same as everywhere else in the app; nothing here is
 // pre-selected for you.
 export function FollowStep({
@@ -38,8 +38,8 @@ export function FollowStep({
 
   return (
     <OnboardStep
-      step={1}
-      total={4}
+      step={2}
+      total={5}
       title="Cooks worth following"
       blurb={`You're following ${following.size}.`}
       cta={following.size ? 'Continue' : 'Continue without following anyone'}

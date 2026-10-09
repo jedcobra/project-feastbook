@@ -15,7 +15,7 @@ const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
 
 const ALL_OFF: NotificationPrefs = { notes: false, follows: false, messages: false, cooked: false, digest: false };
 
-// Step 4 of 4 — these persist for real, to profiles.notification_prefs
+// Step 5 of 5 — these persist for real, to profiles.notification_prefs
 // (Settings > Notifications reads and writes the same row).
 export function NotifyStep({
   onNext,
@@ -34,8 +34,8 @@ export function NotifyStep({
 
   return (
     <OnboardStep
-      step={3}
-      total={4}
+      step={4}
+      total={5}
       title="What's worth interrupting you for?"
       blurb="Pick now, change any time in settings. We'll only ask the phone for permission if you say yes to something."
       cta="Done — take me in"

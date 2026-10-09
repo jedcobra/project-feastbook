@@ -21,7 +21,7 @@ const TASTES = [
   'low effort',
 ];
 
-// Step 1 of 4 — seeds Discover ranking later; the app never treats it as a
+// Step 2 of 5 — seeds Discover ranking later; the app never treats it as a
 // gate on what you're allowed to save.
 export function TasteStep({
   picked,
@@ -38,8 +38,8 @@ export function TasteStep({
 
   return (
     <OnboardStep
-      step={0}
-      total={4}
+      step={1}
+      total={5}
       title="What do you actually cook?"
       blurb="Pick a few. This decides what shows up in Discover — not what you're allowed to save."
       cta={picked.length < 3 ? `Pick ${3 - picked.length} more` : 'Continue'}
