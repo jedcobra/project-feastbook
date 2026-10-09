@@ -41,7 +41,7 @@ export function RatingWidget({ recipeId, ratingCount }: { recipeId: string; rati
             ? `${ratingCount} rating${ratingCount === 1 ? '' : 's'} — add yours`
             : 'Be the first to rate this'}
       </span>
-      <div className="flex gap-0.5" onMouseLeave={() => setHover(0)}>
+      <div className="flex gap-1" onMouseLeave={() => setHover(0)}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -49,7 +49,7 @@ export function RatingWidget({ recipeId, ratingCount }: { recipeId: string; rati
             aria-label={`Rate ${n} star${n === 1 ? '' : 's'}`}
             onMouseEnter={() => setHover(n)}
             onClick={() => rate(n)}
-            className={`font-mono text-[16px] leading-none ${filled >= n ? 'text-ink' : 'text-rule'}`}
+            className={`font-mono text-[32px] leading-none ${filled >= n ? 'text-ink' : 'text-rule'}`}
           >
             ★
           </button>
