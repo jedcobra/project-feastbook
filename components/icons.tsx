@@ -153,9 +153,8 @@ export function ForkIcon(props: StrokeIconProps) {
 export function FishIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
-      <ellipse cx="10" cy="12" rx="7" ry="5" />
-      <path d="M17 9l5 3-5 3" />
-      <circle cx="7" cy="11" r="0.8" fill="currentColor" stroke="none" />
+      <path d="M2 12s4-7 12-7c4 0 7 3 8 7-1 4-4 7-8 7-8 0-12-7-12-7z" />
+      <path d="M14 9l2-3M14 15l2 3M2 12h4" />
     </StrokeIcon>
   );
 }
@@ -190,11 +189,10 @@ export function BottleIcon(props: StrokeIconProps) {
   );
 }
 
-export function MeatIcon(props: StrokeIconProps) {
+export function DrumstickIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
-      <path d="M4 9c0-2.5 2.5-5 8-5s8 2.5 8 5-2.5 11-8 11-8-8.5-8-11z" />
-      <path d="M7.5 9c2-1.3 7-1.3 9 0M6.5 13c2.3-1 8.7-1 11 0" />
+      <path d="M13 3c3 0 6 3 6 6s-2 5-4 6l-6 6a2 2 0 01-3-3l6-6c-1-2-1-5 1-7 0 0 0-1 0-2z" />
     </StrokeIcon>
   );
 }
@@ -202,11 +200,10 @@ export function MeatIcon(props: StrokeIconProps) {
 export function WheatIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
-      <path d="M12 21V3" />
-      <path d="M12 6l-3 2M12 6l3 2" />
-      <path d="M12 10l-3 2M12 10l3 2" />
-      <path d="M12 14l-3 2M12 14l3 2" />
-      <path d="M12 18l-2.5 1.5M12 18l2.5 1.5" />
+      <path d="M12 2v20" />
+      <path d="M12 4c-2 0-3 1-3 3s1 3 3 3M12 4c2 0 3 1 3 3s-1 3-3 3" />
+      <path d="M12 10c-2 0-3 1-3 3s1 3 3 3M12 10c2 0 3 1 3 3s-1 3-3 3" />
+      <path d="M12 16c-2 0-3 1-3 3s1 2 3 2" />
     </StrokeIcon>
   );
 }
@@ -214,11 +211,9 @@ export function WheatIcon(props: StrokeIconProps) {
 export function CakeIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="9" cy="9" r="1" fill="currentColor" stroke="none" />
-      <circle cx="15.5" cy="10" r="1" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="15" r="1" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="15" r="1" fill="currentColor" stroke="none" />
+      <path d="M4 20v-7l8-7 8 7v7z" />
+      <path d="M4 16h16" />
+      <circle cx="12" cy="6" r="1" fill="currentColor" stroke="none" />
     </StrokeIcon>
   );
 }
