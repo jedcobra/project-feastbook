@@ -7,7 +7,7 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Special Spoon',
-    short_name: 'Spoon',
+    short_name: 'Special Spoon',
     description: 'A personal online recipe book — create, curate, and share what you cook.',
     start_url: '/feed',
     display: 'standalone',
