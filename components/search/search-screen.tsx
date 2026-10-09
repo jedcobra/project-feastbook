@@ -204,7 +204,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                     href={`/recipe/${r.id}`}
                     className={`flex items-center gap-2.5 border-t border-dashed border-rule py-[11px] ${i === 0 ? '' : ''}`}
                   >
-                    <RecipeThumbnail recipe={r} size={36} />
+                    {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} size={36} />}
                     <div className="min-w-0 flex-1">
                       <h3 className="mb-0.5 font-display text-[15.5px] font-bold text-ink">{r.title}</h3>
                       <div className="font-mono text-[10.5px] text-ink-mute">

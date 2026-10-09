@@ -290,7 +290,7 @@ function RecipesTab({
             href={`/recipe/${r.id}`}
             className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
           >
-            <RecipeThumbnail recipe={r} />
+            {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2.5">
                 <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
@@ -432,7 +432,7 @@ function CookedTab({ recipes, firstName }: { recipes: Recipe[]; firstName: strin
           href={`/recipe/${r.id}`}
           className="flex items-center gap-2.5 border-b border-dashed border-rule py-3.5"
         >
-          <RecipeThumbnail recipe={r} />
+          {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2.5">
               <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
