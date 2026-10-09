@@ -5,7 +5,7 @@ import { TopBar } from '@/components/top-bar';
 export default function FeedPage() {
   return (
     <>
-      <TopBar variant="brand" trailing={<NotificationsButton />} />
+      <TopBar title="Feed" trailing={<NotificationsButton />} />
       <FeedScreen />
     </>
   );

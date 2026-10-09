@@ -8,7 +8,6 @@ export default function CookbookPage() {
   return (
     <>
       <TopBar
-        variant="brand"
         trailing={
           <Link href="/settings" aria-label="Settings" className={outlineBoxClasses(true)}>
             <GearIcon size={14} />

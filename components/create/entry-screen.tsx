@@ -88,7 +88,7 @@ export function EntryScreen() {
   if (loading) {
     return (
       <>
-        <TopBar title="New recipe" backHref="/me" />
+        <TopBar title="New recipe" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
         </div>
@@ -99,7 +99,7 @@ export function EntryScreen() {
   if (!user) {
     return (
       <>
-        <TopBar title="New recipe" backHref="/me" />
+        <TopBar title="New recipe" />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
           <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
             Sign in to add a recipe to your cookbook.
@@ -119,7 +119,6 @@ export function EntryScreen() {
     <>
       <TopBar
         title="New recipe"
-        backHref="/me"
         trailing={
           <Link href="/new/drafts" className={outlineBoxClasses(true)}>
             Drafts · {draftCount}
