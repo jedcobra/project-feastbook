@@ -12,14 +12,14 @@ import {
   fetchProfileByHandle,
   fetchSavedRecipes,
 } from '@/lib/supabase/queries';
-import type { Person, Recipe, Shelf } from '@/lib/types';
+import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
 
 // The real, auth-backed Cookbook screen.
 export function OwnCookbook() {
   const { loading, user, profile } = useAuth();
   const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
-  const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
+  const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
   const [archivedShelfCount, setArchivedShelfCount] = useState(0);
 
   useEffect(() => {

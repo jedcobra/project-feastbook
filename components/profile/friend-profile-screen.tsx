@@ -7,7 +7,7 @@ import { FollowActions } from '@/components/profile/follow-actions';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { fetchCookedRecipes, fetchProfileByHandle, isFollowing, setFollowing } from '@/lib/supabase/queries';
-import type { Person, Recipe, Shelf } from '@/lib/types';
+import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
 
 export function FriendProfileScreen({ handle }: { handle: string }) {
   const { profile } = useAuth();
@@ -15,7 +15,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     { person: Person; recipes: Recipe[]; shelves: Shelf[] } | null | undefined
   >(undefined);
   const [following, setFollowingState] = useState(false);
-  const [cookedRecipes, setCookedRecipes] = useState<Recipe[]>([]);
+  const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
 
   useEffect(() => {
     fetchProfileByHandle(handle).then(setData);

@@ -7,7 +7,7 @@ import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
-import type { Recipe, Shelf } from '@/lib/types';
+import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
 
@@ -26,7 +26,7 @@ export function ProfileTabs({
   shelves: Shelf[];
   recipes: Recipe[];
   savedRecipes?: Recipe[];
-  cookedRecipes?: Recipe[];
+  cookedRecipes?: CookedRecipe[];
   archivedShelfCount?: number;
   firstName: string;
   isOwn: boolean;
@@ -412,7 +412,7 @@ function DeleteRecipeConfirm({
   );
 }
 
-function CookedTab({ recipes, firstName }: { recipes: Recipe[]; firstName: string }) {
+function CookedTab({ recipes, firstName }: { recipes: CookedRecipe[]; firstName: string }) {
   if (recipes.length === 0) {
     return (
       <div className="mx-5 pb-8 pt-6">
@@ -441,7 +441,7 @@ function CookedTab({ recipes, firstName }: { recipes: Recipe[]; firstName: strin
             <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
               <span>{r.time}</span>
               <span>·</span>
-              <span>{r.madeIt} cooked</span>
+              <span>Cooked {r.cookedAt}</span>
               <span>·</span>
               <span>{r.difficulty}</span>
             </div>

@@ -92,6 +92,13 @@ export interface Recipe {
   comments: RecipeComment[];
 }
 
+// A recipe in the profile's "Cooked" tab — same shape as Recipe, plus when
+// *this* viewer last marked it cooked (made_it is one row per user+recipe,
+// so this is always the most recent cook, not just the first).
+export interface CookedRecipe extends Recipe {
+  cookedAt: string;
+}
+
 export type ActivityKind = 'new' | 'madeit' | 'saved';
 
 export interface FeedActivity {

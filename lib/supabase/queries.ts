@@ -5,6 +5,7 @@ import type { NotificationPrefs } from '@/lib/supabase/types';
 import type {
   AppNotification,
   ConversationSummary,
+  CookedRecipe,
   DirectMessage,
   FeedActivity,
   NotificationKind,
@@ -500,11 +501,11 @@ export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
 // option) — the made_it table this reads has existed since the first
 // schema migration, but nothing read from it until now. Most recently
 // cooked first; a repeat cook doesn't duplicate since made_it is one row
-// per user+recipe.
-export async function fetchCookedRecipes(userId: string): Promise<Recipe[]> {
+// per user+recipe, so created_at is always that cook's most recent one.
+export async function fetchCookedRecipes(userId: string): Promise<CookedRecipe[]> {
   const { data: madeItRows, error } = await supabase
     .from('made_it')
-    .select('recipe_id')
+    .select('recipe_id, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error || !madeItRows) {
@@ -517,7 +518,12 @@ export async function fetchCookedRecipes(userId: string): Promise<Recipe[]> {
     .select('*')
     .in('id', madeItRows.map((m) => m.recipe_id));
   const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
-  return madeItRows.map((m) => recipeById.get(m.recipe_id)).filter((r): r is Recipe => !!r);
+  return madeItRows
+    .map((m) => {
+      const recipe = recipeById.get(m.recipe_id);
+      return recipe ? { ...recipe, cookedAt: formatRelativeTime(m.created_at) } : undefined;
+    })
+    .filter((r): r is CookedRecipe => !!r);
 }
 
 // ─────────────────────────────────────────────────────────────
