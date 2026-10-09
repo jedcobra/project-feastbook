@@ -10,7 +10,7 @@ const EXT_BY_TYPE: Record<string, string> = {
   'image/heic': 'heic',
 };
 
-export type PhotoKind = 'recipe-cover' | 'recipe-step' | 'cooked' | 'message';
+export type PhotoKind = 'recipe-cover' | 'recipe-step' | 'cooked' | 'message' | 'avatar';
 
 // Uploads to the public `photos` bucket under the uploader's own profile-id
 // folder — storage RLS (see 0014_photos.sql) only lets someone write inside

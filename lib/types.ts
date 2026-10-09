@@ -6,6 +6,7 @@ export interface Person {
   name: string;
   handle: string;
   bio: string;
+  avatarUrl?: string;
   recipes: number;
   followers: number;
   following: number;

@@ -45,7 +45,7 @@ export function DocumentDetail({
       )}
 
       <Link href={`/${author.handle}`} className="flex items-center gap-2">
-        <Avatar name={author.name} size={24} />
+        <Avatar name={author.name} src={author.avatarUrl} size={24} />
         <span className="font-mono text-[13px] text-ink underline decoration-dashed underline-offset-[3px]">
           {author.name}
         </span>

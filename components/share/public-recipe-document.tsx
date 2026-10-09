@@ -32,7 +32,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
       )}
 
       <div className="mb-3.5 flex items-center gap-2">
-        <Avatar name={author.name} size={24} />
+        <Avatar name={author.name} src={author.avatarUrl} size={24} />
         <span className="font-mono text-[13px] text-ink">{author.name}</span>
         <span className="font-mono text-meta text-ink-mute">@{author.handle}</span>
       </div>

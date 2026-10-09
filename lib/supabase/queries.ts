@@ -34,6 +34,7 @@ interface ProfileRow {
   name: string;
   handle: string;
   bio: string;
+  avatar_url: string | null;
 }
 
 function mapPerson(row: ProfileRow, stats?: ProfileStats): Person {
@@ -42,6 +43,7 @@ function mapPerson(row: ProfileRow, stats?: ProfileStats): Person {
     name: row.name,
     handle: row.handle,
     bio: row.bio,
+    avatarUrl: row.avatar_url ?? undefined,
     recipes: stats?.recipe_count ?? 0,
     followers: stats?.follower_count ?? 0,
     following: stats?.following_count ?? 0,
@@ -144,7 +146,7 @@ export async function fetchFeed(limit = 20) {
 
   const [{ data: recipeRows }, { data: peopleRows }] = await Promise.all([
     supabase.from('recipes').select('*').in('id', recipeIds),
-    supabase.from('profiles').select('id, name, handle, bio').in('id', whoIds),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').in('id', whoIds),
   ]);
 
   const [recipes, peopleStats] = await Promise.all([
@@ -186,7 +188,7 @@ export async function fetchDiscoverPeople(excludeProfileId: string | null, limit
   // to suggest following.
   let query = supabase
     .from('profiles')
-    .select('id, name, handle, bio')
+    .select('id, name, handle, bio, avatar_url')
     .neq('handle', 'you')
     .order('created_at', { ascending: true })
     .limit(limit + 1);
@@ -235,7 +237,7 @@ export async function fetchFollowing(profileId: string): Promise<Person[]> {
 async function mapPeopleInOrder(ids: string[]): Promise<Person[]> {
   if (ids.length === 0) return [];
   const [{ data: rows }, stats] = await Promise.all([
-    supabase.from('profiles').select('id, name, handle, bio').in('id', ids),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').in('id', ids),
     fetchProfileStatsByIds(ids),
   ]);
   const byId = new Map((rows ?? []).map((r: ProfileRow) => [r.id, r]));
@@ -294,9 +296,9 @@ export async function searchAll(query: string): Promise<SearchResults> {
     supabase.from('recipes').select('id').ilike('subtitle', pattern),
     supabase.from('recipes').select('id').contains('tags', [q.toLowerCase()]),
     supabase.from('recipe_ingredients').select('recipe_ingredient_sections(recipe_id)').ilike('name', pattern),
-    supabase.from('profiles').select('id, name, handle, bio').ilike('name', pattern).neq('handle', 'you'),
-    supabase.from('profiles').select('id, name, handle, bio').ilike('handle', handlePattern).neq('handle', 'you'),
-    supabase.from('profiles').select('id, name, handle, bio').ilike('bio', pattern).neq('handle', 'you'),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').ilike('name', pattern).neq('handle', 'you'),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').ilike('handle', handlePattern).neq('handle', 'you'),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').ilike('bio', pattern).neq('handle', 'you'),
     supabase
       .from('shelves')
       .select('id, title, subtitle, visibility, shelf_recipes(recipe_id)')
@@ -385,7 +387,7 @@ export async function completeOnboarding(profileId: string, tasteTags: string[])
 // ─────────────────────────────────────────────────────────────
 export async function updateProfile(
   profileId: string,
-  fields: { name: string; handle: string; bio: string; link: string },
+  fields: { name: string; handle: string; bio: string; link: string; avatarUrl?: string },
 ): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('profiles')
@@ -394,6 +396,7 @@ export async function updateProfile(
       handle: fields.handle.trim(),
       bio: fields.bio.trim(),
       link: fields.link.trim(),
+      ...(fields.avatarUrl !== undefined ? { avatar_url: fields.avatarUrl || null } : {}),
     })
     .eq('id', profileId);
   if (error) {
@@ -421,7 +424,7 @@ export async function updateDefaultVisibility(profileId: string, visibility: Vis
 export async function fetchProfileByHandle(handle: string) {
   const { data: profileRow, error } = await supabase
     .from('profiles')
-    .select('id, name, handle, bio')
+    .select('id, name, handle, bio, avatar_url')
     .eq('handle', handle)
     .maybeSingle();
 
@@ -598,12 +601,12 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
         .select('id, parent_id, text, cooked, photo_url, created_at, author:profiles!comments_author_id_fkey(id, name, handle)')
         .eq('recipe_id', id)
         .order('created_at'),
-      supabase.from('profiles').select('id, name, handle, bio').eq('id', recipeRow.author_id).maybeSingle(),
+      supabase.from('profiles').select('id, name, handle, bio, avatar_url').eq('id', recipeRow.author_id).maybeSingle(),
       fetchProfileStatsByIds([recipeRow.author_id]),
     ]);
 
   const author = mapPerson(
-    (authorRow as ProfileRow | null) ?? { id: recipeRow.author_id, name: '', handle: '', bio: '' },
+    (authorRow as ProfileRow | null) ?? { id: recipeRow.author_id, name: '', handle: '', bio: '', avatar_url: null },
     authorStats.get(recipeRow.author_id),
   );
   const recipe = mapRecipeSummary(recipeRow as RecipeRow, author.handle, (await fetchRecipeStatsByIds([id])).get(id));
@@ -1637,7 +1640,7 @@ async function fetchConversationSummaries(myId: string, which: 'active' | 'archi
 
   const otherIds = rowsInView.map((r) => (r.user_a_id === myId ? r.user_b_id : r.user_a_id));
   const [{ data: peopleRows }, stats, lastMessages, unreadCounts] = await Promise.all([
-    supabase.from('profiles').select('id, name, handle, bio').in('id', otherIds),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').in('id', otherIds),
     fetchProfileStatsByIds(otherIds),
     fetchLastMessageByConversation(rowsInView.map((r) => r.id)),
     fetchUnreadCountByConversation(rowsInView.map((r) => r.id), myId),
@@ -1713,7 +1716,7 @@ export async function fetchConversationPeer(conversationId: string, myId: string
   }
   const otherId = data.user_a_id === myId ? data.user_b_id : data.user_a_id;
   const [{ data: personRow }, stats] = await Promise.all([
-    supabase.from('profiles').select('id, name, handle, bio').eq('id', otherId).maybeSingle(),
+    supabase.from('profiles').select('id, name, handle, bio, avatar_url').eq('id', otherId).maybeSingle(),
     fetchProfileStatsByIds([otherId]),
   ]);
   if (!personRow) return null;

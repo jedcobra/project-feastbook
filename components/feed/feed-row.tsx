@@ -35,7 +35,7 @@ export function FeedRow({
     <div className="rule-y">
       <div className="flex items-center gap-2 px-5 pt-3">
         <Link href={`/${author.handle}`} className="flex items-center gap-2">
-          <Avatar name={author.name} size={22} />
+          <Avatar name={author.name} src={author.avatarUrl} size={22} />
           <span className="font-mono text-[12px] text-ink underline decoration-dashed underline-offset-[3px]">
             {author.name}
           </span>
