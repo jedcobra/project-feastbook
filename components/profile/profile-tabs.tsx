@@ -261,9 +261,13 @@ function RecipesTab({
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
+  // Saving your own recipe to one of your own shelves (the shelf "Add
+  // recipes" picker allows this) marks it saved without un-authoring it —
+  // without this filter it'd show up twice, once from each list.
+  const ownIds = new Set(recipes.map((r) => r.id));
   const rows = [
     ...recipes.map((r) => ({ recipe: r, saved: false })),
-    ...savedRecipes.map((r) => ({ recipe: r, saved: true })),
+    ...savedRecipes.filter((r) => !ownIds.has(r.id)).map((r) => ({ recipe: r, saved: true })),
   ];
 
   if (rows.length === 0) {
