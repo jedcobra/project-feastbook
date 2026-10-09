@@ -73,6 +73,7 @@ export function SwipeableRow({
         ))}
       </div>
       <div
+        data-swipe-row
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}

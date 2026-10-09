@@ -1,4 +1,5 @@
 import { OnboardingGate } from '@/components/auth/onboarding-gate';
+import { SectionSwipeNav } from '@/components/section-swipe-nav';
 import { TabBar } from '@/components/tab-bar';
 
 // Shared shell for every tab-root screen (Feed, Cookbook, Discover, Add) and
@@ -9,6 +10,7 @@ export default function TabsLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <OnboardingGate />
+      <SectionSwipeNav />
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       <TabBar />
     </>
