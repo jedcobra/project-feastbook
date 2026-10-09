@@ -251,6 +251,28 @@ async function mapPeopleInOrder(ids: string[]): Promise<Person[]> {
     .map((r) => mapPerson(r, stats.get(r.id)));
 }
 
+// Tags people are actually using, most-used first — not a curated list,
+// since a hand-picked one drifts out of sync with what recipes are
+// actually tagged the moment real content replaces seed data.
+export async function fetchTrendingTags(limit = 8): Promise<string[]> {
+  const { data, error } = await supabase.from('recipes').select('tags');
+  if (error || !data) {
+    console.error('fetchTrendingTags', error);
+    return [];
+  }
+  const counts = new Map<string, number>();
+  for (const r of data as { tags: string[] }[]) {
+    for (const t of r.tags ?? []) {
+      const tag = t.toLowerCase();
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([tag]) => tag);
+}
+
 export async function fetchEditorsPicks(limit = 5) {
   const { data, error } = await supabase
     .from('recipes')
