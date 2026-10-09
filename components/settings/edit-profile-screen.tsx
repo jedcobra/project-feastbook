@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
 import { Field } from '@/components/create/field';
 import { CameraIcon } from '@/components/icons';
+import { AvatarCropper } from '@/components/settings/avatar-cropper';
 import { TopBar } from '@/components/top-bar';
 import { checkHandleAvailable, updateProfile } from '@/lib/supabase/queries';
 import { uploadPhoto } from '@/lib/supabase/storage';
@@ -23,6 +24,7 @@ export function EditProfileScreen() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const touch = <T,>(fn: (v: T) => void) => (v: T) => {
@@ -45,6 +47,11 @@ export function EditProfileScreen() {
     }
     setAvatarUrl(result.url);
     setDirty(true);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    setPendingFile(null);
+    void handleAvatarFile(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
   };
 
   const handleSave = async () => {
@@ -131,7 +138,7 @@ export function EditProfileScreen() {
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              void handleAvatarFile(e.target.files?.[0]);
+              setPendingFile(e.target.files?.[0] ?? null);
               e.target.value = '';
             }}
           />
@@ -149,6 +156,9 @@ export function EditProfileScreen() {
         />
         <Field label="Link" value={link} onChange={touch(setLink)} placeholder="Optional" />
       </div>
+      {pendingFile && (
+        <AvatarCropper file={pendingFile} onCancel={() => setPendingFile(null)} onCropped={handleCropped} />
+      )}
     </>
   );
 }
