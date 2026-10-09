@@ -273,17 +273,35 @@ export async function fetchTrendingTags(limit = 8): Promise<string[]> {
     .map(([tag]) => tag);
 }
 
+// Recipes with a cover photo lead, most recent first — a photoless row
+// still reads fine in a plain list, but it's a weak first impression for a
+// featured pick. Two queries (rather than one pool fetched and sorted
+// client-side) so a genuinely recent photo'd recipe can never get bumped
+// out by an arbitrary pool cutoff; the photoless query only runs at all if
+// the photo'd one didn't fill the limit on its own.
 export async function fetchEditorsPicks(limit = 5) {
-  const { data, error } = await supabase
+  const { data: withPhoto, error: photoError } = await supabase
     .from('recipes')
     .select('*')
+    .not('cover_photo_url', 'is', null)
     .order('created_at', { ascending: false })
     .limit(limit);
-  if (error || !data) {
-    console.error('fetchEditorsPicks', error);
-    return [];
+  if (photoError) console.error('fetchEditorsPicks (with photo)', photoError);
+
+  const remaining = limit - (withPhoto?.length ?? 0);
+  let withoutPhoto: RecipeRow[] = [];
+  if (remaining > 0) {
+    const { data, error: noPhotoError } = await supabase
+      .from('recipes')
+      .select('*')
+      .is('cover_photo_url', null)
+      .order('created_at', { ascending: false })
+      .limit(remaining);
+    if (noPhotoError) console.error('fetchEditorsPicks (without photo)', noPhotoError);
+    withoutPhoto = (data ?? []) as RecipeRow[];
   }
-  return mapRecipeRows(data as RecipeRow[]);
+
+  return mapRecipeRows([...((withPhoto ?? []) as RecipeRow[]), ...withoutPhoto]);
 }
 
 // ─────────────────────────────────────────────────────────────
