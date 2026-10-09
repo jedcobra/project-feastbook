@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { FollowActions } from '@/components/profile/follow-actions';
@@ -10,12 +11,23 @@ import { fetchCookedRecipes, fetchProfileByHandle, isFollowing, setFollowing } f
 import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
 
 export function FriendProfileScreen({ handle }: { handle: string }) {
+  const router = useRouter();
   const { profile } = useAuth();
   const [data, setData] = useState<
     { person: Person; recipes: Recipe[]; shelves: Shelf[] } | null | undefined
   >(undefined);
   const [following, setFollowingState] = useState(false);
   const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
+
+  // A link to your own @handle — from a comment, an activity row, search,
+  // wherever — should land you on your own Cookbook (with Edit/Share and
+  // every tab), not this read-only "someone else's profile" view with a
+  // Follow button on it.
+  useEffect(() => {
+    if (profile && profile.handle === handle.toLowerCase()) {
+      router.replace('/me');
+    }
+  }, [profile, handle, router]);
 
   useEffect(() => {
     fetchProfileByHandle(handle).then(setData);
@@ -41,7 +53,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     if (!ok) setFollowingState(!next);
   };
 
-  if (data === undefined) {
+  if (data === undefined || (profile && profile.handle === handle.toLowerCase())) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center">
         <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
