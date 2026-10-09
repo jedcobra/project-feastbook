@@ -240,6 +240,14 @@ export function GearIcon(props: StrokeIconProps) {
   );
 }
 
+export function MenuIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </StrokeIcon>
+  );
+}
+
 export function HomeIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
@@ -272,6 +280,15 @@ export function BookIcon(props: StrokeIconProps) {
     <StrokeIcon {...props}>
       <path d="M5 5.5A1.5 1.5 0 016.5 4H19v15H6.5A1.5 1.5 0 015 17.5v-12z" />
       <path d="M8 4v15" />
+    </StrokeIcon>
+  );
+}
+
+export function OpenBookIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2V3z" />
+      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7V3z" />
     </StrokeIcon>
   );
 }

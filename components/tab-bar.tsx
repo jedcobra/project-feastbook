@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { BookIcon, HomeIcon, MessageIcon, PlusIcon, SearchIcon } from '@/components/icons';
+import { HomeIcon, MessageIcon, OpenBookIcon, PlusIcon, SearchIcon } from '@/components/icons';
 import { countUnreadMessages } from '@/lib/supabase/queries';
 
 const TABS = [
@@ -12,7 +12,7 @@ const TABS = [
   { id: 'discover', label: 'Discover', href: '/discover', icon: SearchIcon, active: (p: string) => p === '/discover' },
   { id: 'new', label: 'New', href: '/new', icon: PlusIcon, active: (p: string) => p.startsWith('/new') },
   { id: 'messages', label: 'Messages', href: '/messages', icon: MessageIcon, active: (p: string) => p.startsWith('/messages') },
-  { id: 'cookbook', label: 'Cookbook', href: '/me', icon: BookIcon, active: (p: string) => p === '/me' },
+  { id: 'cookbook', label: 'Cookbook', href: '/me', icon: OpenBookIcon, active: (p: string) => p === '/me' },
 ] as const;
 
 // Persistent bottom nav — icons only, no labels. Austere by design: no
