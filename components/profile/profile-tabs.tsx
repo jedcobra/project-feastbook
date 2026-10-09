@@ -441,7 +441,7 @@ function CookedTab({ recipes, firstName }: { recipes: CookedRecipe[]; firstName:
             <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
               <span>{r.time}</span>
               <span>·</span>
-              <span>Cooked {r.cookedAt}</span>
+              <span>Last cooked {r.cookedAt}</span>
               <span>·</span>
               <span>{r.difficulty}</span>
             </div>
