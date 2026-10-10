@@ -167,11 +167,12 @@ export function ProfileTabs({
   );
 }
 
-// Own shelves can be swiped left to archive (instant, reversible from the
-// Archived list) or delete (a shelf's recipes aren't going anywhere, so a
-// swipe plus one confirm tap is enough — no async impact check needed,
-// unlike a recipe). Someone else's shelves aren't yours to touch here.
-// Like Recipes, a long press on your own shelves switches to reorder mode.
+// Like Recipes, a long press on your own shelves switches to edit mode:
+// drag a shelf by its handle to reorder, or swipe it left to archive
+// (instant, reversible from the Archived list) or delete (a shelf's recipes
+// aren't going anywhere, so one confirm tap is enough — no async impact
+// check needed, unlike a recipe). Outside edit mode shelves are plain links.
+// Someone else's shelves aren't yours to touch here.
 function ShelvesTab({
   shelves,
   isOwn,
@@ -221,28 +222,62 @@ function ShelvesTab({
     </>
   );
 
+  const confirmSheet = confirmingShelf && (
+    <DeleteShelfConfirm
+      shelf={confirmingShelf}
+      onCancel={() => setConfirmingId(null)}
+      onDeleted={() => {
+        setConfirmingId(null);
+        onShelfRemoved?.(confirmingShelf.id);
+      }}
+    />
+  );
+
   if (reorder.reorderIds) {
     const shelfById = new Map(shelves.map((s) => [s.id, s]));
     return (
       <div className="mx-5 select-none pb-8">
-        <ReorderBar label="Drag a shelf up or down" onDone={reorder.stop} />
+        <ReorderBar
+          label="Drag to reorder · swipe left for more"
+          onDone={() => {
+            setOpenId(null);
+            reorder.stop();
+          }}
+        />
         {reorder.reorderIds
           .map((id) => shelfById.get(id))
           .filter((s): s is Shelf => !!s)
           .map((shelf) => (
-            <div
-              key={shelf.id}
-              ref={reorder.rowRef(shelf.id)}
-              className={`flex items-start gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
-                reorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
-              }`}
-            >
-              {shelfBody(shelf)}
-              <div className="self-center">
-                <DragHandle label={`Move ${shelf.title}`} onStart={() => reorder.startDrag(shelf.id)} />
-              </div>
+            <div key={shelf.id} ref={reorder.rowRef(shelf.id)}>
+              <SwipeableRow
+                open={openId === shelf.id}
+                onOpen={() => setOpenId(shelf.id)}
+                onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
+                actions={[
+                  { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
+                  { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
+                ]}
+              >
+                <div
+                  className={`flex items-start gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                    reorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
+                  }`}
+                >
+                  {shelfBody(shelf)}
+                  <div className="self-center">
+                    <DragHandle
+                      label={`Move ${shelf.title}`}
+                      onStart={() => {
+                        setOpenId(null);
+                        reorder.startDrag(shelf.id);
+                      }}
+                    />
+                  </div>
+                </div>
+              </SwipeableRow>
             </div>
           ))}
+        {confirmSheet}
       </div>
     );
   }
@@ -256,8 +291,8 @@ function ShelvesTab({
           </Link>
         </div>
       )}
-      {shelves.map((shelf) => {
-        const row = (
+      {shelves.map((shelf) => (
+        <div key={shelf.id} {...reorder.pressProps}>
           <Link
             href={`/shelf/${shelf.id}`}
             className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5"
@@ -265,26 +300,8 @@ function ShelvesTab({
             {shelfBody(shelf)}
             <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
           </Link>
-        );
-
-        if (!isOwn) return <div key={shelf.id}>{row}</div>;
-
-        return (
-          <div key={shelf.id} {...reorder.pressProps}>
-            <SwipeableRow
-              open={openId === shelf.id}
-              onOpen={() => setOpenId(shelf.id)}
-              onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
-              actions={[
-                { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
-                { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
-              ]}
-            >
-              {row}
-            </SwipeableRow>
-          </div>
-        );
-      })}
+        </div>
+      ))}
       {isOwn && (
         <Link
           href="/new-shelf"
@@ -294,17 +311,7 @@ function ShelvesTab({
           New shelf
         </Link>
       )}
-
-      {confirmingShelf && (
-        <DeleteShelfConfirm
-          shelf={confirmingShelf}
-          onCancel={() => setConfirmingId(null)}
-          onDeleted={() => {
-            setConfirmingId(null);
-            onShelfRemoved?.(confirmingShelf.id);
-          }}
-        />
-      )}
+      {confirmSheet}
     </div>
   );
 }
@@ -369,11 +376,11 @@ function DeleteShelfConfirm({
 
 // Authored recipes and recipes saved from other cooks, in one list — a
 // saved-from-someone-else row carries a heart badge with their handle
-// instead of a saves count, rather than living in a separate tab. Own
-// authored rows can be swiped left to delete; saved rows and anyone else's
-// cookbook aren't yours to delete from here. In your own cookbook a long
-// press switches the list into reorder mode: rows stop being links, each
-// gets a drag handle, and every drop is saved as the cookbook's order.
+// instead of a saves count, rather than living in a separate tab. In your
+// own cookbook a long press switches the list into edit mode: rows stop
+// being links, each gets a drag handle (every drop is saved as the
+// cookbook's order), and your own recipes can be swiped left to delete.
+// Saved rows and anyone else's cookbook aren't yours to delete from here.
 function RecipesTab({
   recipes,
   savedRecipes,
