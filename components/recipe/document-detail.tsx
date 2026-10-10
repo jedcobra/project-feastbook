@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
-import { CommentsBlock } from '@/components/recipe/comments-block';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
 import { Label } from '@/components/label';
 import { MethodBlock } from '@/components/recipe/method-block';
+import { NotesSection } from '@/components/recipe/notes-section';
 import { RecipeActions } from '@/components/recipe/recipe-actions';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { Tag } from '@/components/tag';
@@ -13,11 +13,11 @@ import type { Person, Recipe, RecipeComment } from '@/lib/types';
 export function DocumentDetail({
   recipe,
   author,
-  onCommentPosted,
+  onCommentsChange,
 }: {
   recipe: Recipe;
   author: Person;
-  onCommentPosted: (comment: RecipeComment) => void;
+  onCommentsChange: (fn: (comments: RecipeComment[]) => RecipeComment[]) => void;
 }) {
   return (
     <div className="px-5 pb-5">
@@ -83,7 +83,12 @@ export function DocumentDetail({
         </div>
       )}
 
-      <CommentsBlock recipeId={recipe.id} authorId={author.id} comments={recipe.comments} onPosted={onCommentPosted} />
+      <NotesSection
+        recipeId={recipe.id}
+        authorId={author.id}
+        comments={recipe.comments}
+        onCommentsChange={onCommentsChange}
+      />
     </div>
   );
 }

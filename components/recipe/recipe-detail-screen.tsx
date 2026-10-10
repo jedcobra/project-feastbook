@@ -87,8 +87,8 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         <DocumentDetail
           recipe={data.recipe}
           author={data.author}
-          onCommentPosted={(comment) =>
-            setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: [comment, ...d.recipe.comments] } } : d))
+          onCommentsChange={(fn) =>
+            setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: fn(d.recipe.comments) } } : d))
           }
         />
       </div>

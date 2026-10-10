@@ -4,79 +4,53 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
-import { HeartIcon } from '@/components/icons';
-import { OutlineBox } from '@/components/outline-box';
+import { HeartIcon, PencilIcon } from '@/components/icons';
+import { Label } from '@/components/label';
 import { NoteComposer } from '@/components/recipe/note-composer';
 import { ZoomablePhoto } from '@/components/photo-viewer';
-import { TopBar } from '@/components/top-bar';
-import {
-  deleteComment,
-  fetchRecipeFull,
-  hasCooked,
-  postComment,
-  toggleCommentLike,
-  updateComment,
-} from '@/lib/supabase/queries';
-import type { Person, Recipe, RecipeComment } from '@/lib/types';
+import { deleteComment, hasCooked, postComment, toggleCommentLike, updateComment } from '@/lib/supabase/queries';
+import type { RecipeComment } from '@/lib/types';
 
 type Filter = 'all' | 'cooked' | 'questions';
 
 const COMPOSER_ID = 'note-composer';
 
-export function NotesScreen({ id }: { id: string }) {
+// The full notes thread, at the bottom of the recipe itself: the note box
+// first (new notes land right under it), then every note with its replies,
+// likes, and edit/delete for your own. A note is marked "cooked it" when
+// its author has cooked the recipe by the time they post it.
+export function NotesSection({
+  recipeId,
+  authorId,
+  comments,
+  onCommentsChange,
+}: {
+  recipeId: string;
+  authorId: string;
+  comments: RecipeComment[];
+  onCommentsChange: (fn: (comments: RecipeComment[]) => RecipeComment[]) => void;
+}) {
   const { profile } = useAuth();
   const router = useRouter();
-  const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [filter, setFilter] = useState<Filter>('all');
   const [replyTo, setReplyTo] = useState<RecipeComment | null>(null);
   const [editing, setEditing] = useState<RecipeComment | null>(null);
   const [draft, setDraft] = useState('');
-  const [cookedMark, setCookedMark] = useState(false);
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState('');
 
+  const total = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
+  const shown = comments.filter((c) => (filter === 'all' ? true : filter === 'cooked' ? c.cooked : c.isQuestion));
+  const updateComments = onCommentsChange;
+  const focusComposer = () => document.getElementById(COMPOSER_ID)?.focus();
+
+  // Arriving from an old notes link (/recipe/[id]/comments → #notes): the
+  // recipe loads after the browser's own hash jump, so scroll here once
+  // the section exists.
   useEffect(() => {
-    fetchRecipeFull(id, profile?.id ?? null).then(setData);
-  }, [id, profile?.id]);
-
-  // Pre-check the box if this recipe's already marked cooked (e.g. from the
-  // one-tap "I cooked it" on the recipe page itself) — otherwise it'd look
-  // unchecked even though the recipe already shows as cooked.
-  useEffect(() => {
-    if (profile) hasCooked(profile.id, id).then(setCookedMark);
-  }, [profile, id]);
-
-  if (data === undefined) {
-    return (
-      <>
-        <TopBar title="Notes" backHref={`/recipe/${id}`} />
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
-        </div>
-      </>
-    );
-  }
-
-  if (data === null) {
-    return (
-      <>
-        <TopBar title="Notes" backHref={`/recipe/${id}`} />
-        <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[14px] text-ink-mute">Recipe not found.</span>
-        </div>
-      </>
-    );
-  }
-
-  const { recipe } = data;
-  const total = recipe.comments.reduce((n, c) => n + 1 + c.replies.length, 0);
-  const shown = recipe.comments.filter((c) =>
-    filter === 'all' ? true : filter === 'cooked' ? c.cooked : c.isQuestion,
-  );
-
-  const updateComments = (fn: (comments: RecipeComment[]) => RecipeComment[]) =>
-    setData((d) => (d ? { ...d, recipe: { ...d.recipe, comments: fn(d.recipe.comments) } } : d));
+    if (window.location.hash === '#notes') document.getElementById('notes')?.scrollIntoView();
+  }, []);
 
   const handleLike = async (comment: RecipeComment) => {
     if (!profile) return;
@@ -101,8 +75,9 @@ export function NotesScreen({ id }: { id: string }) {
     setDraft(comment.text);
     setPhotoUrl(comment.photoUrl ?? '');
     setPostError(null);
-    // Synchronous with the tap, so phones open the keyboard too.
-    document.getElementById(COMPOSER_ID)?.focus();
+    // Synchronous with the tap, so phones open the keyboard too (and the
+    // page scrolls up to the box).
+    focusComposer();
   };
 
   const cancelEdit = () => {
@@ -114,6 +89,7 @@ export function NotesScreen({ id }: { id: string }) {
   const startReply = (comment: RecipeComment) => {
     if (editing) cancelEdit();
     setReplyTo(comment);
+    focusComposer();
   };
 
   const handleSaveEdit = async (comment: RecipeComment) => {
@@ -147,10 +123,11 @@ export function NotesScreen({ id }: { id: string }) {
     setPostError(null);
     let comment: RecipeComment | null = null;
     try {
-      comment = await postComment(profile.id, id, draft.trim(), {
+      const cooked = !replyTo && (await hasCooked(profile.id, recipeId));
+      comment = await postComment(profile.id, recipeId, draft.trim(), {
         parentId: replyTo?.id,
-        cooked: !replyTo && cookedMark,
-        recipeAuthorId: data.author.id,
+        cooked,
+        recipeAuthorId: authorId,
         photoUrl: photoUrl || undefined,
       });
     } catch (err) {
@@ -171,68 +148,19 @@ export function NotesScreen({ id }: { id: string }) {
 
 
   return (
-    <>
-      <TopBar title="Notes" backHref={`/recipe/${id}`} subtitle={`${recipe.title} · ${total} note${total === 1 ? '' : 's'}`} />
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-        <div className="mb-3 flex items-center gap-2 border-y border-dashed border-rule py-2.5">
-          <span className="flex-1 font-mono text-[12px] text-ink-mute">{recipe.madeIt} people cooked this</span>
-          {profile && (
-            <OutlineBox compact filled={cookedMark} onClick={() => setCookedMark((c) => !c)}>
-              {cookedMark ? '✓ Cooked it' : 'I cooked it'}
-            </OutlineBox>
-          )}
-        </div>
-
-        <div className="mb-1 flex gap-1.5">
-          {(
-            [
-              ['all', 'All'],
-              ['cooked', 'Cooked it'],
-              ['questions', 'Questions'],
-            ] as [Filter, string][]
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`rounded border border-ink px-2.5 py-2 font-mono text-[12px] leading-none ${
-                filter === key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {shown.length === 0 ? (
-          <div className="mt-4 border border-dashed border-rule p-[22px] text-center">
-            <div className="mb-1.5 font-display text-[18px] font-bold text-ink">No notes yet</div>
-            <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
-              {filter === 'all'
-                ? "If you change something, or it goes wrong, say so here. That's what makes the recipe better next time."
-                : 'Nothing under this filter yet.'}
-            </div>
-          </div>
-        ) : (
-          shown.map((comment) => (
-            <div key={comment.id} className="border-t border-dashed border-rule">
-              <NoteRow
-                comment={comment}
-                depth={0}
-                viewerId={profile?.id ?? null}
-                onLike={handleLike}
-                onReply={startReply}
-                onEdit={startEdit}
-                onDelete={handleDelete}
-                onOpenProfile={(handle) => router.push(`/${handle}`)}
-              />
-            </div>
-          ))
+    <div id="notes" className="scroll-mt-4">
+      <div className="mb-3.5 border-t border-dashed border-rule" />
+      <div className="mb-3 flex items-baseline gap-2">
+        <Label className="flex-1">Notes from the table</Label>
+        {total > 0 && (
+          <span className="font-mono text-[12px] text-ink-mute">
+            {total} note{total === 1 ? '' : 's'}
+          </span>
         )}
       </div>
 
-      {profile && (
-        <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
+      {profile ? (
+        <div className="mb-3">
           {postError && <div className="mb-2 font-mono text-[12px] text-accent">{postError}</div>}
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
@@ -262,17 +190,71 @@ export function NotesScreen({ id }: { id: string }) {
             profileId={profile.id}
             value={draft}
             onChange={setDraft}
-            placeholder={editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
+            placeholder={
+              editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : total === 0 ? 'Leave the first note…' : 'Leave a note…'
+            }
             photoUrl={photoUrl}
             onPhotoUrlChange={setPhotoUrl}
             onSubmit={handlePost}
             submitLabel={editing ? 'Save' : 'Post'}
             submitting={posting}
             onError={setPostError}
+            maxHeightClassName=""
           />
         </div>
+      ) : (
+        <div className="mb-3 flex items-center gap-2 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[14px] text-ink-mute">
+          <PencilIcon size={15} />
+          Sign in to leave a note
+        </div>
       )}
-    </>
+
+      {total > 0 && (
+        <div className="mb-1 flex gap-1.5">
+          {(
+            [
+              ['all', 'All'],
+              ['cooked', 'Cooked it'],
+              ['questions', 'Questions'],
+            ] as [Filter, string][]
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilter(key)}
+              className={`rounded border border-ink px-2.5 py-2 font-mono text-[12px] leading-none ${
+                filter === key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {total === 0 ? (
+        <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
+          If you change something, or it goes wrong, say so here. That&rsquo;s what makes the recipe better next time.
+        </div>
+      ) : shown.length === 0 ? (
+        <div className="py-4 font-mono text-[14px] text-ink-mute">Nothing under this filter yet.</div>
+      ) : (
+        shown.map((comment) => (
+          <div key={comment.id} className="border-t border-dashed border-rule">
+            <NoteRow
+              comment={comment}
+              depth={0}
+              viewerId={profile?.id ?? null}
+              onLike={handleLike}
+              onReply={startReply}
+              onEdit={startEdit}
+              onDelete={handleDelete}
+              onOpenProfile={(handle) => router.push(`/${handle}`)}
+            />
+          </div>
+        ))
+      )}
+    </div>
   );
 }
 
