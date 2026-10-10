@@ -93,7 +93,7 @@ export function CookPhotoViewer({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={`Photo by @${photo.handle}`}
+        aria-label={`Photo by ${photo.handle}`}
         onClick={(e) => e.stopPropagation()}
         className="mt-auto flex max-h-[100dvh] min-h-0 flex-col overflow-hidden bg-cream sm:my-auto"
       >
@@ -114,7 +114,7 @@ export function CookPhotoViewer({
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo.photoUrl} alt={`@${photo.handle}’s ${photo.recipeTitle}`} className="max-h-[60dvh] w-full bg-ink object-contain" />
+          <img src={photo.photoUrl} alt={`${photo.handle}’s ${photo.recipeTitle}`} className="max-h-[60dvh] w-full bg-ink object-contain" />
 
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export function CookPhotoViewer({
               </div>
             )}
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
-              <HandleLink handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
+              <HandleLink bare handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
               <span className="text-ink-mute">cooked</span>{' '}
               <Link
                 href={`/recipe/${photo.recipeId}`}

@@ -96,11 +96,11 @@ export async function POST(request: Request) {
   webpush.setVapidDetails('mailto:support@specialspoon.app', vapidPublicKey, vapidPrivateKey);
 
   const actorHandle = unwrapOne(notifRow.actor as { handle: string } | { handle: string }[] | null)?.handle;
-  const actorName = actorHandle ? `@${actorHandle}` : 'Someone';
+  const actorName = actorHandle ?? 'Someone';
   const recipeTitle = unwrapOne(notifRow.recipe as { title: string } | { title: string }[] | null)?.title;
   const verb = KIND_VERB[notifRow.kind] ?? 'did something on';
   // Photo kisses and comments read as complete sentences on their own
-  // ("@sam added a chef’s kiss to your photo"), so they don't name the recipe.
+  // ("sam added a chef’s kiss to your photo"), so they don't name the recipe.
   const body =
     recipeTitle && !notifRow.cook_photo_id ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;
   const url = notifRow.cook_photo_id

@@ -245,7 +245,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
           {blockedByMe ? (
             <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
               <span className="flex-1 font-mono text-[12px] text-ink-mute">
-                You&rsquo;ve blocked <HandleLink handle={peer.handle} className="text-ink" />.
+                You&rsquo;ve blocked <HandleLink bare handle={peer.handle} className="text-ink" />.
               </span>
               <OutlineBox compact onClick={toggleBlock}>
                 Unblock
@@ -340,7 +340,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             >
               <span className="min-w-0 flex-1">
                 <span className={`block font-mono text-[14px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
-                  {blockedByMe ? `Unblock @${peer.handle}` : `Block @${peer.handle}`}
+                  {blockedByMe ? `Unblock ${peer.handle}` : `Block ${peer.handle}`}
                 </span>
                 <span className="block truncate font-mono text-[12px] text-ink-mute">
                   {blockedByMe

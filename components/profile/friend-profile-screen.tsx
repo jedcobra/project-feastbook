@@ -199,7 +199,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
               >
                 <span className="min-w-0 flex-1">
                   <span className={`block font-mono text-[14px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
-                    {blockedByMe ? `Unblock @${data.person.handle}` : `Block @${data.person.handle}`}
+                    {blockedByMe ? `Unblock ${data.person.handle}` : `Block ${data.person.handle}`}
                   </span>
                   <span className="block truncate font-mono text-[12px] text-ink-mute">
                     {blockedByMe

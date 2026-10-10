@@ -98,7 +98,7 @@ export function FeedPhotoPost({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo.photoUrl}
-          alt={`@${photo.handle}’s ${photo.recipeTitle}`}
+          alt={`${photo.handle}’s ${photo.recipeTitle}`}
           loading="lazy"
           className="aspect-[2/1] w-full object-cover"
         />
@@ -113,7 +113,7 @@ export function FeedPhotoPost({
       {error && <div className="px-5 pt-1.5 font-mono text-[12px] text-accent">{error}</div>}
 
       <div className="px-5 pt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
-        <HandleLink handle={photo.handle} className="font-semibold" /> <span className="text-ink-mute">cooked</span>{' '}
+        <HandleLink bare handle={photo.handle} className="font-semibold" /> <span className="text-ink-mute">cooked</span>{' '}
         <Link href={`/recipe/${photo.recipeId}`} className="underline decoration-dashed underline-offset-[3px]">
           {photo.recipeTitle}
         </Link>
@@ -154,7 +154,7 @@ export function FeedPhotoPost({
             value={draft}
             rows={1}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={isOwner ? 'Add a comment…' : `Leave a comment for @${photo.handle}`}
+            placeholder={isOwner ? 'Add a comment…' : `Leave a comment for ${photo.handle}`}
             className="max-h-[30dvh] flex-1 resize-none border-none bg-transparent py-1 font-mono text-[16px] leading-[1.4] text-ink outline-none placeholder:text-[14px] placeholder:text-ink-mute"
           />
           {draft.trim() && (

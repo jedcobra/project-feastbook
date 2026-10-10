@@ -217,7 +217,7 @@ export function NotificationsScreen() {
                           <div className="font-mono text-[14px] leading-[1.45] text-ink">
                             {n.actorHandle && (
                               <>
-                                <HandleLink nested handle={n.actorHandle} className="font-semibold" />{' '}
+                                <HandleLink nested bare handle={n.actorHandle} className="font-semibold" />{' '}
                               </>
                             )}
                             <span className="text-ink-mute">{describe(n)}</span>

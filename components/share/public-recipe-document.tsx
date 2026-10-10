@@ -105,7 +105,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
       <div className="mt-[22px] border border-ink p-4 text-center">
         <div className="mb-1.5 font-display text-[19px] font-bold text-ink">Keep this one?</div>
         <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
-          An account gives you a shelf to put it on, step-by-step cooking mode, and @{author.handle}&rsquo;s next one.
+          An account gives you a shelf to put it on, step-by-step cooking mode, and {author.handle}&rsquo;s next one.
         </div>
         <a
           href="/account/sign-up"

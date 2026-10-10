@@ -166,7 +166,7 @@ export function NotesSection({
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
               <span>
-                Replying to <HandleLink handle={replyTo.handle} className="text-ink" />
+                Replying to <HandleLink bare handle={replyTo.handle} className="text-ink" />
               </span>
               <button
                 type="button"
@@ -320,7 +320,7 @@ function NoteRow({
           {comment.photoUrl && (
             <ZoomablePhoto
               src={comment.photoUrl}
-              alt={`Photo from @${comment.handle}`}
+              alt={`Photo from ${comment.handle}`}
               className="h-24 w-24 rounded-button border border-rule object-cover"
             />
           )}

@@ -648,7 +648,7 @@ function CookedTab({
               </>
             ) : (
               <>
-                Photos of what @{ownerHandle} has cooked
+                Photos of what {ownerHandle} has cooked
                 <br />
                 will appear here.
               </>
@@ -662,7 +662,7 @@ function CookedTab({
               key={p.id}
               type="button"
               onClick={() => onOpenPhotoId(p.id)}
-              aria-label={`@${p.handle}’s ${p.recipeTitle}`}
+              aria-label={`${p.handle}’s ${p.recipeTitle}`}
               className="relative aspect-square overflow-hidden bg-cream-deep"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
