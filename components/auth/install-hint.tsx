@@ -74,7 +74,7 @@ export function InstallHint() {
     if (outcome === 'accepted') setPlatform(null);
   };
 
-  const share = <IosShareIcon size={11} className="mx-0.5 inline -translate-y-0.5" />;
+  const share = <IosShareIcon size={10} className="mx-0.5 inline -translate-y-0.5" />;
   const steps: Record<Platform, React.ReactNode> = {
     'ios-safari': <>Tap {share} Share below, then &ldquo;Add to Home Screen&rdquo;.</>,
     'ios-safari-26': <>Tap &bull;&bull;&bull; below, then {share} Share, then &ldquo;Add to Home Screen&rdquo;.</>,
@@ -85,10 +85,10 @@ export function InstallHint() {
 
   // Kept quiet: one small line of body copy above the sign-in buttons.
   return (
-    <p className="mb-3 px-5 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
-      <span className="font-semibold text-ink">Best on your home screen.</span> {steps[platform]}{' '}
+    <p className="mb-3 px-5 text-center font-mono text-[11px] leading-[1.55] text-ink-mute">
+      Best on your home screen. {steps[platform]}{' '}
       {platform === 'android-prompt' && (
-        <button type="button" onClick={install} className="font-semibold text-ink underline underline-offset-2">
+        <button type="button" onClick={install} className="text-ink underline underline-offset-2">
           Add it now
         </button>
       )}
