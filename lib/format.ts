@@ -39,6 +39,19 @@ export function parseDuration(time: string): { hours: number; minutes: number } 
   return Number.isFinite(bare) && bare > 0 ? { hours: 0, minutes: bare } : { hours: 0, minutes: 0 };
 }
 
+// Compact form for tight stat lines: "35m", "1h 30m", "2h". Only a plain
+// hours/minutes value is shortened — free text like "overnight + 20 min
+// bake" is returned as written rather than collapsed to a misleading "20m".
+const PLAIN_DURATION = /^\s*(?:\d+\s*(?:h|hr|hrs|hour|hours)\b)?\s*(?:\d+\s*(?:m|min|mins|minute|minutes)\b)?\s*$/i;
+
+export function formatDurationShort(time: string): string {
+  if (!PLAIN_DURATION.test(time)) return time;
+  const { hours, minutes } = parseDuration(time);
+  if (!hours && !minutes) return time;
+  if (!hours) return `${minutes}m`;
+  return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
 // Total minutes for sorting/filtering by time — a plain parseInt on "1 hr
 // 30 min" reads as 1, which is wrong the moment an hour is involved.
 export function parseDurationMinutes(time: string): number {

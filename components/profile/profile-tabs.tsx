@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { ChefHatIcon, ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
-import { formatCount } from '@/lib/format';
+import { formatCount, formatDurationShort } from '@/lib/format';
 import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
@@ -366,25 +366,29 @@ function RecipesTab({
             </span>
           )}
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 font-mono text-meta text-ink-mute">
-          <span>{r.time}</span>
-          <span>·</span>
-          <span>{formatCount(r.madeIt)} cooked</span>
-          <span>·</span>
-          <span aria-label={`${r.saves} save${r.saves === 1 ? '' : 's'}`} className="flex items-center gap-1">
+        {/* Always one line: only the time gives way (truncates) if it must. */}
+        <div className="mt-1 flex items-center gap-x-1.5 overflow-hidden whitespace-nowrap font-mono text-meta text-ink-mute">
+          <span className="min-w-0 truncate">{formatDurationShort(r.time)}</span>
+          <span className="flex-shrink-0">·</span>
+          <span aria-label={`${r.madeIt} cooked`} className="flex flex-shrink-0 items-center gap-1">
+            {formatCount(r.madeIt)}
+            <ChefHatIcon size={10} />
+          </span>
+          <span className="flex-shrink-0">·</span>
+          <span aria-label={`${r.saves} save${r.saves === 1 ? '' : 's'}`} className="flex flex-shrink-0 items-center gap-1">
             {formatCount(r.saves)}
             <HeartIcon size={10} filled className="text-accent" />
           </span>
           {r.ratingCount > 0 && (
             <>
-              <span>·</span>
-              <span aria-label={`Rated ${r.rating.toFixed(1)} out of 5`}>
+              <span className="flex-shrink-0">·</span>
+              <span aria-label={`Rated ${r.rating.toFixed(1)} out of 5`} className="flex-shrink-0">
                 {r.rating.toFixed(1)} <span className="text-ink">★</span>
               </span>
             </>
           )}
-          <span>·</span>
-          <span>{r.difficulty}</span>
+          <span className="flex-shrink-0">·</span>
+          <span className="flex-shrink-0">{r.difficulty}</span>
         </div>
       </div>
     </>
