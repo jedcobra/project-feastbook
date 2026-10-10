@@ -71,10 +71,10 @@ export function CommentsBlock({
           key={comment.id}
           className={`flex items-start gap-2.5 py-3 ${i === 0 ? '' : 'border-t border-dotted border-rule'}`}
         >
-          <Avatar name={comment.by} size={32} />
+          <Avatar name={comment.handle} size={32} />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-mono text-[14px] font-semibold text-ink">{comment.by}</span>
+              <span className="font-mono text-[14px] font-semibold text-ink">@{comment.handle}</span>
               {comment.likes > 0 && <span className="font-mono text-[12px] text-ink-mute">· {comment.likes} ♥</span>}
             </div>
             <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>

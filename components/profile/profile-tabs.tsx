@@ -19,7 +19,7 @@ export function ProfileTabs({
   savedRecipes = [],
   cookedRecipes = [],
   archivedShelfCount = 0,
-  firstName,
+  ownerHandle,
   isOwn,
   recipeOrder = [],
   onReorderRecipes,
@@ -33,7 +33,7 @@ export function ProfileTabs({
   savedRecipes?: Recipe[];
   cookedRecipes?: CookedRecipe[];
   archivedShelfCount?: number;
-  firstName: string;
+  ownerHandle: string;
   isOwn: boolean;
   recipeOrder?: string[];
   onReorderRecipes?: (recipeIds: string[]) => void;
@@ -89,7 +89,7 @@ export function ProfileTabs({
           onShelfArchived={onShelfArchived}
         />
       )}
-      {tab === 'cooked' && <CookedTab recipes={cookedRecipes} firstName={firstName} />}
+      {tab === 'cooked' && <CookedTab recipes={cookedRecipes} ownerHandle={ownerHandle} />}
     </div>
   );
 }
@@ -522,12 +522,12 @@ function DeleteRecipeConfirm({
   );
 }
 
-function CookedTab({ recipes, firstName }: { recipes: CookedRecipe[]; firstName: string }) {
+function CookedTab({ recipes, ownerHandle }: { recipes: CookedRecipe[]; ownerHandle: string }) {
   if (recipes.length === 0) {
     return (
       <div className="mx-5 pb-8 pt-6">
         <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
-          Recipes {firstName} has cooked
+          Recipes @{ownerHandle} has cooked
           <br />
           will appear here.
         </div>

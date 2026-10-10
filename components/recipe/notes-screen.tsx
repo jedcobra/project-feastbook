@@ -189,7 +189,7 @@ export function NotesScreen({ id }: { id: string }) {
           {postError && <div className="mb-2 font-mono text-[12px] text-accent">{postError}</div>}
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
-              <span>Replying to {replyTo.by}</span>
+              <span>Replying to @{replyTo.handle}</span>
               <button type="button" onClick={() => setReplyTo(null)} className="px-1 text-[16px] leading-none text-ink">
                 ×
               </button>
@@ -289,7 +289,7 @@ function NoteRow({
     <div className={depth ? 'ml-[42px]' : ''}>
       <div className="flex items-start gap-2.5 py-3">
         <button type="button" onClick={() => onOpenProfile(comment.handle)} className="flex-shrink-0">
-          <Avatar name={comment.by} size={depth ? 24 : 32} />
+          <Avatar name={comment.handle} size={depth ? 24 : 32} />
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -298,7 +298,7 @@ function NoteRow({
               onClick={() => onOpenProfile(comment.handle)}
               className="font-mono text-[14px] font-semibold text-ink"
             >
-              {comment.by}
+              @{comment.handle}
             </button>
             {comment.cooked && !depth && (
               <span className="border border-accent px-1 font-mono text-[11px] uppercase tracking-[0.08em] text-accent">

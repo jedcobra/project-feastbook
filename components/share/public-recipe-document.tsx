@@ -32,9 +32,8 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
       )}
 
       <div className="mb-3.5 flex items-center gap-2">
-        <Avatar name={author.name} src={author.avatarUrl} size={24} />
-        <span className="font-mono text-[14px] text-ink">{author.name}</span>
-        <span className="font-mono text-meta text-ink-mute">@{author.handle}</span>
+        <Avatar name={author.handle} src={author.avatarUrl} size={24} />
+        <span className="font-mono text-[14px] text-ink">@{author.handle}</span>
       </div>
 
       <div className="mb-4 grid grid-cols-3 border-y border-dashed border-rule">
@@ -105,7 +104,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
       <div className="mt-[22px] border border-ink p-4 text-center">
         <div className="mb-1.5 font-display text-[19px] font-bold text-ink">Keep this one?</div>
         <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
-          An account gives you a shelf to put it on, step-by-step cooking mode, and {author.name}&rsquo;s next one.
+          An account gives you a shelf to put it on, step-by-step cooking mode, and @{author.handle}&rsquo;s next one.
         </div>
         <a
           href="/account/sign-up"

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     return { title: 'Special Spoon' };
   }
   const { recipe, author } = data;
-  const description = recipe.subtitle || recipe.intro || `A recipe by ${author.name} on Special Spoon.`;
+  const description = recipe.subtitle || recipe.intro || `A recipe by @${author.handle} on Special Spoon.`;
   return {
     title: `${recipe.title} — Special Spoon`,
     description,
@@ -85,7 +85,7 @@ export default async function PublicRecipePage({ params }: { params: { id: strin
         <ErrorScreen
           kind="private"
           bare
-          body={`${data.author.name} keeps this one to themselves.`}
+          body={`@${data.author.handle} keeps this one to themselves.`}
           ctaHref="/"
           ctaLabel="Go to Special Spoon"
         />

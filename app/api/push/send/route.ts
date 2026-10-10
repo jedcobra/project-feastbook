@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   const { data: notifRow, error: notifError } = await admin
     .from('notifications')
     .select(
-      'recipient_id, actor_id, kind, recipe_id, conversation_id, actor:profiles!actor_id(name), recipe:recipes(title)',
+      'recipient_id, actor_id, kind, recipe_id, conversation_id, actor:profiles!actor_id(handle), recipe:recipes(title)',
     )
     .eq('id', notificationId)
     .maybeSingle();
@@ -93,7 +93,8 @@ export async function POST(request: Request) {
 
   webpush.setVapidDetails('mailto:support@specialspoon.app', vapidPublicKey, vapidPrivateKey);
 
-  const actorName = unwrapOne(notifRow.actor as { name: string } | { name: string }[] | null)?.name ?? 'Someone';
+  const actorHandle = unwrapOne(notifRow.actor as { handle: string } | { handle: string }[] | null)?.handle;
+  const actorName = actorHandle ? `@${actorHandle}` : 'Someone';
   const recipeTitle = unwrapOne(notifRow.recipe as { title: string } | { title: string }[] | null)?.title;
   const verb = KIND_VERB[notifRow.kind] ?? 'did something on';
   const body = recipeTitle ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;

@@ -59,11 +59,10 @@ export function ArchivedScreen() {
                 href={`/messages/${c.id}`}
                 className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3 ${i === 0 ? 'border-t' : ''}`}
               >
-                <Avatar name={c.person.name} src={c.person.avatarUrl} size={34} />
+                <Avatar name={c.person.handle} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-[16px] font-bold text-ink">{c.person.name}</span>
-                    <span className="font-mono text-meta text-ink-mute">@{c.person.handle}</span>
+                    <span className="font-display text-[16px] font-bold text-ink">@{c.person.handle}</span>
                   </div>
                   <div className="truncate font-mono text-[14px] text-ink-mute">{c.lastMessage || 'Say hello…'}</div>
                 </div>

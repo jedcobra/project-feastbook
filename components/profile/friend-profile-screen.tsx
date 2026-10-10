@@ -79,7 +79,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     const url = `${window.location.origin}/${data.person.handle}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: data.person.name, url });
+        await navigator.share({ title: `@${data.person.handle}`, url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -160,7 +160,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
           shelves={data.shelves}
           recipes={data.recipes}
           cookedRecipes={cookedRecipes}
-          firstName={data.person.name.split(' ')[0]}
+          ownerHandle={data.person.handle}
           isOwn={false}
           recipeOrder={recipeOrder}
         />
@@ -175,7 +175,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
             onClick={(e) => e.stopPropagation()}
             className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
           >
-            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">{data.person.name}</h3>
+            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">@{data.person.handle}</h3>
             <button
               type="button"
               onClick={shareProfile}

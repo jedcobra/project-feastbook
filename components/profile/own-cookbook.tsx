@@ -77,7 +77,7 @@ export function OwnCookbook() {
   if (data.recipes.length === 0 && savedRecipes.length === 0 && cookedRecipes.length === 0) {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <EmptyCookbook name={data.person.name.split(' ')[0]} />
+        <EmptyCookbook name={`@${data.person.handle}`} />
       </div>
     );
   }
@@ -91,7 +91,7 @@ export function OwnCookbook() {
         savedRecipes={savedRecipes}
         cookedRecipes={cookedRecipes}
         archivedShelfCount={archivedShelfCount}
-        firstName={data.person.name.split(' ')[0]}
+        ownerHandle={data.person.handle}
         isOwn
         recipeOrder={recipeOrder}
         onReorderRecipes={(ids) => {

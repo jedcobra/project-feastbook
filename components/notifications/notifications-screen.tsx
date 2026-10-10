@@ -145,8 +145,8 @@ export function NotificationsScreen() {
                         <div className="w-1.5 flex-shrink-0 pt-[7px]">
                           {!n.read && <div className="h-1.5 w-1.5 rounded-full bg-accent" />}
                         </div>
-                        {n.actorName ? (
-                          <Avatar name={n.actorName} size={26} />
+                        {n.actorHandle ? (
+                          <Avatar name={n.actorHandle} size={26} />
                         ) : (
                           <span className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full border border-ink">
                             <Icon size={13} className="text-ink" />
@@ -154,7 +154,7 @@ export function NotificationsScreen() {
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="font-mono text-[14px] leading-[1.45] text-ink">
-                            {n.actorName && <span className="font-semibold">{n.actorName} </span>}
+                            {n.actorHandle && <span className="font-semibold">@{n.actorHandle} </span>}
                             <span className="text-ink-mute">{describe(n)}</span>
                             {n.recipeTitle && <span> {n.recipeTitle}</span>}
                           </div>

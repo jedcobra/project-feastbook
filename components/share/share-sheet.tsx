@@ -161,10 +161,10 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
                       i === 0 ? '' : 'border-t border-dotted border-rule'
                     }`}
                   >
-                    <Avatar name={p.name} src={p.avatarUrl} size={28} />
-                    <span className="min-w-0 flex-1 font-mono text-[14px] text-ink">{p.name}</span>
+                    <Avatar name={p.handle} src={p.avatarUrl} size={28} />
+                    <span className="min-w-0 flex-1 font-mono text-[14px] text-ink">@{p.handle}</span>
                     <span className="font-mono text-[12px] text-ink-mute">
-                      {sent ? 'Sent' : sending ? 'Sending…' : `@${p.handle}`}
+                      {sent ? 'Sent' : sending ? 'Sending…' : 'Send'}
                     </span>
                   </button>
                 );

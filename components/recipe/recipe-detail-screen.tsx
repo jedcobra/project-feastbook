@@ -55,11 +55,11 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         backHref="/feed"
         body={
           followersOnly
-            ? `${data.author.name} shares this one with followers only.`
-            : `${data.author.name} keeps this one to themselves.`
+            ? `@${data.author.handle} shares this one with followers only.`
+            : `@${data.author.handle} keeps this one to themselves.`
         }
         ctaHref={followersOnly ? `/${data.author.handle}` : '/feed'}
-        ctaLabel={followersOnly ? `Visit ${data.author.name}’s cookbook` : 'Back to feed'}
+        ctaLabel={followersOnly ? `Visit @${data.author.handle}’s cookbook` : 'Back to feed'}
       />
     );
   }

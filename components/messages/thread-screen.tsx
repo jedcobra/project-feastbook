@@ -158,8 +158,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   return (
     <>
       <TopBar
-        title={peer.name}
-        subtitle={`@${peer.handle}`}
+        title={`@${peer.handle}`}
         backHref="/messages"
         trailing={
           <OutlineBox compact aria-label="Conversation options" onClick={() => setMenuOpen(true)}>
@@ -340,7 +339,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             onClick={(e) => e.stopPropagation()}
             className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
           >
-            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">{peer.name}</h3>
+            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">@{peer.handle}</h3>
             <button
               type="button"
               onClick={toggleBlock}

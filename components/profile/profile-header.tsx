@@ -16,12 +16,12 @@ export const PROFILE_BUTTON = `${PROFILE_BUTTON_BASE} bg-transparent text-ink`;
 export const PROFILE_BUTTON_PRIMARY = `${PROFILE_BUTTON_BASE} bg-ink text-cream`;
 
 // Instagram's profile header proportions: an 86px avatar beside three
-// evenly spaced stats (split by this app's dashed rules), then name,
-// handle and bio, then equal-width buttons. Followers and Following open
-// the actual list; Recipes has no list of its own (that's the Recipes tab
-// below). Only your own header
-// gets Edit/Share here — someone else's gets Follow/Message from
-// FollowActions, styled to match.
+// evenly spaced stats (split by this app's dashed rules), then the @handle
+// (how people are identified publicly), their name and bio, then
+// equal-width buttons. Followers and Following open the actual list;
+// Recipes has no list of its own (that's the Recipes tab below). Only your
+// own header gets Edit/Share here — someone else's gets Follow/Message
+// from FollowActions, styled to match.
 export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -35,7 +35,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     const url = `${window.location.origin}/${person.handle}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: person.name, url });
+        await navigator.share({ title: `@${person.handle}`, url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -47,7 +47,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     }
   };
 
-  const avatar = <Avatar name={person.name} src={person.avatarUrl} size={86} className="border border-ink bg-highlight" />
+  const avatar = <Avatar name={person.handle} src={person.avatarUrl} size={86} className="border border-ink bg-highlight" />
 
   return (
     <>
@@ -85,8 +85,8 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
         </div>
 
         <div className="mt-3">
-          <h1 className="font-display text-[16px] font-bold leading-tight text-ink">{person.name}</h1>
-          <div className="font-mono text-[14px] text-ink-mute">@{person.handle}</div>
+          <h1 className="font-display text-[16px] font-bold leading-tight text-ink">@{person.handle}</h1>
+          {person.name && <div className="font-mono text-[14px] text-ink-mute">{person.name}</div>}
           {person.bio && (
             <div className="mt-1 whitespace-pre-line break-words font-mono text-[14px] leading-[1.45] text-ink">
               {person.bio}
@@ -122,7 +122,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={person.avatarUrl}
-            alt={person.name}
+            alt={`@${person.handle}`}
             className="aspect-square w-full max-w-sm rounded-full border border-cream object-cover"
             onClick={(e) => e.stopPropagation()}
           />

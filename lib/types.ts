@@ -38,7 +38,6 @@ export interface RecipeNote {
 export interface RecipeComment {
   id: string;
   authorId: string;
-  by: string;
   handle: string;
   at: string;
   text: string;
@@ -55,7 +54,6 @@ export type NotificationKind = 'note' | 'reply' | 'follow' | 'cooked' | 'digest'
 export interface AppNotification {
   id: string;
   kind: NotificationKind;
-  actorName: string | null;
   actorHandle: string | null;
   recipeId: string | null;
   recipeTitle: string | null;

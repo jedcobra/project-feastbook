@@ -39,9 +39,9 @@ export function CookRow({ person, first }: { person: Person; first: boolean }) {
   return (
     <div className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3 ${first ? 'border-t' : ''}`}>
       <Link href={`/${person.handle}`} className="flex min-w-0 flex-1 items-center gap-2.5">
-        <Avatar name={person.name} src={person.avatarUrl} size={30} />
+        <Avatar name={person.handle} src={person.avatarUrl} size={30} />
         <div className="min-w-0 flex-1">
-          <div className="font-display text-[16px] font-bold text-ink">{person.name}</div>
+          <div className="font-display text-[16px] font-bold text-ink">@{person.handle}</div>
           <div className="mt-px font-mono text-meta text-ink-mute">
             {person.recipes} recipes · {formatCount(person.followers)} followers
           </div>

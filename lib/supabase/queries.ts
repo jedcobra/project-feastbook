@@ -666,7 +666,6 @@ async function mapCommentRows(
     byId.set(r.id, {
       id: r.id,
       authorId: a?.id ?? '',
-      by: a?.name ?? 'Someone',
       handle: a?.handle ?? '',
       at: formatRelativeTime(r.created_at),
       text: r.text,
@@ -1029,7 +1028,6 @@ export async function postComment(
   return {
     id: data.id,
     authorId,
-    by: author?.name ?? 'Someone',
     handle: author?.handle ?? '',
     at: formatRelativeTime(data.created_at),
     text: data.text,
@@ -1628,7 +1626,6 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
       return {
         id: n.id,
         kind: n.kind,
-        actorName: actor?.name ?? null,
         actorHandle: actor?.handle ?? null,
         recipeId: recipe?.id ?? null,
         recipeTitle: recipe?.title ?? null,
