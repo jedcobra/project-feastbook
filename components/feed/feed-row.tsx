@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { HandleLink } from '@/components/handle-link';
+import { Avatar } from '@/components/avatar';
 import { ChefHatIcon, ChevronIcon, HeartIcon, PlusIcon } from '@/components/icons';
 import { Tag } from '@/components/tag';
 import { fetchRecipeOverview } from '@/lib/supabase/queries';
@@ -45,11 +45,30 @@ export function FeedEntry({ image, children }: { image?: React.ReactNode; childr
 // The image fills the whole left quarter.
 export const FEED_IMAGE_FILL = 'absolute inset-0 block h-full w-full';
 
-// Who did what, and when — the first line of every entry.
-export function FeedEntryByline({ handle, verb, when }: { handle: string; verb: React.ReactNode; when: string }) {
+// Who did what, and when — the first line of every entry. Their profile
+// photo and @handle together link to their profile (without also toggling
+// the entry they sit in).
+export function FeedEntryByline({
+  handle,
+  avatarUrl,
+  verb,
+  when,
+}: {
+  handle: string;
+  avatarUrl?: string;
+  verb: React.ReactNode;
+  when: string;
+}) {
   return (
     <div className="flex items-center gap-1.5 font-mono text-meta text-ink-mute">
-      <HandleLink handle={handle} className="min-w-0 truncate font-semibold text-ink" />
+      <Link
+        href={`/${handle}`}
+        onClick={(e) => e.stopPropagation()}
+        className="flex min-w-0 items-center gap-1.5"
+      >
+        <Avatar name={handle} src={avatarUrl} size={22} />
+        <span className="min-w-0 truncate font-semibold text-ink">@{handle}</span>
+      </Link>
       <span className="flex flex-shrink-0 items-center gap-1">{verb}</span>
       <span className="ml-auto flex-shrink-0">{when}</span>
     </div>
@@ -103,6 +122,7 @@ export function FeedRow({ item, recipe, author }: { item: FeedActivity; recipe: 
         >
           <FeedEntryByline
             handle={author.handle}
+            avatarUrl={author.avatarUrl}
             when={item.when}
             verb={
               <>
