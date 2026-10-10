@@ -364,7 +364,13 @@ function RecipesTab({
               <HeartIcon size={10} />@{r.author}
             </span>
           ) : (
-            <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>
+            <span
+              aria-label={`${r.saves} save${r.saves === 1 ? '' : 's'}`}
+              className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute"
+            >
+              {r.saves}
+              <HeartIcon size={10} filled className="text-accent" />
+            </span>
           )}
         </div>
         <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
