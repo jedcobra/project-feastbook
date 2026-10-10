@@ -1534,6 +1534,9 @@ export async function fetchShelfIdsForRecipe(recipeId: string): Promise<Set<stri
 // ─────────────────────────────────────────────────────────────
 // Notifications
 // ─────────────────────────────────────────────────────────────
+// Message rows are still written — they're what triggers a message's push
+// notification — but the in-app list and badge leave them out, since the
+// Messages tab already carries its own unread dot.
 export async function fetchNotifications(recipientId: string): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('notifications')
@@ -1544,6 +1547,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
       'id, kind, excerpt, conversation_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)',
     )
     .eq('recipient_id', recipientId)
+    .neq('kind', 'message')
     .order('created_at', { ascending: false })
     .limit(100);
   if (error || !data) {
@@ -1584,6 +1588,7 @@ export async function countUnreadNotifications(recipientId: string): Promise<num
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('recipient_id', recipientId)
+    .neq('kind', 'message')
     .is('read_at', null);
   if (error) {
     console.error('countUnreadNotifications', error);
