@@ -237,7 +237,7 @@ export function NotesSection({
 
       {total === 0 ? (
         <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
-          If you change something, or it goes wrong, say so here. That&rsquo;s what makes the recipe better next time.
+          If you change something, or it goes wrong, leave a note. That&rsquo;s what helps recipes evolve and get better!
         </div>
       ) : shown.length === 0 ? (
         <div className="py-4 font-mono text-[14px] text-ink-mute">Nothing under this filter yet.</div>
