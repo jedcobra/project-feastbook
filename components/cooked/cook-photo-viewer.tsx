@@ -102,15 +102,6 @@ export function CookPhotoViewer({
             <Avatar name={photo.handle} size={28} />
             <span className="truncate font-mono text-[14px] font-semibold text-ink">@{photo.handle}</span>
           </Link>
-          {isOwner && (
-            <button
-              type="button"
-              onClick={() => setConfirmDelete((c) => !c)}
-              className="font-mono text-[12px] text-ink-mute"
-            >
-              Delete
-            </button>
-          )}
           <button
             type="button"
             onClick={onClose}
@@ -121,18 +112,6 @@ export function CookPhotoViewer({
           </button>
         </div>
 
-        {confirmDelete && (
-          <div className="flex flex-shrink-0 items-center gap-2 border-b border-dashed border-rule bg-cream-deep px-4 py-2.5 font-mono text-[12px] text-ink">
-            <span className="flex-1">Delete this photo and its comments?</span>
-            <button type="button" onClick={() => setConfirmDelete(false)} className="px-1 text-ink-mute">
-              Cancel
-            </button>
-            <button type="button" onClick={removePhoto} className="font-semibold text-accent">
-              Delete
-            </button>
-          </div>
-        )}
-
         <div className="min-h-0 flex-1 overflow-y-auto">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo.photoUrl} alt={`@${photo.handle}’s ${photo.recipeTitle}`} className="max-h-[60dvh] w-full bg-ink object-contain" />
@@ -141,7 +120,27 @@ export function CookPhotoViewer({
             <div className="flex items-center gap-2">
               <KissButton photo={photo} onChange={onChange} onError={setError} />
               <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete((c) => !c)}
+                  className="ml-auto font-mono text-[12px] text-ink-mute"
+                >
+                  Delete
+                </button>
+              )}
             </div>
+            {confirmDelete && (
+              <div className="mt-2.5 flex items-center gap-2 rounded-button bg-cream-deep px-3 py-2.5 font-mono text-[12px] text-ink">
+                <span className="flex-1">Delete this photo and its comments?</span>
+                <button type="button" onClick={() => setConfirmDelete(false)} className="px-1 text-ink-mute">
+                  Cancel
+                </button>
+                <button type="button" onClick={removePhoto} className="font-semibold text-accent">
+                  Delete
+                </button>
+              </div>
+            )}
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
               <HandleLink handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
               <span className="text-ink-mute">cooked</span>{' '}
