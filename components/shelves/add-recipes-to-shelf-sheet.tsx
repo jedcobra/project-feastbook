@@ -68,9 +68,9 @@ export function AddRecipesToShelfSheet({
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {recipes === null ? (
-            <div className="py-4 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+            <div className="py-4 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
           ) : recipes.length === 0 ? (
-            <div className="py-4 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+            <div className="py-4 text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
               Nothing left to add — every recipe in your cookbook is already here.
             </div>
           ) : (
@@ -85,7 +85,7 @@ export function AddRecipesToShelfSheet({
                 {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-display text-[14px] font-bold text-ink">{r.title}</span>
-                  <span className="block font-mono text-[10.5px] text-ink-mute">
+                  <span className="block font-mono text-[12px] text-ink-mute">
                     @{r.author} · {r.time}
                   </span>
                 </span>
@@ -99,7 +99,7 @@ export function AddRecipesToShelfSheet({
             type="button"
             onClick={handleAdd}
             disabled={saving || selected.size === 0}
-            className="mt-3.5 w-full flex-shrink-0 rounded-button border border-ink bg-ink py-3 font-mono text-[13px] font-semibold text-cream disabled:opacity-60"
+            className="mt-3.5 w-full flex-shrink-0 rounded-button border border-ink bg-ink py-3 font-mono text-[14px] font-semibold text-cream disabled:opacity-60"
           >
             {saving ? 'Adding…' : `Add ${selected.size || ''} recipe${selected.size === 1 ? '' : 's'}`}
           </button>

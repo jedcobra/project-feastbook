@@ -110,7 +110,7 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
 
   const filled = hover || myRating;
   const average = ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : null;
-  const stat = 'font-mono text-[11px] text-ink-mute';
+  const stat = 'font-mono text-[12px] text-ink-mute';
 
   return (
     <>

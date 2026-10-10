@@ -37,7 +37,7 @@ export function DraftsScreen() {
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {drafts && drafts.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-1 py-16 text-center">
-            <span className="font-mono text-[12px] text-ink-mute">No drafts yet.</span>
+            <span className="font-mono text-[14px] text-ink-mute">No drafts yet.</span>
           </div>
         )}
         {drafts?.map((draft, i) => {
@@ -63,7 +63,7 @@ export function DraftsScreen() {
                 <div className="h-0.5 flex-1 bg-rule-soft">
                   <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="flex-shrink-0 font-mono text-[10px] text-ink-mute">
+                <span className="flex-shrink-0 font-mono text-[11px] text-ink-mute">
                   {pct}% · {formatRelativeTime(draft.updatedAt)}
                 </span>
               </div>
@@ -97,21 +97,21 @@ export function DraftsScreen() {
               <TrashIcon size={16} />
               Discard &ldquo;{confirmingDraft.title.trim() || 'Untitled recipe'}&rdquo;?
             </h3>
-            <div className="mb-3.5 font-mono text-[11.5px] leading-[1.55] text-ink-mute">
+            <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
               This can&rsquo;t be undone — everything typed into it goes with it.
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setConfirmingId(null)}
-                className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+                className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
               >
                 Keep it
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(confirmingDraft.id)}
-                className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream"
+                className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream"
               >
                 Discard
               </button>

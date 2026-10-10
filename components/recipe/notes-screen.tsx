@@ -43,7 +43,7 @@ export function NotesScreen({ id }: { id: string }) {
       <>
         <TopBar title="Notes" backHref={`/recipe/${id}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -54,7 +54,7 @@ export function NotesScreen({ id }: { id: string }) {
       <>
         <TopBar title="Notes" backHref={`/recipe/${id}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">Recipe not found.</span>
+          <span className="font-mono text-[14px] text-ink-mute">Recipe not found.</span>
         </div>
       </>
     );
@@ -129,7 +129,7 @@ export function NotesScreen({ id }: { id: string }) {
       <TopBar title="Notes" backHref={`/recipe/${id}`} subtitle={`${recipe.title} · ${total} note${total === 1 ? '' : 's'}`} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
         <div className="mb-3 flex items-center gap-2 border-y border-dashed border-rule py-2.5">
-          <span className="flex-1 font-mono text-[11px] text-ink-mute">{recipe.madeIt} people cooked this</span>
+          <span className="flex-1 font-mono text-[12px] text-ink-mute">{recipe.madeIt} people cooked this</span>
           {profile && (
             <OutlineBox compact filled={cookedMark} onClick={() => setCookedMark((c) => !c)}>
               {cookedMark ? '✓ Cooked it' : 'I cooked it'}
@@ -161,7 +161,7 @@ export function NotesScreen({ id }: { id: string }) {
         {shown.length === 0 ? (
           <div className="mt-4 border border-dashed border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">No notes yet</div>
-            <div className="font-mono text-[12px] leading-[1.55] text-ink-mute">
+            <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
               {filter === 'all'
                 ? "If you change something, or it goes wrong, say so here. That's what makes the recipe better next time."
                 : 'Nothing under this filter yet.'}
@@ -301,7 +301,7 @@ function NoteRow({
               {comment.by}
             </button>
             {comment.cooked && !depth && (
-              <span className="border border-accent px-1 font-mono text-[10px] uppercase tracking-[0.08em] text-accent">
+              <span className="border border-accent px-1 font-mono text-[11px] uppercase tracking-[0.08em] text-accent">
                 cooked it
               </span>
             )}

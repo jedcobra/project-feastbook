@@ -12,7 +12,7 @@ import type { Person } from '@/lib/types';
 export function CooksToFollow({ people }: { people: Person[] }) {
   return (
     <div className="mb-6">
-      <h2 className="mb-2.5 font-display text-[15px] font-bold text-ink">Cooks to follow</h2>
+      <h2 className="mb-2.5 font-display text-[16px] font-bold text-ink">Cooks to follow</h2>
       {people.map((person, i) => (
         <CookRow key={person.id} person={person} first={i === 0} />
       ))}
@@ -41,7 +41,7 @@ export function CookRow({ person, first }: { person: Person; first: boolean }) {
       <Link href={`/${person.handle}`} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar name={person.name} src={person.avatarUrl} size={30} />
         <div className="min-w-0 flex-1">
-          <div className="font-display text-[15px] font-bold text-ink">{person.name}</div>
+          <div className="font-display text-[16px] font-bold text-ink">{person.name}</div>
           <div className="mt-px font-mono text-meta text-ink-mute">
             {person.recipes} recipes · {formatCount(person.followers)} followers
           </div>

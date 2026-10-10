@@ -31,7 +31,7 @@ export function CookingScreenLoader({ id }: { id: string }) {
   if (data === undefined) {
     return (
       <div className="flex flex-1 items-center justify-center bg-ink">
-        <span className="font-mono text-[12px] text-cream/50">Loading…</span>
+        <span className="font-mono text-[14px] text-cream/50">Loading…</span>
       </div>
     );
   }
@@ -39,7 +39,7 @@ export function CookingScreenLoader({ id }: { id: string }) {
   if (data === null) {
     return (
       <div className="flex flex-1 items-center justify-center bg-ink px-8 text-center">
-        <span className="font-mono text-[12px] text-cream/50">Recipe not found.</span>
+        <span className="font-mono text-[14px] text-cream/50">Recipe not found.</span>
       </div>
     );
   }

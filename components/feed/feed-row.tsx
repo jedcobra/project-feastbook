@@ -36,7 +36,7 @@ export function FeedRow({
       <div className="flex items-center gap-2 px-5 pt-3">
         <Link href={`/${author.handle}`} className="flex items-center gap-2">
           <Avatar name={author.name} src={author.avatarUrl} size={22} />
-          <span className="font-mono text-[12px] text-ink underline decoration-dashed underline-offset-[3px]">
+          <span className="font-mono text-[14px] text-ink underline decoration-dashed underline-offset-[3px]">
             {author.name}
           </span>
         </Link>
@@ -57,7 +57,7 @@ export function FeedRow({
       </Link>
 
       {item.caption && (
-        <div className="px-5 pb-1 font-mono text-[12px] leading-relaxed text-ink-mute">
+        <div className="px-5 pb-1 font-mono text-[14px] leading-relaxed text-ink-mute">
           &ldquo;{item.caption}&rdquo;
         </div>
       )}

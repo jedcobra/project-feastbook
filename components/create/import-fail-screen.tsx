@@ -60,7 +60,7 @@ export function ImportFailScreen() {
     <>
       <TopBar title="Couldn't read that page" backHref="/new" subtitle={p.host || p.url} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <div className="mb-[18px] border border-dashed border-rule p-[13px] font-mono text-[12px] leading-[1.6] text-ink-mute">
+        <div className="mb-[18px] border border-dashed border-rule p-[13px] font-mono text-[14px] leading-[1.6] text-ink-mute">
           {p.reason === 'fetch-failed'
             ? 'We couldn’t reach that page — it might be blocking automated requests, or temporarily down.'
             : 'We got the title, but no ingredient list we trust. Some sites hide the recipe behind a script, and guessing at quantities is worse than not guessing.'}
@@ -71,7 +71,7 @@ export function ImportFailScreen() {
             <Label className="mb-2">What we did get</Label>
             <div className="mb-[18px] border-t border-dashed border-rule pt-2.5">
               <div className="mb-0.5 font-display text-[17px] font-bold text-ink">{p.title}</div>
-              {p.host && <div className="font-mono text-[11px] text-ink-mute">{p.host} · source saved</div>}
+              {p.host && <div className="font-mono text-[12px] text-ink-mute">{p.host} · source saved</div>}
             </div>
           </>
         )}
@@ -88,8 +88,8 @@ export function ImportFailScreen() {
           >
             <row.icon size={17} className="flex-shrink-0 text-ink" />
             <span className="min-w-0 flex-1">
-              <span className="mb-px block font-display text-[14.5px] font-bold text-ink">{row.label}</span>
-              <span className="block font-mono text-[10.5px] leading-[1.45] text-ink-mute">{row.sub}</span>
+              <span className="mb-px block font-display text-[16px] font-bold text-ink">{row.label}</span>
+              <span className="block font-mono text-[12px] leading-[1.45] text-ink-mute">{row.sub}</span>
             </span>
             <ChevronIcon size={13} className="flex-shrink-0 text-rule" />
           </button>

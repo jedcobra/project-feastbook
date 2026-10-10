@@ -32,7 +32,7 @@ export function FollowActions({
       <button
         type="button"
         onClick={onToggleFollow}
-        className={`flex-1 rounded-button border border-ink py-2.5 font-mono text-[13px] font-semibold ${
+        className={`flex-1 rounded-button border border-ink py-2.5 font-mono text-[14px] font-semibold ${
           following ? 'bg-cream text-ink' : 'bg-ink text-cream'
         }`}
       >

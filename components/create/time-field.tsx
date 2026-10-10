@@ -12,7 +12,7 @@ export function TimeField({ value, onChange }: { value: string; onChange: (value
 
   return (
     <div className="mb-3.5">
-      <Label className="mb-0.5 text-[9px]">Time</Label>
+      <Label className="mb-0.5 text-[11px]">Time</Label>
       <div className="flex items-baseline gap-1 pt-1.5">
         <input
           type="number"
@@ -22,9 +22,9 @@ export function TimeField({ value, onChange }: { value: string; onChange: (value
           value={hours || ''}
           onChange={(e) => setHours(parseInt(e.target.value, 10) || 0)}
           placeholder="0"
-          className="w-7 border-none bg-transparent p-0 font-mono text-[12px] text-ink outline-none"
+          className="w-7 border-none bg-transparent p-0 font-mono text-[14px] text-ink outline-none"
         />
-        <span className="font-mono text-[10px] text-ink-mute">hr</span>
+        <span className="font-mono text-[11px] text-ink-mute">hr</span>
         <input
           type="number"
           inputMode="numeric"
@@ -33,9 +33,9 @@ export function TimeField({ value, onChange }: { value: string; onChange: (value
           value={minutes || ''}
           onChange={(e) => setMinutes(parseInt(e.target.value, 10) || 0)}
           placeholder="0"
-          className="w-7 border-none bg-transparent p-0 font-mono text-[12px] text-ink outline-none"
+          className="w-7 border-none bg-transparent p-0 font-mono text-[14px] text-ink outline-none"
         />
-        <span className="font-mono text-[10px] text-ink-mute">min</span>
+        <span className="font-mono text-[11px] text-ink-mute">min</span>
       </div>
       <div className="mt-1.5 border-b border-dashed border-rule" />
     </div>

@@ -55,7 +55,7 @@ export function InboxScreen() {
         title="Messages"
         trailing={
           archivedCount > 0 ? (
-            <Link href="/messages/archived" className="font-mono text-[11px] text-ink-mute">
+            <Link href="/messages/archived" className="font-mono text-[12px] text-ink-mute">
               Archived ({archivedCount})
             </Link>
           ) : undefined
@@ -63,11 +63,11 @@ export function InboxScreen() {
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {conversations === null ? (
-          <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+          <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : conversations.length === 0 ? (
           <div className="mt-4 border border-dashed border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">No messages yet</div>
-            <div className="font-mono text-[12px] leading-[1.55] text-ink-mute">
+            <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
               Message a cook from their profile and it&rsquo;ll show up here.
             </div>
           </div>
@@ -95,19 +95,19 @@ export function InboxScreen() {
                 <Avatar name={c.person.name} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-[15px] font-bold text-ink">{c.person.name}</span>
+                    <span className="font-display text-[16px] font-bold text-ink">{c.person.name}</span>
                     <span className="font-mono text-meta text-ink-mute">@{c.person.handle}</span>
                   </div>
                   <div
-                    className={`truncate font-mono text-[12px] ${c.unread > 0 ? 'font-semibold text-ink' : 'text-ink-mute'}`}
+                    className={`truncate font-mono text-[14px] ${c.unread > 0 ? 'font-semibold text-ink' : 'text-ink-mute'}`}
                   >
                     {c.lastMessage || 'Say hello…'}
                   </div>
                 </div>
                 <div className="flex flex-shrink-0 flex-col items-end gap-1">
-                  <span className="font-mono text-[10px] text-ink-mute">{formatRelativeTime(c.lastMessageAt)}</span>
+                  <span className="font-mono text-[11px] text-ink-mute">{formatRelativeTime(c.lastMessageAt)}</span>
                   {c.unread > 0 && (
-                    <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[9px] font-semibold text-cream">
+                    <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[11px] font-semibold text-cream">
                       {c.unread}
                     </span>
                   )}

@@ -55,10 +55,10 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
         {view === 'shelves' ? (
           <>
             <h3 className="mb-0.5 font-display text-[19px] font-bold text-ink">Manage shelves</h3>
-            <div className="mb-3 truncate font-mono text-[11px] text-ink-mute">{recipeTitle}</div>
+            <div className="mb-3 truncate font-mono text-[12px] text-ink-mute">{recipeTitle}</div>
 
             {shelves === null ? (
-              <div className="py-4 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+              <div className="py-4 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
             ) : (
               shelves.map((shelf) => (
                 <button
@@ -69,8 +69,8 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
                 >
                   <Checkbox checked={selected.has(shelf.id)} />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-mono text-[12.5px] text-ink">{shelf.title}</span>
-                    <span className="block font-mono text-[10.5px] text-ink-mute">{shelf.count} recipes</span>
+                    <span className="block font-mono text-[14px] text-ink">{shelf.title}</span>
+                    <span className="block font-mono text-[12px] text-ink-mute">{shelf.count} recipes</span>
                   </span>
                 </button>
               ))
@@ -82,14 +82,14 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
               className="mb-3.5 flex w-full items-center gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
             >
               <PlusIcon size={15} className="text-ink" />
-              <span className="font-mono text-[12.5px] text-ink">New shelf…</span>
+              <span className="font-mono text-[14px] text-ink">New shelf…</span>
             </button>
 
             <button
               type="button"
               onClick={handleSave}
               disabled={saving || shelves === null}
-              className="w-full rounded-button border border-ink bg-ink py-3 font-mono text-[13px] font-semibold text-cream disabled:opacity-60"
+              className="w-full rounded-button border border-ink bg-ink py-3 font-mono text-[14px] font-semibold text-cream disabled:opacity-60"
             >
               {saving ? 'Saving…' : `Save to ${selected.size} shelf${selected.size === 1 ? '' : 'ves'}`}
             </button>
@@ -107,7 +107,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
             <button
               type="button"
               onClick={() => setView('shelves')}
-              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[12px] text-ink-mute"
+              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[14px] text-ink-mute"
             >
               Back
             </button>

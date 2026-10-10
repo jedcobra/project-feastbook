@@ -30,7 +30,7 @@ export function DocumentDetail({
       <h1 className="mb-2 text-balance font-display text-hero font-bold text-ink">
         {recipe.title}
       </h1>
-      <div className="mb-4 font-mono text-[13px] leading-relaxed text-ink-mute">
+      <div className="mb-4 font-mono text-[14px] leading-relaxed text-ink-mute">
         {recipe.subtitle}
       </div>
 
@@ -45,7 +45,7 @@ export function DocumentDetail({
 
       <Link href={`/${author.handle}`} className="flex items-center gap-2">
         <Avatar name={author.name} src={author.avatarUrl} size={24} />
-        <span className="font-mono text-[13px] text-ink underline decoration-dashed underline-offset-[3px]">
+        <span className="font-mono text-[14px] text-ink underline decoration-dashed underline-offset-[3px]">
           {author.name}
         </span>
         <span className="font-mono text-meta text-ink-mute">@{author.handle}</span>
@@ -56,7 +56,7 @@ export function DocumentDetail({
       <RecipeMeta recipe={recipe} />
 
       {recipe.intro && (
-        <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">
+        <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[14px] leading-[1.65] text-ink-mute">
           {recipe.intro}
         </div>
       )}
@@ -77,7 +77,7 @@ export function DocumentDetail({
         <div className="mb-5 border border-dashed border-rule bg-cream-deep p-3.5">
           <Label className="mb-2">Author&rsquo;s notes</Label>
           {recipe.notes.map((note, i) => (
-            <div key={i} className="mb-1 font-mono text-[12px] leading-relaxed text-ink-mute">
+            <div key={i} className="mb-1 font-mono text-[14px] leading-relaxed text-ink-mute">
               — {note.text}
             </div>
           ))}

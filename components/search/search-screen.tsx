@@ -82,7 +82,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Recipes, cooks, tags, ingredients…"
-            className="min-w-0 flex-1 border-none bg-transparent font-mono text-[12.5px] text-ink outline-none placeholder:text-ink-mute"
+            className="min-w-0 flex-1 border-none bg-transparent font-mono text-[14px] text-ink outline-none placeholder:text-ink-mute"
           />
           {q && (
             <button type="button" onClick={() => setQ('')} aria-label="Clear search" className="flex-shrink-0 text-ink-mute">
@@ -106,7 +106,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
               key={key}
               type="button"
               onClick={() => setScope(key)}
-              className={`rounded border border-ink px-2 py-[3px] font-mono text-[11px] ${
+              className={`rounded border border-ink px-2 py-[3px] font-mono text-[12px] ${
                 scope === key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
               }`}
             >
@@ -124,7 +124,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
               key={key}
               type="button"
               onClick={() => toggleFilter(key)}
-              className={`rounded border border-dashed px-[7px] py-[2px] font-mono text-[10.5px] ${
+              className={`rounded border border-dashed px-[7px] py-[2px] font-mono text-[12px] ${
                 filters.has(key) ? 'border-rule bg-cream-deep text-ink' : 'border-rule text-ink-mute'
               }`}
             >
@@ -147,7 +147,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                     clearRecentSearches();
                     setRecent([]);
                   }}
-                  className="font-mono text-[10.5px] text-ink-mute"
+                  className="font-mono text-[12px] text-ink-mute"
                 >
                   Clear
                 </button>
@@ -155,7 +155,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             )}
             {recent.map((s) => (
               <div key={s} className="flex items-center gap-2.5 border-b border-dotted border-rule py-2.5">
-                <button type="button" onClick={() => setQ(s)} className="flex-1 text-left font-mono text-[12.5px] text-ink">
+                <button type="button" onClick={() => setQ(s)} className="flex-1 text-left font-mono text-[14px] text-ink">
                   {s}
                 </button>
                 <button
@@ -165,7 +165,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                     setRecent(listRecentSearches());
                   }}
                   aria-label={`Remove ${s}`}
-                  className="font-mono text-[13px] text-ink-mute"
+                  className="font-mono text-[14px] text-ink-mute"
                 >
                   ×
                 </button>
@@ -185,14 +185,14 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             )}
           </>
         ) : loading ? (
-          <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Searching…</div>
+          <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Searching…</div>
         ) : total === 0 ? (
           <div className="mt-2 border border-dashed border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[19px] font-bold text-ink">Nothing for &ldquo;{q}&rdquo;</div>
-            <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
+            <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">
               Try a different word, or write it yourself.
             </div>
-            <Link href="/new" className="inline-block rounded-button border border-ink px-3 py-1.5 font-mono text-[12px] text-ink">
+            <Link href="/new" className="inline-block rounded-button border border-ink px-3 py-1.5 font-mono text-[14px] text-ink">
               Write it yourself
             </Link>
           </div>
@@ -209,8 +209,8 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                   >
                     {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} size={36} />}
                     <div className="min-w-0 flex-1">
-                      <h3 className="mb-0.5 font-display text-[15.5px] font-bold text-ink">{r.title}</h3>
-                      <div className="font-mono text-[10.5px] text-ink-mute">
+                      <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
+                      <div className="font-mono text-[12px] text-ink-mute">
                         @{r.author} · {r.time} · {r.madeIt} cooked
                       </div>
                     </div>
@@ -240,9 +240,9 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                   >
                     <div className="flex-1">
                       <div className="font-display text-[14px] font-bold text-ink">{sh.title}</div>
-                      <div className="font-mono text-[10.5px] text-ink-mute">{sh.subtitle}</div>
+                      <div className="font-mono text-[12px] text-ink-mute">{sh.subtitle}</div>
                     </div>
-                    <span className="font-mono text-[10.5px] text-ink-mute">{sh.count}</span>
+                    <span className="font-mono text-[12px] text-ink-mute">{sh.count}</span>
                   </Link>
                 ))}
               </div>

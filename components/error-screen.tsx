@@ -60,7 +60,7 @@ export function ErrorScreen({
   const Icon = ICON[kind];
   const label = ctaLabel ?? copy.cta;
   const buttonClasses =
-    'mb-1 inline-block rounded-button border border-ink bg-ink px-[22px] py-3 font-mono text-[12.5px] font-semibold text-cream';
+    'mb-1 inline-block rounded-button border border-ink bg-ink px-[22px] py-3 font-mono text-[14px] font-semibold text-cream';
 
   return (
     <>
@@ -70,7 +70,7 @@ export function ErrorScreen({
           <Icon size={20} className="text-ink" />
         </div>
         <h2 className="mb-2.5 text-balance font-display text-[24px] font-bold text-ink">{title ?? copy.title}</h2>
-        <div className="mb-5 max-w-[270px] font-mono text-[12.5px] leading-[1.65] text-ink-mute">
+        <div className="mb-5 max-w-[270px] font-mono text-[14px] leading-[1.65] text-ink-mute">
           {body ?? copy.body}
         </div>
         {onRetry ? (

@@ -39,7 +39,7 @@ export function OwnCookbook() {
   if (loading) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center">
-        <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+        <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
       </div>
     );
   }
@@ -47,12 +47,12 @@ export function OwnCookbook() {
   if (!user || !profile) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
-        <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
+        <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
           Sign in to see your own cookbook — your recipes, shelves, and what you&rsquo;ve made.
         </p>
         <Link
           href="/account"
-          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
+          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[14px] font-semibold text-cream"
         >
           Sign in / Create account
         </Link>
@@ -63,7 +63,7 @@ export function OwnCookbook() {
   if (!data) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center">
-        <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+        <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
       </div>
     );
   }

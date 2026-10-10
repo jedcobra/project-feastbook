@@ -138,7 +138,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
       <>
         <TopBar backHref="/messages" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -149,7 +149,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
       <>
         <TopBar backHref="/messages" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">This conversation isn&rsquo;t available.</span>
+          <span className="font-mono text-[14px] text-ink-mute">This conversation isn&rsquo;t available.</span>
         </div>
       </>
     );
@@ -169,7 +169,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
       />
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-2">
         {messages.length === 0 ? (
-          <div className="mt-6 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+          <div className="mt-6 text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
             Nothing here yet — say hello.
           </div>
         ) : (
@@ -198,8 +198,8 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                         </span>
                       )}
                       <span className="min-w-0 flex-1">
-                        <span className="block font-mono text-[10.5px] text-ink-mute">Recipe</span>
-                        <span className="block truncate font-mono text-[12.5px] font-semibold text-ink">
+                        <span className="block font-mono text-[12px] text-ink-mute">Recipe</span>
+                        <span className="block truncate font-mono text-[14px] font-semibold text-ink">
                           {m.sharedRecipe.title}
                         </span>
                       </span>
@@ -215,7 +215,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                   )}
                   {m.text && (
                     <div
-                      className={`rounded-2xl px-3.5 py-2 font-mono text-[12.5px] leading-[1.45] ${
+                      className={`rounded-2xl px-3.5 py-2 font-mono text-[14px] leading-[1.45] ${
                         mine ? 'bg-ink text-cream' : 'border border-ink bg-cream text-ink'
                       }`}
                     >
@@ -223,12 +223,12 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                     </div>
                   )}
                   <div className="mt-1 flex items-center gap-2 px-1">
-                    <span className="font-mono text-[10px] text-ink-mute">{formatRelativeTime(m.createdAt)}</span>
+                    <span className="font-mono text-[11px] text-ink-mute">{formatRelativeTime(m.createdAt)}</span>
                     {mine && (
                       <button
                         type="button"
                         onClick={() => handleDeleteMessage(m.id)}
-                        className="font-mono text-[10px] text-ink-mute underline decoration-dashed underline-offset-2"
+                        className="font-mono text-[11px] text-ink-mute underline decoration-dashed underline-offset-2"
                       >
                         Delete
                       </button>
@@ -256,7 +256,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
         <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
           {blockedByMe ? (
             <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
-              <span className="flex-1 font-mono text-[11.5px] text-ink-mute">
+              <span className="flex-1 font-mono text-[12px] text-ink-mute">
                 You&rsquo;ve blocked @{peer.handle}.
               </span>
               <OutlineBox compact onClick={toggleBlock}>
@@ -265,7 +265,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             </div>
           ) : (
             <>
-              {sendError && <div className="mb-2 font-mono text-[11px] text-accent">{sendError}</div>}
+              {sendError && <div className="mb-2 font-mono text-[12px] text-accent">{sendError}</div>}
               {photoUrl && (
                 <div className="relative mb-2 h-16 w-16">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -313,13 +313,13 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                     }
                   }}
                   placeholder={photoUploading ? 'Uploading photo…' : 'Write a message…'}
-                  className="max-h-40 flex-1 resize-none overflow-y-auto border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
+                  className="max-h-40 flex-1 resize-none overflow-y-auto border-none bg-transparent font-mono text-[14px] leading-[1.5] text-ink outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleSend}
                   disabled={(!draft.trim() && !photoUrl) || sending}
-                  className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[11px] ${
+                  className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[12px] ${
                     draft.trim() || photoUrl ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
                   }`}
                 >
@@ -347,10 +347,10 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
               className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left"
             >
               <span className="min-w-0 flex-1">
-                <span className={`block font-mono text-[12.5px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
+                <span className={`block font-mono text-[14px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
                   {blockedByMe ? `Unblock @${peer.handle}` : `Block @${peer.handle}`}
                 </span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   {blockedByMe
                     ? 'They still can’t message you until you unblock them.'
                     : 'They won’t be able to message you, and you won’t be able to message them.'}

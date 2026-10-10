@@ -106,7 +106,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
       <>
         <TopBar backHref="/feed" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -117,7 +117,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
       <>
         <TopBar backHref="/feed" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">No one here by that handle.</span>
+          <span className="font-mono text-[14px] text-ink-mute">No one here by that handle.</span>
         </div>
       </>
     );
@@ -146,7 +146,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
           <div className="px-5 pb-[18px]">
             <Link
               href="/account"
-              className="block w-full rounded-button border border-ink bg-ink py-2.5 text-center font-mono text-[13px] font-semibold text-cream"
+              className="block w-full rounded-button border border-ink bg-ink py-2.5 text-center font-mono text-[14px] font-semibold text-cream"
             >
               Sign in to follow
             </Link>
@@ -177,10 +177,10 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
               className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left"
             >
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">
+                <span className="block font-mono text-[14px] text-ink">
                   {copied ? 'Copied' : 'Share profile'}
                 </span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   {`${typeof window !== 'undefined' ? window.location.host : ''}/${data.person.handle}`}
                 </span>
               </span>
@@ -192,10 +192,10 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
                 className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left"
               >
                 <span className="min-w-0 flex-1">
-                  <span className={`block font-mono text-[12.5px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
+                  <span className={`block font-mono text-[14px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>
                     {blockedByMe ? `Unblock @${data.person.handle}` : `Block @${data.person.handle}`}
                   </span>
-                  <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                  <span className="block truncate font-mono text-[12px] text-ink-mute">
                     {blockedByMe
                       ? 'They still can’t message you until you unblock them.'
                       : 'They won’t be able to follow or message you, and you won’t see each other’s updates.'}

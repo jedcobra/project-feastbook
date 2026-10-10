@@ -32,7 +32,7 @@ export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
                   {step.t}
                 </div>
                 {isActive && (
-                  <div className="font-mono text-[12px] leading-relaxed text-ink-mute">
+                  <div className="font-mono text-[14px] leading-relaxed text-ink-mute">
                     {step.d}
                   </div>
                 )}
@@ -46,7 +46,7 @@ export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
                 )}
               </div>
               {step.timer && (
-                <span className="flex-shrink-0 rounded-[3px] border border-accent px-[5px] py-0.5 font-mono text-[10px] text-accent">
+                <span className="flex-shrink-0 rounded-[3px] border border-accent px-[5px] py-0.5 font-mono text-[11px] text-accent">
                   {step.timer}m
                 </span>
               )}

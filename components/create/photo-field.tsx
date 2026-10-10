@@ -40,7 +40,7 @@ export function PhotoField({ label, photoUrl, onChange, profileId, kind, size = 
 
   return (
     <div className="mb-3.5">
-      <Label className="mb-1 text-[9px]">{label}</Label>
+      <Label className="mb-1 text-[11px]">{label}</Label>
       <div className="flex items-center gap-2.5">
         {photoUrl ? (
           <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
@@ -68,16 +68,16 @@ export function PhotoField({ label, photoUrl, onChange, profileId, kind, size = 
             style={{ width: size, height: size }}
           >
             <CameraIcon size={18} />
-            <span className="font-mono text-[9px]">{uploading ? 'Uploading…' : 'Add photo'}</span>
+            <span className="font-mono text-[11px]">{uploading ? 'Uploading…' : 'Add photo'}</span>
           </button>
         )}
         {photoUrl && (
-          <button type="button" onClick={pick} disabled={uploading} className="font-mono text-[11px] text-ink-mute">
+          <button type="button" onClick={pick} disabled={uploading} className="font-mono text-[12px] text-ink-mute">
             {uploading ? 'Uploading…' : 'Change'}
           </button>
         )}
       </div>
-      {error && <div className="mt-1 font-mono text-[10px] text-accent">{error}</div>}
+      {error && <div className="mt-1 font-mono text-[11px] text-accent">{error}</div>}
       <input
         ref={inputRef}
         type="file"

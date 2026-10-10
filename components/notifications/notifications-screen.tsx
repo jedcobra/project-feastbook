@@ -109,7 +109,7 @@ export function NotificationsScreen() {
               key={f.key}
               type="button"
               onClick={() => setFilter(f.key)}
-              className={`rounded border border-ink px-2 py-[3px] font-mono text-[11px] ${
+              className={`rounded border border-ink px-2 py-[3px] font-mono text-[12px] ${
                 filter === f.key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
               }`}
             >
@@ -119,11 +119,11 @@ export function NotificationsScreen() {
         </div>
 
         {items === null ? (
-          <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+          <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : shown.length === 0 ? (
           <div className="mt-4 border border-dashed border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">Nothing here</div>
-            <div className="font-mono text-[12px] leading-[1.55] text-ink-mute">
+            <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
               When someone cooks or notes on one of yours, it lands here. Nothing else does.
             </div>
           </div>
@@ -132,7 +132,7 @@ export function NotificationsScreen() {
             (g) =>
               groups[g].length > 0 && (
                 <div key={g} className="mt-4">
-                  <div className="mb-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-mute">{g}</div>
+                  <div className="mb-0.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-mute">{g}</div>
                   {groups[g].map((n) => {
                     const Icon = KIND_ICON[n.kind];
                     return (
@@ -153,18 +153,18 @@ export function NotificationsScreen() {
                           </span>
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="font-mono text-[12px] leading-[1.45] text-ink">
+                          <div className="font-mono text-[14px] leading-[1.45] text-ink">
                             {n.actorName && <span className="font-semibold">{n.actorName} </span>}
                             <span className="text-ink-mute">{describe(n)}</span>
                             {n.recipeTitle && <span> {n.recipeTitle}</span>}
                           </div>
                           {n.excerpt && n.kind !== 'digest' && (
-                            <div className="mt-1 border-l border-dashed border-rule pl-2.5 font-mono text-[11px] leading-[1.5] text-ink-mute">
+                            <div className="mt-1 border-l border-dashed border-rule pl-2.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
                               {n.excerpt}
                             </div>
                           )}
                         </div>
-                        <span className="flex-shrink-0 font-mono text-[10px] text-ink-mute">
+                        <span className="flex-shrink-0 font-mono text-[11px] text-ink-mute">
                           {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
                       </button>

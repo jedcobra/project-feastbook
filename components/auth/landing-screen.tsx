@@ -17,13 +17,13 @@ export function LandingScreen() {
       <div className="flex flex-col gap-2.5 px-5 pb-[34px]">
         <Link
           href="/account/sign-up"
-          className="w-full rounded-button border border-ink bg-ink py-3.5 text-center font-mono text-[13px] font-semibold text-cream"
+          className="w-full rounded-button border border-ink bg-ink py-3.5 text-center font-mono text-[14px] font-semibold text-cream"
         >
           Create an account
         </Link>
         <Link
           href="/account/sign-in"
-          className="w-full rounded-button border border-ink bg-transparent py-3.5 text-center font-mono text-[13px] font-semibold text-ink"
+          className="w-full rounded-button border border-ink bg-transparent py-3.5 text-center font-mono text-[14px] font-semibold text-ink"
         >
           Sign in
         </Link>

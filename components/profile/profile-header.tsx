@@ -57,20 +57,20 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
           </div>
           <h1 className="mb-0.5 font-display text-profile-name font-bold text-ink">{person.name}</h1>
           <div className="mb-2.5 font-mono text-meta text-ink-mute">@{person.handle}</div>
-          <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">{person.bio}</div>
+          <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{person.bio}</div>
           <div className="grid grid-cols-3 border-t border-dashed border-rule pt-3">
             {stats.map(([label, value, href]) =>
               href ? (
                 <Link key={label} href={href} className="text-center">
                   <div className="font-display text-[20px] font-bold text-ink">{value}</div>
-                  <div className="font-display text-[9px] font-bold uppercase tracking-wide text-ink underline decoration-dashed underline-offset-2">
+                  <div className="font-display text-[11px] font-bold uppercase tracking-wide text-ink underline decoration-dashed underline-offset-2">
                     {label}
                   </div>
                 </Link>
               ) : (
                 <div key={label} className="text-center">
                   <div className="font-display text-[20px] font-bold text-ink">{value}</div>
-                  <div className="font-display text-[9px] font-bold uppercase tracking-wide text-ink">{label}</div>
+                  <div className="font-display text-[11px] font-bold uppercase tracking-wide text-ink">{label}</div>
                 </div>
               ),
             )}
@@ -79,14 +79,14 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
             <div className="mt-3.5 flex gap-2 border-t border-dashed border-rule pt-3.5">
               <Link
                 href="/settings/profile"
-                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[12px] font-semibold text-ink"
+                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[14px] font-semibold text-ink"
               >
                 Edit profile
               </Link>
               <button
                 type="button"
                 onClick={shareProfile}
-                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[12px] font-semibold text-ink"
+                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[14px] font-semibold text-ink"
               >
                 {copied ? 'Copied' : 'Share profile'}
               </button>

@@ -80,7 +80,7 @@ export function PhotoBioStep({
                 <CameraIcon size={11} />
               </span>
             </button>
-            <div className="min-w-0 flex-1 font-mono text-[10.5px] leading-[1.5] text-ink-mute">
+            <div className="min-w-0 flex-1 font-mono text-[12px] leading-[1.5] text-ink-mute">
               {uploading ? 'Uploading…' : 'Tap to add a photo.'}
             </div>
             <input
@@ -94,7 +94,7 @@ export function PhotoBioStep({
               }}
             />
           </div>
-          {error && <div className="mb-3.5 font-mono text-[11.5px] text-accent">{error}</div>}
+          {error && <div className="mb-3.5 font-mono text-[12px] text-accent">{error}</div>}
           <Field
             label="Bio"
             value={bio}

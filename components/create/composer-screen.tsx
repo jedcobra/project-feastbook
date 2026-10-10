@@ -74,7 +74,7 @@ export function ComposerScreen() {
       <>
         <TopBar title="Type it out" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -85,7 +85,7 @@ export function ComposerScreen() {
       <>
         <TopBar title="Type it out" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">Sign in to write a recipe.</span>
+          <span className="font-mono text-[14px] text-ink-mute">Sign in to write a recipe.</span>
         </div>
       </>
     );
@@ -188,14 +188,14 @@ export function ComposerScreen() {
             size={12}
           />
           <div className="mb-3.5">
-            <Label className="mb-0.5 text-[9px]">Level</Label>
+            <Label className="mb-0.5 text-[11px]">Level</Label>
             <div className="flex gap-1 pt-1.5">
               {LEVELS.map((l) => (
                 <button
                   key={l}
                   type="button"
                   onClick={() => update({ level: l })}
-                  className={`border border-ink px-[5px] py-0.5 font-mono text-[10px] ${
+                  className={`border border-ink px-[5px] py-0.5 font-mono text-[11px] ${
                     draft.level === l ? 'bg-ink text-cream' : 'bg-transparent text-ink'
                   }`}
                 >
@@ -220,7 +220,7 @@ export function ComposerScreen() {
         <div className="mb-5 mt-[22px]">
           <div className="mb-2.5 flex items-baseline justify-between border-b border-dashed border-rule pb-1.5">
             <Label>Ingredients</Label>
-            <button type="button" onClick={addSection} className="font-mono text-[10px] text-ink-mute">
+            <button type="button" onClick={addSection} className="font-mono text-[11px] text-ink-mute">
               + section
             </button>
           </div>
@@ -230,7 +230,7 @@ export function ComposerScreen() {
                 value={section.section}
                 onChange={(e) => setSectionName(si, e.target.value)}
                 placeholder={si === 0 ? 'Section name (optional)' : 'Section name'}
-                className="mb-1.5 w-full border-none bg-transparent p-0 font-mono text-[10px] uppercase tracking-wide text-ink-mute outline-none"
+                className="mb-1.5 w-full border-none bg-transparent p-0 font-mono text-[11px] uppercase tracking-wide text-ink-mute outline-none"
               />
               {section.items.map((item, ii) => (
                 <div key={ii} className="flex items-center gap-2 border-t border-dotted border-rule py-1.5">
@@ -239,20 +239,20 @@ export function ComposerScreen() {
                     value={item.q}
                     onChange={(e) => setItem(si, ii, 'q', e.target.value)}
                     placeholder="200g"
-                    className="w-[62px] flex-shrink-0 border-none bg-transparent p-0 font-mono text-[11px] text-ink-mute outline-none"
+                    className="w-[62px] flex-shrink-0 border-none bg-transparent p-0 font-mono text-[12px] text-ink-mute outline-none"
                   />
                   <input
                     value={item.i}
                     onChange={(e) => setItem(si, ii, 'i', e.target.value)}
                     placeholder="bucatini"
-                    className="min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-[12px] text-ink outline-none"
+                    className="min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-[14px] text-ink outline-none"
                   />
                 </div>
               ))}
               <button
                 type="button"
                 onClick={() => addItem(si)}
-                className="w-full border-t border-dotted border-rule py-1.5 pl-5 text-left font-mono text-[11px] text-ink-mute"
+                className="w-full border-t border-dotted border-rule py-1.5 pl-5 text-left font-mono text-[12px] text-ink-mute"
               >
                 + ingredient
               </button>
@@ -283,10 +283,10 @@ export function ComposerScreen() {
                     maxLength={STEP_DESCRIPTION_LIMIT}
                     onChange={(e) => setStep(i, 'd', e.target.value)}
                     placeholder="What to do, and what it should look like when it's right."
-                    className="block w-full resize-none border-none bg-transparent p-0 font-mono text-[12px] leading-[1.55] text-ink-mute outline-none"
+                    className="block w-full resize-none border-none bg-transparent p-0 font-mono text-[14px] leading-[1.55] text-ink-mute outline-none"
                   />
                   {step.d.length >= STEP_DESCRIPTION_LIMIT - 40 && (
-                    <div className="text-right font-mono text-[9px] text-ink-mute">
+                    <div className="text-right font-mono text-[11px] text-ink-mute">
                       {step.d.length}/{STEP_DESCRIPTION_LIMIT}
                     </div>
                   )}
@@ -296,7 +296,7 @@ export function ComposerScreen() {
                       value={step.timer}
                       onChange={(e) => setStep(i, 'timer', e.target.value)}
                       placeholder="timer (min)"
-                      className="w-[90px] border-none bg-transparent p-0 font-mono text-[10px] text-ink-mute outline-none"
+                      className="w-[90px] border-none bg-transparent p-0 font-mono text-[11px] text-ink-mute outline-none"
                     />
                   </div>
                   <div className="mt-1.5">
@@ -316,7 +316,7 @@ export function ComposerScreen() {
           <button
             type="button"
             onClick={addStep}
-            className="w-full border-t border-dashed border-rule pl-[30px] pt-2 text-left font-mono text-[11px] text-ink-mute"
+            className="w-full border-t border-dashed border-rule pl-[30px] pt-2 text-left font-mono text-[12px] text-ink-mute"
           >
             + step
           </button>
@@ -332,7 +332,7 @@ export function ComposerScreen() {
         />
 
         <div className="mb-5">
-          <Label className="mb-1.5 text-[9px]">Tags</Label>
+          <Label className="mb-1.5 text-[11px]">Tags</Label>
           <div className="flex flex-wrap items-center gap-1.5">
             {draft.tags.map((t) => (
               <Tag key={t} selected onRemove={() => toggleTag(t)}>
@@ -377,7 +377,7 @@ export function ComposerScreen() {
         <button
           type="button"
           onClick={() => router.push(`/new/publish?draft=${draft.id}`)}
-          className="flex-1 rounded-button border border-ink bg-ink py-[13px] font-mono text-[13px] font-semibold text-cream"
+          className="flex-1 rounded-button border border-ink bg-ink py-[13px] font-mono text-[14px] font-semibold text-cream"
         >
           Continue to publish
         </button>

@@ -92,7 +92,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
         {view === 'main' ? (
           <>
             <h3 className="mb-0.5 truncate font-display text-[17px] font-bold text-ink">{recipe.title}</h3>
-            <div className="mb-1 font-mono text-[11px] text-ink-mute">Anyone with the link can read it, signed in or not</div>
+            <div className="mb-1 font-mono text-[12px] text-ink-mute">Anyone with the link can read it, signed in or not</div>
 
             {profile && (
               <button
@@ -102,8 +102,8 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
               >
                 <MessageIcon size={16} className="flex-shrink-0 text-ink" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-mono text-[12.5px] text-ink">Send in a message</span>
-                  <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                  <span className="block font-mono text-[14px] text-ink">Send in a message</span>
+                  <span className="block truncate font-mono text-[12px] text-ink-mute">
                     To someone you follow or already message
                   </span>
                 </span>
@@ -117,8 +117,8 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
             >
               <LinkIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Copy link</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">{copied ? 'Copied' : url}</span>
+                <span className="block font-mono text-[14px] text-ink">Copy link</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">{copied ? 'Copied' : url}</span>
               </span>
             </button>
 
@@ -130,8 +130,8 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
               >
                 <ShareIcon size={16} className="flex-shrink-0 text-ink" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-mono text-[12.5px] text-ink">Share via…</span>
-                  <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                  <span className="block font-mono text-[14px] text-ink">Share via…</span>
+                  <span className="block truncate font-mono text-[12px] text-ink-mute">
                     Messages, mail, or any app on this device
                   </span>
                 </span>
@@ -142,9 +142,9 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
           <>
             <h3 className="mb-3 font-display text-[17px] font-bold text-ink">Send to</h3>
             {people === null ? (
-              <div className="py-4 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+              <div className="py-4 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
             ) : people.length === 0 ? (
-              <div className="py-4 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+              <div className="py-4 text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
                 Follow someone or start a conversation first — that&rsquo;s who shows up here.
               </div>
             ) : (
@@ -162,8 +162,8 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
                     }`}
                   >
                     <Avatar name={p.name} src={p.avatarUrl} size={28} />
-                    <span className="min-w-0 flex-1 font-mono text-[12.5px] text-ink">{p.name}</span>
-                    <span className="font-mono text-[11px] text-ink-mute">
+                    <span className="min-w-0 flex-1 font-mono text-[14px] text-ink">{p.name}</span>
+                    <span className="font-mono text-[12px] text-ink-mute">
                       {sent ? 'Sent' : sending ? 'Sending…' : `@${p.handle}`}
                     </span>
                   </button>
@@ -173,7 +173,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
             <button
               type="button"
               onClick={() => setView('main')}
-              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[12px] text-ink-mute"
+              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[14px] text-ink-mute"
             >
               Back
             </button>

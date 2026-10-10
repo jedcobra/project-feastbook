@@ -30,12 +30,12 @@ export function AuthCallbackScreen() {
   if (status === 'failed') {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
-        <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
+        <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
           That confirmation link didn&rsquo;t go through — it may have expired or already been used.
         </p>
         <Link
           href="/account"
-          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
+          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[14px] font-semibold text-cream"
         >
           Back to Special Spoon
         </Link>
@@ -46,12 +46,12 @@ export function AuthCallbackScreen() {
   if (status === 'confirmed') {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
-        <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
+        <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
           Your email is confirmed. Sign in to get started.
         </p>
         <Link
           href="/account"
-          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
+          className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[14px] font-semibold text-cream"
         >
           Continue
         </Link>
@@ -61,7 +61,7 @@ export function AuthCallbackScreen() {
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-      <p className="font-mono text-[13px] text-ink-mute">Confirming your email…</p>
+      <p className="font-mono text-[14px] text-ink-mute">Confirming your email…</p>
     </div>
   );
 }

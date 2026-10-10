@@ -21,8 +21,8 @@ export function SettingRow({ label, value, onClick, danger, first }: SettingRowP
         first ? 'border-t' : ''
       }`}
     >
-      <span className={`flex-1 font-mono text-[12.5px] ${danger ? 'text-accent' : 'text-ink'}`}>{label}</span>
-      {value && <span className="font-mono text-[11.5px] text-ink-mute">{value}</span>}
+      <span className={`flex-1 font-mono text-[14px] ${danger ? 'text-accent' : 'text-ink'}`}>{label}</span>
+      {value && <span className="font-mono text-[12px] text-ink-mute">{value}</span>}
       {onClick && !danger && <ChevronIcon size={13} className="flex-shrink-0 text-rule" />}
     </Tag>
   );

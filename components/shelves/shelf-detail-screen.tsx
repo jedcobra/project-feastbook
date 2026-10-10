@@ -71,7 +71,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
       <>
         <TopBar backHref="/me" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -82,7 +82,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
       <>
         <TopBar backHref="/me" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">Not available.</span>
+          <span className="font-mono text-[14px] text-ink-mute">Not available.</span>
         </div>
       </>
     );
@@ -103,7 +103,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         }
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        {shelf.subtitle && <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>}
+        {shelf.subtitle && <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>}
 
         <div className="mb-1.5 flex gap-1.5">
           {SORTS.map((s) => (
@@ -111,7 +111,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
               key={s.key}
               type="button"
               onClick={() => setSort(s.key)}
-              className={`rounded border border-ink px-2 py-[3px] font-mono text-[10.5px] ${
+              className={`rounded border border-ink px-2 py-[3px] font-mono text-[12px] ${
                 sort === s.key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
               }`}
             >
@@ -127,14 +127,14 @@ export function ShelfDetailScreen({ id }: { id: string }) {
               <>
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
-                  <div className="font-mono text-[10.5px] text-ink-mute">
+                  <div className="font-mono text-[12px] text-ink-mute">
                     @{r.author} · {r.time} · {r.difficulty}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleRemove(r.id)}
-                  className="flex-shrink-0 font-mono text-[11px] text-accent"
+                  className="flex-shrink-0 font-mono text-[12px] text-accent"
                 >
                   Remove
                 </button>
@@ -143,7 +143,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
               <Link href={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
-                  <div className="font-mono text-[10.5px] text-ink-mute">
+                  <div className="font-mono text-[12px] text-ink-mute">
                     @{r.author} · {r.time} · {r.difficulty}
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         {sorted.length === 0 && (
           <div className="mt-2.5 border border-dashed border-rule p-[26px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">Empty shelf</div>
-            <div className="mb-3.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
+            <div className="mb-3.5 font-mono text-[14px] leading-[1.5] text-ink-mute">
               Save a recipe and file it here, or move things over from another shelf.
             </div>
             {isOwner && (
@@ -174,14 +174,14 @@ export function ShelfDetailScreen({ id }: { id: string }) {
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(true)}
-                className="flex items-center gap-2.5 font-mono text-[12.5px] text-accent"
+                className="flex items-center gap-2.5 font-mono text-[14px] text-accent"
               >
                 <TrashIcon size={16} />
                 Delete shelf
               </button>
             ) : (
               <div className="border border-accent p-3">
-                <div className="mb-2.5 font-mono text-[11.5px] leading-[1.55] text-ink">
+                <div className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink">
                   Delete &ldquo;{shelf.title}&rdquo;?{' '}
                   {shelf.recipes.length > 0
                     ? `The ${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
@@ -191,7 +191,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
                   <button
                     type="button"
                     onClick={() => setConfirmingDelete(false)}
-                    className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+                    className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
                   >
                     Keep it
                   </button>
@@ -199,7 +199,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
                     type="button"
                     onClick={handleDeleteShelf}
                     disabled={deleting}
-                    className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+                    className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
                   >
                     {deleting ? 'Deleting…' : 'Delete'}
                   </button>

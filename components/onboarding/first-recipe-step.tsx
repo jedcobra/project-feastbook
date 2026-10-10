@@ -42,8 +42,8 @@ export function FirstRecipeStep({
           >
             <w.icon size={17} className="flex-shrink-0 text-ink" />
             <span className="min-w-0 flex-1">
-              <span className="mb-px block font-display text-[14.5px] font-bold text-ink">{w.label}</span>
-              <span className="block font-mono text-[10.5px] text-ink-mute">{w.sub}</span>
+              <span className="mb-px block font-display text-[16px] font-bold text-ink">{w.label}</span>
+              <span className="block font-mono text-[12px] text-ink-mute">{w.sub}</span>
             </span>
             <ChevronIcon size={13} className="flex-shrink-0 text-rule" />
           </button>

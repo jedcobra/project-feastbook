@@ -118,14 +118,14 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
           <XIcon size={16} />
         </button>
         <div className="min-w-0 flex-1">
-          <div className="mb-px font-mono text-[10px] uppercase tracking-wide text-cream/45">
+          <div className="mb-px font-mono text-[11px] uppercase tracking-wide text-cream/45">
             Now cooking
           </div>
           <div className="truncate font-display text-[14px] font-bold text-cream/80">
             {recipe.title}
           </div>
         </div>
-        <div className="flex-shrink-0 font-mono text-[12px] text-cream/40">
+        <div className="flex-shrink-0 font-mono text-[14px] text-cream/40">
           {step + 1}/{total}
         </div>
       </div>
@@ -138,7 +138,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-4 pt-7">
-        <div className="mb-3 font-mono text-[11px] uppercase tracking-wide text-cream/35">
+        <div className="mb-3 font-mono text-[12px] uppercase tracking-wide text-cream/35">
           Step {String(step + 1).padStart(2, '0')}
         </div>
 
@@ -158,7 +158,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
               >
                 {timeLeft !== null ? formatTime(timeLeft) : `${String(current.timer).padStart(2, '0')}:00`}
               </div>
-              <div className="mt-[3px] font-mono text-[10px] text-cream/35">
+              <div className="mt-[3px] font-mono text-[11px] text-cream/35">
                 {timerActive ? 'running' : 'timer'}
               </div>
             </div>
@@ -166,7 +166,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
               <button
                 type="button"
                 onClick={startTimer}
-                className="rounded-button border border-cream px-4 py-2 font-mono text-[12px] text-cream"
+                className="rounded-button border border-cream px-4 py-2 font-mono text-[14px] text-cream"
               >
                 Start
               </button>
@@ -174,7 +174,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
               <button
                 type="button"
                 onClick={() => setTimerActive(false)}
-                className="rounded-button border border-cream/30 px-4 py-2 font-mono text-[12px] text-cream/60"
+                className="rounded-button border border-cream/30 px-4 py-2 font-mono text-[14px] text-cream/60"
               >
                 Pause
               </button>
@@ -184,17 +184,17 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
 
         {step === 0 && allIngredients.length > 0 && (
           <div className="mt-auto border border-dashed border-cream/15 px-3.5 py-3">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-wide text-cream/35">
+            <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-cream/35">
               You&rsquo;ll need
             </div>
             {allIngredients.slice(0, 4).map((item, i) => (
-              <div key={i} className="flex gap-2.5 py-1 font-mono text-[12px]">
+              <div key={i} className="flex gap-2.5 py-1 font-mono text-[14px]">
                 <span className="w-[60px] flex-shrink-0 text-cream/35">{item.q}</span>
                 <span className="min-w-0 flex-1 break-words text-cream/70">{item.i}</span>
               </div>
             ))}
             {allIngredients.length > 4 && (
-              <div className="mt-1 font-mono text-[11px] text-cream/30">
+              <div className="mt-1 font-mono text-[12px] text-cream/30">
                 + {allIngredients.length - 4} more
               </div>
             )}
@@ -218,7 +218,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
           type="button"
           onClick={goNext}
           disabled={finishing}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-cream bg-cream py-[13px] font-mono text-[13px] font-semibold text-ink disabled:opacity-60"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-cream bg-cream py-[13px] font-mono text-[14px] font-semibold text-ink disabled:opacity-60"
         >
           {step < total - 1 ? 'Next step' : finishing ? 'Marking it cooked…' : 'Done'}
           <ChevronIcon size={16} weight={2} />

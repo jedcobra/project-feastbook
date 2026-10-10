@@ -43,7 +43,7 @@ export function Field({
   return (
     <div className="mb-3.5">
       <div className="mb-0.5 flex items-baseline gap-1.5">
-        <Label className="text-[9px]">{label}</Label>
+        <Label className="text-[11px]">{label}</Label>
       </div>
       {multiline ? (
         <textarea
@@ -69,7 +69,7 @@ export function Field({
         />
       )}
       <div className="border-b border-dashed border-rule" />
-      {hint && <div className="mt-1 font-mono text-[10px] text-ink-mute">{hint}</div>}
+      {hint && <div className="mt-1 font-mono text-[11px] text-ink-mute">{hint}</div>}
     </div>
   );
 }

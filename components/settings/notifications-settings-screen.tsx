@@ -78,7 +78,7 @@ export function NotificationsSettingsScreen() {
     <>
       <TopBar title="Notifications" backHref="/settings" subtitle={saving ? 'Saving…' : undefined} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <Label className="mb-0.5 mt-1 text-[9px] tracking-[0.12em]">On this device</Label>
+        <Label className="mb-0.5 mt-1 text-[11px] tracking-[0.12em]">On this device</Label>
         {pushSupported ? (
           <button
             type="button"
@@ -88,24 +88,24 @@ export function NotificationsSettingsScreen() {
           >
             <Checkbox checked={pushOn} className="mt-0.5" />
             <span className="flex-1">
-              <span className="block font-mono text-[12.5px] text-ink">Push notifications</span>
-              <span className="mt-0.5 block font-mono text-[10.5px] text-ink-mute">
+              <span className="block font-mono text-[14px] text-ink">Push notifications</span>
+              <span className="mt-0.5 block font-mono text-[12px] text-ink-mute">
                 {permission === 'denied'
                   ? 'Blocked — allow notifications for this site in your browser settings first.'
                   : pushBusy
                     ? 'Working…'
                     : 'A real notification from your browser or phone, even when Special Spoon isn’t open.'}
               </span>
-              {pushError && <span className="mt-1 block font-mono text-[10.5px] text-accent">{pushError}</span>}
+              {pushError && <span className="mt-1 block font-mono text-[12px] text-accent">{pushError}</span>}
             </span>
           </button>
         ) : (
-          <div className="border-y border-dashed border-rule py-3 font-mono text-[11px] text-ink-mute">
+          <div className="border-y border-dashed border-rule py-3 font-mono text-[12px] text-ink-mute">
             Push notifications aren’t supported in this browser.
           </div>
         )}
 
-        <Label className="mb-0.5 mt-5 text-[9px] tracking-[0.12em]">In the app</Label>
+        <Label className="mb-0.5 mt-5 text-[11px] tracking-[0.12em]">In the app</Label>
         {ROWS.map((row, i) => (
           <button
             key={row.key}
@@ -117,8 +117,8 @@ export function NotificationsSettingsScreen() {
           >
             <Checkbox checked={profile.notification_prefs[row.key]} className="mt-0.5" />
             <span className="flex-1">
-              <span className="block font-mono text-[12.5px] text-ink">{row.label}</span>
-              {row.sub && <span className="mt-0.5 block font-mono text-[10.5px] text-ink-mute">{row.sub}</span>}
+              <span className="block font-mono text-[14px] text-ink">{row.label}</span>
+              {row.sub && <span className="mt-0.5 block font-mono text-[12px] text-ink-mute">{row.sub}</span>}
             </span>
           </button>
         ))}

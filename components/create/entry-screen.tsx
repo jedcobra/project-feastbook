@@ -99,7 +99,7 @@ export function EntryScreen() {
       <>
         <TopBar title="New recipe" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -110,12 +110,12 @@ export function EntryScreen() {
       <>
         <TopBar title="New recipe" />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
-          <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
+          <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
             Sign in to add a recipe to your cookbook.
           </p>
           <Link
             href="/account"
-            className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[13px] font-semibold text-cream"
+            className="rounded-button border border-ink bg-ink px-5 py-2.5 font-mono text-[14px] font-semibold text-cream"
           >
             Sign in / Create account
           </Link>
@@ -140,7 +140,7 @@ export function EntryScreen() {
             <button
               type="button"
               onClick={() => setLinkOpen(false)}
-              className="mb-2 flex items-center gap-1.5 font-display text-[15px] font-bold text-ink"
+              className="mb-2 flex items-center gap-1.5 font-display text-[16px] font-bold text-ink"
             >
               Import from a link
             </button>
@@ -151,19 +151,19 @@ export function EntryScreen() {
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Paste a recipe URL…"
                 autoFocus
-                className="min-w-0 flex-1 border-none bg-transparent font-mono text-[12px] text-ink placeholder:text-ink-mute focus:outline-none"
+                className="min-w-0 flex-1 border-none bg-transparent font-mono text-[14px] text-ink placeholder:text-ink-mute focus:outline-none"
               />
             </div>
             <button
               type="button"
               onClick={fetchRecipe}
               disabled={!url.trim() || importing}
-              className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[13px] font-semibold text-cream disabled:opacity-50"
+              className="w-full rounded-button border border-ink bg-ink py-2.5 font-mono text-[14px] font-semibold text-cream disabled:opacity-50"
             >
               {importing ? 'Fetching…' : 'Fetch recipe'}
             </button>
-            {importError && <div className="mt-2 font-mono text-[11px] text-accent">{importError}</div>}
-            <div className="mt-2 font-mono text-[10px] leading-relaxed text-ink-mute">
+            {importError && <div className="mt-2 font-mono text-[12px] text-accent">{importError}</div>}
+            <div className="mt-2 font-mono text-[11px] leading-relaxed text-ink-mute">
               We pull the ingredients and method, then you confirm every field before it saves.
             </div>
           </div>
@@ -177,8 +177,8 @@ export function EntryScreen() {
               <LinkIcon size={16} className="text-ink" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="mb-px block font-display text-[15px] font-bold text-ink">Import from a link</span>
-              <span className="block font-mono text-[11px] text-ink-mute">
+              <span className="mb-px block font-display text-[16px] font-bold text-ink">Import from a link</span>
+              <span className="block font-mono text-[12px] text-ink-mute">
                 Paste a URL — we pull the ingredients and method.
               </span>
             </span>
@@ -198,8 +198,8 @@ export function EntryScreen() {
               <row.icon size={16} className="text-ink" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="mb-px block font-display text-[15px] font-bold text-ink">{row.title}</span>
-              <span className="block font-mono text-[11px] text-ink-mute">{row.sub}</span>
+              <span className="mb-px block font-display text-[16px] font-bold text-ink">{row.title}</span>
+              <span className="block font-mono text-[12px] text-ink-mute">{row.sub}</span>
             </span>
             <ChevronIcon size={15} className="flex-shrink-0 text-ink-mute" />
           </Link>

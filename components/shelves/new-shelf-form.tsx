@@ -37,7 +37,7 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
         hint="Optional. Shows under the name."
       />
       <div className="mt-1.5">
-        <Label className="mb-2 text-[9px]">Who can see it</Label>
+        <Label className="mb-2 text-[11px]">Who can see it</Label>
         {SHELF_VISIBILITY_OPTIONS.map((o) => (
           <button
             key={o.id}
@@ -48,7 +48,7 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
             <span className="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
               {visibility === o.id && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
             </span>
-            <span className="font-mono text-[12.5px] text-ink">{o.title}</span>
+            <span className="font-mono text-[14px] text-ink">{o.title}</span>
           </button>
         ))}
       </div>
@@ -56,7 +56,7 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
         type="button"
         onClick={handleCreate}
         disabled={!ready || creating}
-        className={`mt-5 w-full rounded-button border border-ink py-3 font-mono text-[13px] font-semibold ${
+        className={`mt-5 w-full rounded-button border border-ink py-3 font-mono text-[14px] font-semibold ${
           ready ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
         }`}
       >

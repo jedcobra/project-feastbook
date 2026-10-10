@@ -52,18 +52,18 @@ export function SignInScreen() {
             placeholder="••••••••"
           />
 
-          <div className="-mt-1 text-right font-mono text-[11px] text-ink-mute underline decoration-dashed underline-offset-[3px]">
+          <div className="-mt-1 text-right font-mono text-[12px] text-ink-mute underline decoration-dashed underline-offset-[3px]">
             Forgotten it?
           </div>
 
-          {error && <div className="mt-3.5 font-mono text-[12px] text-accent">{error}</div>}
+          {error && <div className="mt-3.5 font-mono text-[14px] text-accent">{error}</div>}
         </div>
 
         <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
           <button
             type="submit"
             disabled={!ready || submitting}
-            className={`w-full rounded-button border border-ink py-[13px] font-mono text-[13px] font-semibold ${
+            className={`w-full rounded-button border border-ink py-[13px] font-mono text-[14px] font-semibold ${
               ready ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
             }`}
           >

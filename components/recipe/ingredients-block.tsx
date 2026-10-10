@@ -98,7 +98,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
         ))}
       </div>
       {dietMode !== 'original' && (
-        <div className="mb-3 font-mono text-[10.5px] leading-snug text-ink-mute print:hidden">
+        <div className="mb-3 font-mono text-[12px] leading-snug text-ink-mute print:hidden">
           Suggested swaps only — you may need to adjust cook time or technique for what you use instead.
         </div>
       )}
@@ -106,7 +106,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
       {sections.map((section, si) => (
         <div key={si} className="mb-3">
           {section.section && (
-            <div className="mb-1.5 font-mono text-[10px] uppercase tracking-wide text-ink-mute">
+            <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wide text-ink-mute">
               {section.section}
             </div>
           )}
@@ -125,17 +125,17 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
                 } ${done ? 'opacity-40' : 'opacity-100'}`}
               >
                 <Checkbox checked={done} size={18} />
-                <span className="w-20 flex-shrink-0 font-mono text-[11px] leading-snug text-ink-mute">
+                <span className="w-20 flex-shrink-0 font-mono text-[12px] leading-snug text-ink-mute">
                   {displayQuantity}
                 </span>
                 <div className="min-w-0 flex-1">
                   <span
-                    className={`break-words font-mono text-[12px] leading-snug text-ink ${done ? 'line-through' : ''}`}
+                    className={`break-words font-mono text-[14px] leading-snug text-ink ${done ? 'line-through' : ''}`}
                   >
                     {item.i}
                   </span>
                   {suggestion && (
-                    <div className="mt-0.5 break-words font-mono text-[10.5px] leading-snug text-accent-2">
+                    <div className="mt-0.5 break-words font-mono text-[12px] leading-snug text-accent-2">
                       → try {suggestion}
                     </div>
                   )}

@@ -93,7 +93,7 @@ export function EditProfileScreen() {
             type="button"
             onClick={handleSave}
             disabled={!dirty || saving}
-            className={`rounded-button border border-ink px-3 py-1.5 font-mono text-[11.5px] ${
+            className={`rounded-button border border-ink px-3 py-1.5 font-mono text-[12px] ${
               dirty && !saving ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
             }`}
           >
@@ -116,7 +116,7 @@ export function EditProfileScreen() {
             </span>
           </button>
           <div className="min-w-0 flex-1">
-            <div className="font-mono text-[10.5px] leading-[1.5] text-ink-mute">
+            <div className="font-mono text-[12px] leading-[1.5] text-ink-mute">
               {avatarUploading ? 'Uploading…' : 'Tap to change your photo.'}
             </div>
             {avatarUrl && !avatarUploading && (
@@ -126,7 +126,7 @@ export function EditProfileScreen() {
                   setAvatarUrl('');
                   setDirty(true);
                 }}
-                className="mt-1 font-mono text-[10.5px] text-ink-mute underline decoration-dashed underline-offset-2"
+                className="mt-1 font-mono text-[12px] text-ink-mute underline decoration-dashed underline-offset-2"
               >
                 Remove photo
               </button>
@@ -143,7 +143,7 @@ export function EditProfileScreen() {
             }}
           />
         </div>
-        {error && <div className="mb-3.5 font-mono text-[11.5px] text-accent">{error}</div>}
+        {error && <div className="mb-3.5 font-mono text-[12px] text-accent">{error}</div>}
         <Field label="Name" value={name} onChange={touch(setName)} mono={false} size={20} />
         <Field
           label="Handle"

@@ -77,7 +77,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
         {view === 'menu' ? (
           <>
             <h3 className="mb-0.5 font-display text-[19px] font-bold text-ink">{title}</h3>
-            <div className="mb-3 font-mono text-[11px] text-ink-mute">Yours</div>
+            <div className="mb-3 font-mono text-[12px] text-ink-mute">Yours</div>
 
             <button
               type="button"
@@ -86,8 +86,8 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             >
               <PencilIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Edit recipe</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block font-mono text-[14px] text-ink">Edit recipe</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   Title, ingredients, method, notes
                 </span>
               </span>
@@ -101,8 +101,8 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             >
               <SaveIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Revision history</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block font-mono text-[14px] text-ink">Revision history</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   Every edit, restorable
                 </span>
               </span>
@@ -116,8 +116,8 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             >
               <BookIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Change who can see it</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block font-mono text-[14px] text-ink">Change who can see it</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   Currently: {visibilityLabel(visibility)}
                 </span>
               </span>
@@ -131,8 +131,8 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             >
               <LinkIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Copy link</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block font-mono text-[14px] text-ink">Copy link</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   {copied ? 'Copied' : `${typeof window !== 'undefined' ? window.location.host : ''}/r/${recipeId}`}
                 </span>
               </span>
@@ -145,8 +145,8 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             >
               <PrintIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
-                <span className="block font-mono text-[12.5px] text-ink">Print or save as PDF</span>
-                <span className="block truncate font-mono text-[10.5px] text-ink-mute">
+                <span className="block font-mono text-[14px] text-ink">Print or save as PDF</span>
+                <span className="block truncate font-mono text-[12px] text-ink-mute">
                   One page, no screen furniture
                 </span>
               </span>
@@ -157,14 +157,14 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
                 <button
                   type="button"
                   onClick={startDelete}
-                  className="flex items-center gap-3 font-mono text-[12.5px] text-accent"
+                  className="flex items-center gap-3 font-mono text-[14px] text-accent"
                 >
                   <TrashIcon size={16} />
                   Delete recipe
                 </button>
               ) : (
                 <div className="border border-accent p-3">
-                  <div className="mb-2.5 font-mono text-[11.5px] leading-[1.55] text-ink">
+                  <div className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink">
                     Delete &ldquo;{title}&rdquo;?{' '}
                     {impact
                       ? `The ${impact.comments} note${impact.comments === 1 ? '' : 's'} on it go too. The ${impact.saves} ${impact.saves === 1 ? 'person who' : 'people who'} saved it will lose it.`
@@ -174,7 +174,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
                     <button
                       type="button"
                       onClick={() => setConfirmingDelete(false)}
-                      className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+                      className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
                     >
                       Keep it
                     </button>
@@ -182,7 +182,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
                       type="button"
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+                      className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
                     >
                       {deleting ? 'Deleting…' : 'Delete'}
                     </button>
@@ -208,10 +208,10 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
                     {on && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
                   </span>
                   <span className="flex-1">
-                    <span className={`block font-mono text-[13px] ${on ? 'font-semibold' : 'font-normal'} text-ink`}>
+                    <span className={`block font-mono text-[14px] ${on ? 'font-semibold' : 'font-normal'} text-ink`}>
                       {o.title}
                     </span>
-                    <span className="block font-mono text-[11px] leading-snug text-ink-mute">{o.sub}</span>
+                    <span className="block font-mono text-[12px] leading-snug text-ink-mute">{o.sub}</span>
                   </span>
                 </button>
               );
@@ -219,7 +219,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => setView('menu')}
-              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[12px] text-ink-mute"
+              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[14px] text-ink-mute"
             >
               Back
             </button>

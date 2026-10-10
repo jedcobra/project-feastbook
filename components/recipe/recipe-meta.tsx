@@ -14,10 +14,10 @@ export function RecipeMeta({ recipe }: { recipe: Recipe }) {
           key={k}
           className={`px-1 py-2.5 text-center ${i < cols.length - 1 ? 'border-r border-dashed border-rule' : ''}`}
         >
-          <div className="mb-[3px] font-display text-[9px] font-bold uppercase tracking-wide text-ink">
+          <div className="mb-[3px] font-display text-[11px] font-bold uppercase tracking-wide text-ink">
             {k}
           </div>
-          <div className="font-mono text-[12px] text-ink">{v}</div>
+          <div className="font-mono text-[14px] text-ink">{v}</div>
         </div>
       ))}
     </div>

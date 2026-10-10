@@ -134,7 +134,7 @@ export function AvatarCropper({ file, onCancel, onCropped }: AvatarCropperProps)
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-button border border-ink bg-transparent py-2.5 font-mono text-[12.5px] text-ink"
+            className="flex-1 rounded-button border border-ink bg-transparent py-2.5 font-mono text-[14px] text-ink"
           >
             Cancel
           </button>
@@ -142,7 +142,7 @@ export function AvatarCropper({ file, onCancel, onCropped }: AvatarCropperProps)
             type="button"
             onClick={handleUse}
             disabled={!natural}
-            className="flex-1 rounded-button border border-ink bg-ink py-2.5 font-mono text-[12.5px] font-semibold text-cream disabled:opacity-60"
+            className="flex-1 rounded-button border border-ink bg-ink py-2.5 font-mono text-[14px] font-semibold text-cream disabled:opacity-60"
           >
             Use photo
           </button>

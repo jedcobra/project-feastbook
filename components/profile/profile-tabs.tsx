@@ -50,7 +50,7 @@ export function ProfileTabs({
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`-mb-px border-b-2 py-2.5 font-mono text-[12px] ${
+            className={`-mb-px border-b-2 py-2.5 font-mono text-[14px] ${
               tab === t.id
                 ? 'border-ink font-semibold text-ink'
                 : 'border-transparent font-normal text-ink-mute'
@@ -115,7 +115,7 @@ function ShelvesTab({
     <div className="mx-5 pb-8">
       {isOwn && archivedShelfCount > 0 && (
         <div className="flex justify-end py-2">
-          <Link href="/archived-shelves" className="font-mono text-[11px] text-ink-mute">
+          <Link href="/archived-shelves" className="font-mono text-[12px] text-ink-mute">
             Archived ({archivedShelfCount})
           </Link>
         </div>
@@ -163,7 +163,7 @@ function ShelvesTab({
       {isOwn && (
         <Link
           href="/new-shelf"
-          className="mt-3.5 flex w-full items-center justify-center gap-1.5 border border-dashed border-rule py-3 font-mono text-[12px] text-ink-mute"
+          className="mt-3.5 flex w-full items-center justify-center gap-1.5 border border-dashed border-rule py-3 font-mono text-[14px] text-ink-mute"
         >
           <PlusIcon size={13} />
           New shelf
@@ -215,7 +215,7 @@ function DeleteShelfConfirm({
           <TrashIcon size={16} />
           Delete &ldquo;{shelf.title}&rdquo;?
         </h3>
-        <div className="mb-3.5 font-mono text-[11.5px] leading-[1.55] text-ink-mute">
+        <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
           {shelf.count > 0
             ? `The ${shelf.count} recipe${shelf.count === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
             : 'This can’t be undone.'}
@@ -224,7 +224,7 @@ function DeleteShelfConfirm({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
           >
             Keep it
           </button>
@@ -232,7 +232,7 @@ function DeleteShelfConfirm({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
           >
             {deleting ? 'Deleting…' : 'Delete'}
           </button>
@@ -273,7 +273,7 @@ function RecipesTab({
   if (rows.length === 0) {
     return (
       <div className="mx-5 pb-8 pt-6">
-        <div className="border border-dashed border-rule p-5 text-center font-mono text-[12px] leading-relaxed text-ink-mute">
+        <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
           Recipes written or saved here will show up here.
         </div>
       </div>
@@ -385,7 +385,7 @@ function DeleteRecipeConfirm({
           <TrashIcon size={16} />
           Delete &ldquo;{recipe.title}&rdquo;?
         </h3>
-        <div className="mb-3.5 font-mono text-[11.5px] leading-[1.55] text-ink-mute">
+        <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
           {impact
             ? `The ${impact.comments} note${impact.comments === 1 ? '' : 's'} on it go too. The ${impact.saves} ${impact.saves === 1 ? 'person who' : 'people who'} saved it will lose it.`
             : 'Checking what this affects…'}
@@ -394,7 +394,7 @@ function DeleteRecipeConfirm({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[12px] text-ink"
+            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
           >
             Keep it
           </button>
@@ -402,7 +402,7 @@ function DeleteRecipeConfirm({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[12px] text-cream disabled:opacity-60"
+            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
           >
             {deleting ? 'Deleting…' : 'Delete'}
           </button>
@@ -416,7 +416,7 @@ function CookedTab({ recipes, firstName }: { recipes: CookedRecipe[]; firstName:
   if (recipes.length === 0) {
     return (
       <div className="mx-5 pb-8 pt-6">
-        <div className="border border-dashed border-rule p-5 text-center font-mono text-[12px] leading-relaxed text-ink-mute">
+        <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
           Recipes {firstName} has cooked
           <br />
           will appear here.

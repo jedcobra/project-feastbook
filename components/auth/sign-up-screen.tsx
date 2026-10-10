@@ -66,7 +66,7 @@ export function SignUpScreen() {
       <>
         <TopBar title="Create an account" backHref="/account" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <p className="font-mono text-[13px] leading-relaxed text-ink-mute">
+          <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
             Check <span className="text-ink">{email}</span> for a confirmation link, then come
             back and sign in.
           </p>
@@ -84,10 +84,10 @@ export function SignUpScreen() {
 
           <div className="mb-3.5">
             <div className="mb-0.5 flex items-baseline gap-1.5">
-              <Label className="text-[9px]">Handle</Label>
+              <Label className="text-[11px]">Handle</Label>
               {handle.trim() && !checkingHandle && (
                 <span
-                  className={`rounded px-1 font-mono text-[9px] border ${
+                  className={`rounded px-1 font-mono text-[11px] border ${
                     taken ? 'border-accent text-accent' : 'border-accent-2 text-accent-2'
                   }`}
                 >
@@ -96,16 +96,16 @@ export function SignUpScreen() {
               )}
             </div>
             <div className="flex items-center gap-0.5">
-              <span className="font-mono text-[13px] text-ink-mute">@</span>
+              <span className="font-mono text-[14px] text-ink-mute">@</span>
               <input
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
                 placeholder="mayacooks"
-                className="min-w-0 flex-1 border-none bg-transparent py-1.5 font-mono text-[13px] text-ink outline-none"
+                className="min-w-0 flex-1 border-none bg-transparent py-1.5 font-mono text-[14px] text-ink outline-none"
               />
             </div>
             <div className={`border-b ${taken ? 'border-solid border-accent' : 'border-dashed border-rule'}`} />
-            <div className="mt-1 font-mono text-[10px] text-ink-mute">
+            <div className="mt-1 font-mono text-[11px] text-ink-mute">
               {taken ? 'Someone has that one. Try another.' : 'This is how people find your cookbook.'}
             </div>
           </div>
@@ -128,9 +128,9 @@ export function SignUpScreen() {
             hint={password && password.length < 8 ? `${8 - password.length} more to go` : undefined}
           />
 
-          {error && <div className="font-mono text-[12px] text-accent">{error}</div>}
+          {error && <div className="font-mono text-[14px] text-accent">{error}</div>}
 
-          <div className="mt-[18px] border-t border-dashed border-rule pt-3.5 font-mono text-[10px] leading-relaxed text-ink-mute">
+          <div className="mt-[18px] border-t border-dashed border-rule pt-3.5 font-mono text-[11px] leading-relaxed text-ink-mute">
             By creating an account you agree to the terms and privacy notice. Your cookbook is
             private until you publish something.
           </div>
@@ -140,7 +140,7 @@ export function SignUpScreen() {
           <button
             type="submit"
             disabled={!ready || submitting}
-            className={`w-full rounded-button border border-ink py-[13px] font-mono text-[13px] font-semibold ${
+            className={`w-full rounded-button border border-ink py-[13px] font-mono text-[14px] font-semibold ${
               ready ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
             }`}
           >

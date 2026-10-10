@@ -86,7 +86,7 @@ export function SettingsScreen() {
       <TopBar title="Settings" backHref="/me" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-9">
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[9px] tracking-[0.12em]">You</Label>
+          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">You</Label>
           <SettingRow label="Account and password" onClick={() => router.push('/settings/account')} first />
           <SettingRow
             label="Who can follow you"
@@ -96,7 +96,7 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[9px] tracking-[0.12em]">Cooking</Label>
+          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Cooking</Label>
           <SettingRow label="Units" value={UNIT_LABEL[units]} onClick={cycleUnits} first />
           <SettingRow label="Keep screen awake while cooking" value={awake ? 'On' : 'Off'} onClick={toggleAwake} />
           <SettingRow
@@ -107,7 +107,7 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[9px] tracking-[0.12em]">Publishing</Label>
+          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Publishing</Label>
           <SettingRow
             label="Default privacy for new recipes"
             value={profile.default_visibility ? visibilityLabel(profile.default_visibility) : 'Ask each time'}
@@ -118,7 +118,7 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[9px] tracking-[0.12em]">About</Label>
+          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">About</Label>
           <SettingRow label="Version" value="Beta" first />
         </div>
 
@@ -127,7 +127,7 @@ export function SettingsScreen() {
           <SettingRow label="Delete account" danger onClick={() => router.push('/settings/account')} />
         </div>
 
-        <div className="text-center font-mono text-[10.5px] leading-[1.55] text-ink-mute">
+        <div className="text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
           Special Spoon · made for people who cook the same eight things
         </div>
       </div>
@@ -151,8 +151,8 @@ export function SettingsScreen() {
                 {!profile.default_visibility && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
               </span>
               <span className="flex-1">
-                <span className="block font-mono text-[13px] font-semibold text-ink">Ask each time</span>
-                <span className="block font-mono text-[11px] leading-snug text-ink-mute">
+                <span className="block font-mono text-[14px] font-semibold text-ink">Ask each time</span>
+                <span className="block font-mono text-[12px] leading-snug text-ink-mute">
                   Choose who sees it every time you publish.
                 </span>
               </span>
@@ -168,12 +168,12 @@ export function SettingsScreen() {
                   {profile.default_visibility === o.id && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
                 </span>
                 <span className="flex-1">
-                  <span className="block font-mono text-[13px] font-semibold text-ink">{o.title}</span>
-                  <span className="block font-mono text-[11px] leading-snug text-ink-mute">{o.sub}</span>
+                  <span className="block font-mono text-[14px] font-semibold text-ink">{o.title}</span>
+                  <span className="block font-mono text-[12px] leading-snug text-ink-mute">{o.sub}</span>
                 </span>
               </button>
             ))}
-            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[10.5px] leading-snug text-ink-mute">
+            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
               Still shown and changeable every time you publish — this just picks what starts selected.
             </div>
           </div>
@@ -199,8 +199,8 @@ export function SettingsScreen() {
                 {!servingsDefault && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
               </span>
               <span className="flex-1">
-                <span className="block font-mono text-[13px] font-semibold text-ink">As written</span>
-                <span className="block font-mono text-[11px] leading-snug text-ink-mute">
+                <span className="block font-mono text-[14px] font-semibold text-ink">As written</span>
+                <span className="block font-mono text-[12px] leading-snug text-ink-mute">
                   Starts on whatever the recipe itself serves.
                 </span>
               </span>
@@ -216,11 +216,11 @@ export function SettingsScreen() {
                   {servingsDefault === n && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
                 </span>
                 <span className="flex-1">
-                  <span className="block font-mono text-[13px] font-semibold text-ink">{n}</span>
+                  <span className="block font-mono text-[14px] font-semibold text-ink">{n}</span>
                 </span>
               </button>
             ))}
-            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[10.5px] leading-snug text-ink-mute">
+            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
               Still shown and changeable on every recipe — this just picks what starts selected.
             </div>
           </div>

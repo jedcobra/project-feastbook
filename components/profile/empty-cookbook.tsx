@@ -13,11 +13,11 @@ export function EmptyCookbook({ name }: { name: string }) {
   return (
     <div className="px-5 pb-8">
       <div className="mb-5 border border-ink px-[22px] pb-7 pt-[22px] text-center">
-        <div className="mb-3.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-mute">
+        <div className="mb-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-mute">
           The cookbook of
         </div>
         <h1 className="mb-1.5 font-display text-[26px] font-bold text-ink">{name}</h1>
-        <div className="mb-5 font-mono text-[12px] leading-relaxed text-ink-mute">Nothing in it yet.</div>
+        <div className="mb-5 font-mono text-[14px] leading-relaxed text-ink-mute">Nothing in it yet.</div>
         <div className="mb-[22px]">
           {[0, 1, 2, 3].map((i) => (
             <div
@@ -29,7 +29,7 @@ export function EmptyCookbook({ name }: { name: string }) {
         </div>
         <Link
           href="/new"
-          className="block w-full rounded-button border border-ink bg-ink py-3 font-mono text-[13px] font-semibold text-cream"
+          className="block w-full rounded-button border border-ink bg-ink py-3 font-mono text-[14px] font-semibold text-cream"
         >
           Add your first recipe
         </Link>
@@ -42,10 +42,10 @@ export function EmptyCookbook({ name }: { name: string }) {
           href="/new"
           className={`flex gap-3 border-b border-dashed border-rule py-3 ${i === 0 ? 'border-t' : ''}`}
         >
-          <span className="w-5 flex-shrink-0 pt-0.5 font-mono text-[11px] text-ink-mute">{w.n}</span>
+          <span className="w-5 flex-shrink-0 pt-0.5 font-mono text-[12px] text-ink-mute">{w.n}</span>
           <div className="min-w-0 flex-1">
-            <div className="mb-0.5 font-display text-[15px] font-bold text-ink">{w.t}</div>
-            <div className="font-mono text-[11px] leading-snug text-ink-mute">{w.s}</div>
+            <div className="mb-0.5 font-display text-[16px] font-bold text-ink">{w.t}</div>
+            <div className="font-mono text-[12px] leading-snug text-ink-mute">{w.s}</div>
           </div>
         </Link>
       ))}

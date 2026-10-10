@@ -96,7 +96,7 @@ export function PublishScreen() {
       <>
         <TopBar title="Publish" backHref="/new/edit" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -107,7 +107,7 @@ export function PublishScreen() {
       <>
         <TopBar title="Publish" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">No draft to publish yet.</span>
+          <span className="font-mono text-[14px] text-ink-mute">No draft to publish yet.</span>
         </div>
       </>
     );
@@ -140,7 +140,7 @@ export function PublishScreen() {
         <div className="mb-6">
           <div className="mb-2.5 flex items-baseline justify-between border-b border-dashed border-rule pb-1.5">
             <Label>Who can see it</Label>
-            {!visibility && <span className="font-mono text-[10px] text-accent">required</span>}
+            {!visibility && <span className="font-mono text-[11px] text-accent">required</span>}
           </div>
           {VISIBILITY_OPTIONS.map((o, i) => {
             const on = visibility === o.id;
@@ -157,10 +157,10 @@ export function PublishScreen() {
                   {on && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
                 </span>
                 <span className="flex-1">
-                  <span className={`block font-mono text-[13px] ${on ? 'font-semibold' : 'font-normal'} text-ink`}>
+                  <span className={`block font-mono text-[14px] ${on ? 'font-semibold' : 'font-normal'} text-ink`}>
                     {o.title}
                   </span>
-                  <span className="block font-mono text-[11px] leading-snug text-ink-mute">{o.sub}</span>
+                  <span className="block font-mono text-[12px] leading-snug text-ink-mute">{o.sub}</span>
                 </span>
               </button>
             );
@@ -181,7 +181,7 @@ export function PublishScreen() {
               }`}
             >
               <Checkbox checked={selectedShelves.has(shelf.id)} />
-              <span className="flex-1 font-mono text-[12px] text-ink">{shelf.title}</span>
+              <span className="flex-1 font-mono text-[14px] text-ink">{shelf.title}</span>
               <span className="font-mono text-meta text-ink-mute">{shelf.count}</span>
             </button>
           ))}
@@ -193,9 +193,9 @@ export function PublishScreen() {
                 onChange={(e) => setNewShelfName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddShelf()}
                 placeholder="Shelf name"
-                className="min-w-0 flex-1 border-b border-dashed border-rule bg-transparent font-mono text-[12px] text-ink outline-none"
+                className="min-w-0 flex-1 border-b border-dashed border-rule bg-transparent font-mono text-[14px] text-ink outline-none"
               />
-              <button type="button" onClick={handleAddShelf} className="font-mono text-[11px] text-ink">
+              <button type="button" onClick={handleAddShelf} className="font-mono text-[12px] text-ink">
                 Add
               </button>
             </div>
@@ -203,7 +203,7 @@ export function PublishScreen() {
             <button
               type="button"
               onClick={() => setNewShelfOpen(true)}
-              className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[11px] text-ink-mute"
+              className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
             >
               + new shelf
             </button>
@@ -216,7 +216,7 @@ export function PublishScreen() {
           className="flex w-full items-center gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
         >
           <Checkbox checked={notify} />
-          <span className="flex-1 font-mono text-[12px] text-ink">Tell my followers</span>
+          <span className="flex-1 font-mono text-[14px] text-ink">Tell my followers</span>
         </button>
       </div>
 
@@ -225,7 +225,7 @@ export function PublishScreen() {
           type="button"
           onClick={handlePublish}
           disabled={!visibility || publishing}
-          className={`w-full rounded-button border border-ink py-[13px] font-mono text-[13px] font-semibold ${
+          className={`w-full rounded-button border border-ink py-[13px] font-mono text-[14px] font-semibold ${
             visibility ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
           }`}
         >

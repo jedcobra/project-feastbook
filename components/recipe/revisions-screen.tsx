@@ -41,7 +41,7 @@ export function RevisionsScreen({ id }: { id: string }) {
       <>
         <TopBar title="Revision history" backHref={`/recipe/${id}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -52,7 +52,7 @@ export function RevisionsScreen({ id }: { id: string }) {
       <>
         <TopBar title="Revision history" backHref={`/recipe/${id}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">Not available.</span>
+          <span className="font-mono text-[14px] text-ink-mute">Not available.</span>
         </div>
       </>
     );
@@ -62,7 +62,7 @@ export function RevisionsScreen({ id }: { id: string }) {
     <>
       <TopBar title="Revision history" subtitle={recipe.title} backHref={`/recipe/${id}`} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <div className="mb-3.5 font-mono text-[11px] leading-[1.55] text-ink-mute">
+        <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
           Every save keeps the version before it. Nothing you write here is ever lost.
         </div>
 
@@ -111,9 +111,9 @@ function RevisionRow({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-[13.5px] font-bold text-ink">{label}</span>
+          <span className="font-display text-[14px] font-bold text-ink">{label}</span>
           {isCurrent && (
-            <span className="border border-ink px-1 font-mono text-[9px] uppercase tracking-[0.08em] text-ink">
+            <span className="border border-ink px-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink">
               current
             </span>
           )}

@@ -38,7 +38,7 @@ export function PeopleListScreen({ handle, kind }: { handle: string; kind: Kind 
       <>
         <TopBar title={copy.title} backHref={`/${handle}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -49,7 +49,7 @@ export function PeopleListScreen({ handle, kind }: { handle: string; kind: Kind 
       <>
         <TopBar title={copy.title} backHref={`/${handle}`} />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">No one here by that handle.</span>
+          <span className="font-mono text-[14px] text-ink-mute">No one here by that handle.</span>
         </div>
       </>
     );
@@ -60,9 +60,9 @@ export function PeopleListScreen({ handle, kind }: { handle: string; kind: Kind 
       <TopBar title={copy.title} backHref={`/${handle}`} subtitle={`@${person.handle}`} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {people === null ? (
-          <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+          <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : people.length === 0 ? (
-          <div className="mt-4 border border-dashed border-rule p-[22px] text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+          <div className="mt-4 border border-dashed border-rule p-[22px] text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
             {copy.empty}
           </div>
         ) : (

@@ -53,8 +53,8 @@ export function NotifyStep({
           >
             <Checkbox checked={!!on[row.key]} className="mt-0.5" />
             <span className="flex-1">
-              <span className="block font-mono text-[12.5px] text-ink">{row.label}</span>
-              {row.sub && <span className="mt-0.5 block font-mono text-[10.5px] text-ink-mute">{row.sub}</span>}
+              <span className="block font-mono text-[14px] text-ink">{row.label}</span>
+              {row.sub && <span className="mt-0.5 block font-mono text-[12px] text-ink-mute">{row.sub}</span>}
             </span>
           </button>
         ))}

@@ -56,7 +56,7 @@ export function TasteStep({
               key={t}
               type="button"
               onClick={() => toggle(t)}
-              className={`rounded border border-ink px-[11px] py-1.5 font-mono text-[12px] ${
+              className={`rounded border border-ink px-[11px] py-1.5 font-mono text-[14px] ${
                 on ? 'bg-ink text-cream' : 'bg-transparent text-ink'
               }`}
             >

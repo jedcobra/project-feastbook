@@ -52,9 +52,11 @@ const config: Config = {
         'profile-name': ['26px', { lineHeight: '1.1', letterSpacing: '-0.005em' }],
         'feed-title': ['22px', { lineHeight: '1.1', letterSpacing: '-0.005em' }],
         'section': ['18px', { lineHeight: '1.15', letterSpacing: '-0.005em' }],
-        'body': ['13px', { lineHeight: '1.55' }],
-        'meta': ['11px', { lineHeight: '1.45' }],
-        'caps': ['11px', { lineHeight: '1.2', letterSpacing: '0.06em' }],
+        // body/meta/caps sit on Instagram's scale: 14px for reading text,
+        // 12px for secondary detail.
+        'body': ['14px', { lineHeight: '1.55' }],
+        'meta': ['12px', { lineHeight: '1.45' }],
+        'caps': ['12px', { lineHeight: '1.2', letterSpacing: '0.06em' }],
       },
       borderRadius: {
         button: '6px',

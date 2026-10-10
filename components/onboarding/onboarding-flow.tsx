@@ -56,7 +56,7 @@ export function OnboardingFlow() {
   if (loading || !user || !profile || profile.onboarded_at) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center">
-        <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+        <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
       </div>
     );
   }

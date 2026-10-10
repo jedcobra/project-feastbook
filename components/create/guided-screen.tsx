@@ -179,7 +179,7 @@ export function GuidedScreen() {
       <>
         <TopBar title="Guide me" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <span className="font-mono text-[12px] text-ink-mute">Loading…</span>
+          <span className="font-mono text-[14px] text-ink-mute">Loading…</span>
         </div>
       </>
     );
@@ -190,7 +190,7 @@ export function GuidedScreen() {
       <>
         <TopBar title="Guide me" backHref="/new" />
         <div className="flex min-h-0 flex-1 items-center justify-center px-8 text-center">
-          <span className="font-mono text-[12px] text-ink-mute">Sign in to write a recipe.</span>
+          <span className="font-mono text-[14px] text-ink-mute">Sign in to write a recipe.</span>
         </div>
       </>
     );
@@ -249,7 +249,7 @@ export function GuidedScreen() {
         <h1 className="mb-2 text-balance font-display text-[28px] font-bold leading-[1.08] text-ink">
           {cur.label}
         </h1>
-        <div className="mb-[26px] font-mono text-[12px] leading-[1.55] text-ink-mute">{cur.hint}</div>
+        <div className="mb-[26px] font-mono text-[14px] leading-[1.55] text-ink-mute">{cur.hint}</div>
 
         {cur.key === 'meta' ? (
           <div>
@@ -264,14 +264,14 @@ export function GuidedScreen() {
               placeholder="2"
             />
             <div>
-              <Label className="mb-1.5 text-[9px]">Level</Label>
+              <Label className="mb-1.5 text-[11px]">Level</Label>
               <div className="flex gap-1.5">
                 {LEVELS.map((l) => (
                   <button
                     key={l}
                     type="button"
                     onClick={() => set('level', l)}
-                    className={`border border-ink px-3.5 py-[7px] font-mono text-[12px] ${
+                    className={`border border-ink px-3.5 py-[7px] font-mono text-[14px] ${
                       values.level === l ? 'bg-ink text-cream' : 'bg-transparent text-ink'
                     }`}
                   >
@@ -287,7 +287,7 @@ export function GuidedScreen() {
             value={values[cur.field as TextField]}
             placeholder={cur.placeholder}
             onChange={(e) => set(cur.field as TextField, e.target.value)}
-            className="block w-full resize-none rounded-button border border-ink bg-cream-surface p-3 font-mono text-[13px] leading-[1.7] text-ink outline-none"
+            className="block w-full resize-none rounded-button border border-ink bg-cream-surface p-3 font-mono text-[14px] leading-[1.7] text-ink outline-none"
           />
         ) : (
           <input
@@ -302,13 +302,13 @@ export function GuidedScreen() {
       </div>
 
       <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
-        <button type="button" onClick={advance} className="px-1 py-3 font-mono text-[11px] text-ink-mute">
+        <button type="button" onClick={advance} className="px-1 py-3 font-mono text-[12px] text-ink-mute">
           Skip
         </button>
         <button
           type="button"
           onClick={advance}
-          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-ink bg-ink py-[13px] font-mono text-[13px] font-semibold text-cream"
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-ink bg-ink py-[13px] font-mono text-[14px] font-semibold text-cream"
         >
           {last ? 'Review and publish' : 'Next'}
           <ChevronIcon size={15} weight={2} />

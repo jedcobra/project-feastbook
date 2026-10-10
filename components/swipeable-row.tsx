@@ -66,7 +66,7 @@ export function SwipeableRow({
               onClose();
               a.onClick();
             }}
-            className={`flex items-center justify-center font-mono text-[11px] font-semibold text-cream ${a.className}`}
+            className={`flex items-center justify-center font-mono text-[12px] font-semibold text-cream ${a.className}`}
           >
             {a.label}
           </button>

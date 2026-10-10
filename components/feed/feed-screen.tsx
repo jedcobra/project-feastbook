@@ -38,7 +38,7 @@ export function FeedScreen() {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto pb-8">
       {entries.length === 0 ? (
-        <div className="px-5 pt-8 text-center font-mono text-[12px] text-ink-mute">
+        <div className="px-5 pt-8 text-center font-mono text-[14px] text-ink-mute">
           No activity yet — recipes people add, cook, or save will show up here.
         </div>
       ) : (

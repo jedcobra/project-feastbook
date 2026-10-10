@@ -62,13 +62,13 @@ export function FollowStep({
             <div key={p.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-[11px]">
               <Avatar name={p.name} src={p.avatarUrl} size={32} />
               <div className="min-w-0 flex-1">
-                <div className="font-display text-[14.5px] font-bold text-ink">{p.name}</div>
-                <div className="truncate font-mono text-[10.5px] leading-[1.45] text-ink-mute">{p.bio}</div>
+                <div className="font-display text-[16px] font-bold text-ink">{p.name}</div>
+                <div className="truncate font-mono text-[12px] leading-[1.45] text-ink-mute">{p.bio}</div>
               </div>
               <button
                 type="button"
                 onClick={() => toggle(p.id)}
-                className={`flex-shrink-0 rounded-button border border-ink px-2.5 py-1.5 font-mono text-[11px] ${
+                className={`flex-shrink-0 rounded-button border border-ink px-2.5 py-1.5 font-mono text-[12px] ${
                   on ? 'bg-ink text-cream' : 'bg-transparent text-ink'
                 }`}
               >

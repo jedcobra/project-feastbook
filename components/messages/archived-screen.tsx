@@ -38,9 +38,9 @@ export function ArchivedScreen() {
       <TopBar title="Archived" backHref="/messages" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {conversations === null ? (
-          <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Loading…</div>
+          <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : conversations.length === 0 ? (
-          <div className="mt-4 border border-dashed border-rule p-[22px] text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+          <div className="mt-4 border border-dashed border-rule p-[22px] text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
             Nothing archived.
           </div>
         ) : (
@@ -62,12 +62,12 @@ export function ArchivedScreen() {
                 <Avatar name={c.person.name} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-[15px] font-bold text-ink">{c.person.name}</span>
+                    <span className="font-display text-[16px] font-bold text-ink">{c.person.name}</span>
                     <span className="font-mono text-meta text-ink-mute">@{c.person.handle}</span>
                   </div>
-                  <div className="truncate font-mono text-[12px] text-ink-mute">{c.lastMessage || 'Say hello…'}</div>
+                  <div className="truncate font-mono text-[14px] text-ink-mute">{c.lastMessage || 'Say hello…'}</div>
                 </div>
-                <span className="flex-shrink-0 font-mono text-[10px] text-ink-mute">
+                <span className="flex-shrink-0 font-mono text-[11px] text-ink-mute">
                   {formatRelativeTime(c.lastMessageAt)}
                 </span>
               </Link>
