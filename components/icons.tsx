@@ -102,18 +102,42 @@ export function ChefHatIcon(props: StrokeIconProps) {
 // the 24px box with the stroke compensated so it matches the other icons.
 const CHEF_KISS_SCALE = 24 / 512;
 
-export function ChefKissIcon(props: StrokeIconProps) {
+// Filled: the hand as a solid shape in the current colour, with its
+// finger, nail and crease lines drawn on top in cream ("ivory").
+const CHEF_KISS_SILHOUETTE =
+  'M108 82C95 74 70 82 62 100C45 130 30 190 28 255C26 300 50 330 90 375C115 405 130 440 145 458C220 470 300 478 378 492C420 480 470 450 490 415C480 370 455 340 425 325L415 320C410 315 400 302 380 290C330 260 270 235 240 200C215 160 205 120 188 92C180 80 165 72 150 80C140 70 118 70 108 82Z';
+const CHEF_KISS_DETAILS = [
+  'M108 82C112 100 98 120 92 140C82 180 85 240 100 290C110 320 120 350 128 372',
+  'M66 118C78 116 92 110 98 96M112 112C125 110 138 104 142 92',
+  'M150 80C158 90 152 115 148 140C140 180 145 230 160 270C175 305 185 335 190 358',
+  'M165 105C180 150 195 200 215 250C228 285 260 298 300 300C350 305 400 315 425 325',
+  'M245 245C255 238 265 236 272 236',
+];
+
+export function ChefKissIcon({ filled = false, ...props }: StrokeIconProps & { filled?: boolean }) {
+  const strokeWidth = (props.weight ?? 1.4) / CHEF_KISS_SCALE;
   return (
     <StrokeIcon {...props}>
-      <g transform={`scale(${CHEF_KISS_SCALE})`} strokeWidth={(props.weight ?? 1.4) / CHEF_KISS_SCALE}>
+      <g transform={`scale(${CHEF_KISS_SCALE})`} strokeWidth={strokeWidth}>
         <path d="M100 30L117 52M133 8L134 38M184 18L163 44" />
-        <path d="M108 82C95 74 70 82 62 100C45 130 30 190 28 255C26 300 50 330 90 375C115 405 130 440 145 458C220 470 300 478 378 492" />
-        <path d="M108 82C112 100 98 120 92 140C82 180 85 240 100 290C110 320 120 350 128 372" />
-        <path d="M66 118C78 116 92 110 98 96M112 112C125 110 138 104 142 92" />
-        <path d="M108 82C118 70 140 70 150 80C158 90 152 115 148 140C140 180 145 230 160 270C175 305 185 335 190 358" />
-        <path d="M150 80C165 72 180 80 188 92C205 120 215 160 240 200C270 235 330 260 380 290C400 302 410 315 415 320" />
-        <path d="M165 105C180 150 195 200 215 250C228 285 260 298 300 300C350 305 400 315 425 325C455 340 480 370 490 415" />
-        <path d="M245 245C255 238 265 236 272 236" />
+        {filled ? (
+          <>
+            <path d={CHEF_KISS_SILHOUETTE} fill="currentColor" />
+            {CHEF_KISS_DETAILS.map((d) => (
+              <path key={d} d={d} className="stroke-cream" />
+            ))}
+          </>
+        ) : (
+          <>
+            <path d="M108 82C95 74 70 82 62 100C45 130 30 190 28 255C26 300 50 330 90 375C115 405 130 440 145 458C220 470 300 478 378 492" />
+            <path d="M108 82C118 70 140 70 150 80" />
+            <path d="M150 80C165 72 180 80 188 92C205 120 215 160 240 200C270 235 330 260 380 290C400 302 410 315 415 320" />
+            {CHEF_KISS_DETAILS.map((d) => (
+              <path key={d} d={d} />
+            ))}
+            <path d="M425 325C455 340 480 370 490 415" />
+          </>
+        )}
       </g>
     </StrokeIcon>
   );
