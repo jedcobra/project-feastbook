@@ -7,17 +7,24 @@ import { XIcon } from '@/components/icons';
 import { formatCount } from '@/lib/format';
 import type { Person } from '@/lib/types';
 
-// Bordered profile card — banner + overlapping avatar, name, handle, bio,
-// stats grid. Followers and Following open the actual list; Recipes has
-// no separate list of its own (that's just the Recipes tab below). Only
-// your own card gets the Edit/Share row below the stats — Instagram-style.
+// Instagram's profile button: equal width, ~32px tall, soft fill, no border.
+const PROFILE_BUTTON_BASE = 'flex h-8 flex-1 items-center justify-center rounded-lg font-mono text-[14px] font-semibold';
+export const PROFILE_BUTTON = `${PROFILE_BUTTON_BASE} bg-cream-deep text-ink`;
+export const PROFILE_BUTTON_PRIMARY = `${PROFILE_BUTTON_BASE} bg-ink text-cream`;
+
+// Instagram's profile header proportions: an 86px avatar beside three
+// evenly spaced stats, then name, handle and bio, then equal-width soft
+// buttons. Followers and Following open the actual list; Recipes has no
+// list of its own (that's the Recipes tab below). Only your own header
+// gets Edit/Share here — someone else's gets Follow/Message from
+// FollowActions, styled to match.
 export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
   const stats: [string, string, string | null][] = [
-    ['Recipes', String(person.recipes), null],
-    ['Followers', formatCount(person.followers), `/${person.handle}/followers`],
-    ['Following', String(person.following), `/${person.handle}/following`],
+    ['recipes', formatCount(person.recipes), null],
+    ['followers', formatCount(person.followers), `/${person.handle}/followers`],
+    ['following', formatCount(person.following), `/${person.handle}/following`],
   ];
 
   const shareProfile = async () => {
@@ -36,63 +43,60 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     }
   };
 
+  const avatar = <Avatar name={person.name} src={person.avatarUrl} size={86} />;
+
   return (
     <>
-      <div className="mx-5 mb-5">
-        <div className="h-16 rounded-t-lg border border-b-0 border-ink bg-gradient-to-r from-ink to-ink-soft" />
-        <div className="border border-ink px-[18px] pb-3.5 pt-0">
-          <div className="-mt-7 mb-2.5">
-            {person.avatarUrl ? (
-              <button type="button" onClick={() => setPhotoOpen(true)} aria-label="View photo">
-                <Avatar
-                  name={person.name}
-                  src={person.avatarUrl}
-                  size={56}
-                  className="border-[3px] border-cream bg-highlight shadow-sm"
-                />
-              </button>
-            ) : (
-              <Avatar name={person.name} size={56} className="border-[3px] border-cream bg-highlight shadow-sm" />
-            )}
-          </div>
-          <h1 className="mb-0.5 font-display text-profile-name font-bold text-ink">{person.name}</h1>
-          <div className="mb-2.5 font-mono text-meta text-ink-mute">@{person.handle}</div>
-          <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{person.bio}</div>
-          <div className="grid grid-cols-3 border-t border-dashed border-rule pt-3">
-            {stats.map(([label, value, href]) =>
-              href ? (
+      <div className={`px-5 pt-1 ${isOwn ? 'pb-4' : 'pb-3'}`}>
+        <div className="flex items-center gap-5">
+          {person.avatarUrl ? (
+            <button type="button" onClick={() => setPhotoOpen(true)} aria-label="View photo" className="flex-shrink-0">
+              {avatar}
+            </button>
+          ) : (
+            avatar
+          )}
+          <div className="grid min-w-0 flex-1 grid-cols-3">
+            {stats.map(([label, value, href]) => {
+              const body = (
+                <>
+                  <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>
+                  <div className="font-mono text-[12px] text-ink">{label}</div>
+                </>
+              );
+              return href ? (
                 <Link key={label} href={href} className="text-center">
-                  <div className="font-display text-[20px] font-bold text-ink">{value}</div>
-                  <div className="font-display text-[11px] font-bold uppercase tracking-wide text-ink underline decoration-dashed underline-offset-2">
-                    {label}
-                  </div>
+                  {body}
                 </Link>
               ) : (
                 <div key={label} className="text-center">
-                  <div className="font-display text-[20px] font-bold text-ink">{value}</div>
-                  <div className="font-display text-[11px] font-bold uppercase tracking-wide text-ink">{label}</div>
+                  {body}
                 </div>
-              ),
-            )}
+              );
+            })}
           </div>
-          {isOwn && (
-            <div className="mt-3.5 flex gap-2 border-t border-dashed border-rule pt-3.5">
-              <Link
-                href="/settings/profile"
-                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[14px] font-semibold text-ink"
-              >
-                Edit profile
-              </Link>
-              <button
-                type="button"
-                onClick={shareProfile}
-                className="flex-1 rounded-button border border-ink bg-transparent py-2 text-center font-mono text-[14px] font-semibold text-ink"
-              >
-                {copied ? 'Copied' : 'Share profile'}
-              </button>
+        </div>
+
+        <div className="mt-3">
+          <h1 className="font-display text-[16px] font-bold leading-tight text-ink">{person.name}</h1>
+          <div className="font-mono text-[14px] text-ink-mute">@{person.handle}</div>
+          {person.bio && (
+            <div className="mt-1 whitespace-pre-line break-words font-mono text-[14px] leading-[1.45] text-ink">
+              {person.bio}
             </div>
           )}
         </div>
+
+        {isOwn && (
+          <div className="mt-3 flex gap-1.5">
+            <Link href="/settings/profile" className={PROFILE_BUTTON}>
+              Edit profile
+            </Link>
+            <button type="button" onClick={shareProfile} className={PROFILE_BUTTON}>
+              {copied ? 'Copied' : 'Share profile'}
+            </button>
+          </div>
+        )}
       </div>
 
       {photoOpen && person.avatarUrl && (

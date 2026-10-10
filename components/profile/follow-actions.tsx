@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { OutlineBox } from '@/components/outline-box';
+import { PROFILE_BUTTON, PROFILE_BUTTON_PRIMARY } from '@/components/profile/profile-header';
 import { getOrCreateConversation } from '@/lib/supabase/queries';
 
 export function FollowActions({
@@ -28,19 +28,17 @@ export function FollowActions({
   };
 
   return (
-    <div className="flex gap-2 px-5 pb-[18px]">
+    <div className="flex gap-1.5 px-5 pb-4">
       <button
         type="button"
         onClick={onToggleFollow}
-        className={`flex-1 rounded-button border border-ink py-2.5 font-mono text-[14px] font-semibold ${
-          following ? 'bg-cream text-ink' : 'bg-ink text-cream'
-        }`}
+        className={following ? PROFILE_BUTTON : PROFILE_BUTTON_PRIMARY}
       >
         {following ? 'Following' : 'Follow'}
       </button>
-      <OutlineBox onClick={openConversation} disabled={opening}>
+      <button type="button" onClick={openConversation} disabled={opening} className={PROFILE_BUTTON}>
         {opening ? '…' : 'Message'}
-      </OutlineBox>
+      </button>
     </div>
   );
 }

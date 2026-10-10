@@ -7,7 +7,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { MoreIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { FollowActions } from '@/components/profile/follow-actions';
-import { ProfileHeader } from '@/components/profile/profile-header';
+import { PROFILE_BUTTON_PRIMARY, ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { TopBar } from '@/components/top-bar';
 import {
@@ -143,10 +143,10 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
             onToggleFollow={toggleFollow}
           />
         ) : (
-          <div className="px-5 pb-[18px]">
+          <div className="flex px-5 pb-4">
             <Link
               href="/account"
-              className="block w-full rounded-button border border-ink bg-ink py-2.5 text-center font-mono text-[14px] font-semibold text-cream"
+              className={PROFILE_BUTTON_PRIMARY}
             >
               Sign in to follow
             </Link>
