@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { HandleLink } from '@/components/handle-link';
-import { BookIcon, ChefHatIcon, HeartIcon, PlusIcon } from '@/components/icons';
+import { ChefHatIcon, HeartIcon, PlusIcon } from '@/components/icons';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
 
@@ -18,18 +18,27 @@ const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => Reac
   saved: HeartIcon,
 };
 
-// Every feed post is a horizontal entry, like a page in a recipe book: a
-// square picture in the left quarter, the details in the other three.
-export function FeedEntry({ image, children }: { image: React.ReactNode; children: React.ReactNode }) {
+// Every feed post is a horizontal entry, like a page in a recipe book: the
+// picture bleeds to the left edge and to the entry's top and bottom across
+// the first quarter, and the details fill the other three. The image is at
+// least square and grows with the entry if the text runs taller. Entries
+// without a picture are just the text.
+export function FeedEntry({ image, children }: { image?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <article className="flex items-start gap-3.5 border-b border-dashed border-rule px-5 py-4">
-      <div className="w-1/4 flex-shrink-0">{image}</div>
-      <div className="min-w-0 flex-1">{children}</div>
+    <article className="flex border-b border-dashed border-rule">
+      {image && (
+        <div className="relative w-1/4 flex-shrink-0 bg-cream-deep">
+          <div className="aspect-square" aria-hidden />
+          {image}
+        </div>
+      )}
+      <div className={`min-w-0 flex-1 py-4 pr-5 ${image ? 'pl-3.5' : 'pl-5'}`}>{children}</div>
     </article>
   );
 }
 
-export const FEED_IMAGE_CLASS = 'aspect-square w-full rounded-button border border-rule bg-cream-deep object-cover';
+// The image (or the link/button wrapping it) fills the whole left quarter.
+export const FEED_IMAGE_FILL = 'absolute inset-0 block h-full w-full';
 
 // Who did what, and when — the first line of every entry.
 export function FeedEntryByline({ handle, verb, when }: { handle: string; verb: React.ReactNode; when: string }) {
@@ -42,23 +51,19 @@ export function FeedEntryByline({ handle, verb, when }: { handle: string; verb: 
   );
 }
 
-// A recipe activity entry (added / cooked / saved). Recipes without a cover
-// photo get a plain placeholder so every entry keeps the same shape.
+// A recipe activity entry (added / cooked / saved), led by the recipe's
+// cover photo when it has one.
 export function FeedRow({ item, recipe, author }: { item: FeedActivity; recipe: Recipe; author: Person }) {
   const VerbIcon = VERB_ICON[item.kind];
   return (
     <FeedEntry
       image={
-        <Link href={`/recipe/${recipe.id}`} className="block">
-          {recipe.coverPhotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={recipe.coverPhotoUrl} alt={recipe.title} loading="lazy" className={FEED_IMAGE_CLASS} />
-          ) : (
-            <span className={`${FEED_IMAGE_CLASS} flex items-center justify-center text-rule`}>
-              <BookIcon size={20} />
-            </span>
-          )}
-        </Link>
+        recipe.coverPhotoUrl && (
+          <Link href={`/recipe/${recipe.id}`} className={FEED_IMAGE_FILL}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={recipe.coverPhotoUrl} alt={recipe.title} loading="lazy" className="h-full w-full object-cover" />
+          </Link>
+        )
       }
     >
       <FeedEntryByline

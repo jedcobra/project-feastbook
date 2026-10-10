@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
-import { FEED_IMAGE_CLASS, FeedEntry, FeedEntryByline } from '@/components/feed/feed-row';
+import { FEED_IMAGE_FILL, FeedEntry, FeedEntryByline } from '@/components/feed/feed-row';
 import { ChefHatIcon, MessageIcon } from '@/components/icons';
 import type { CookPhoto } from '@/lib/types';
 
@@ -26,13 +26,13 @@ export function FeedPhotoPost({
   return (
     <FeedEntry
       image={
-        <button type="button" onClick={() => setOpen(true)} aria-label="Open photo" className="block w-full">
+        <button type="button" onClick={() => setOpen(true)} aria-label="Open photo" className={FEED_IMAGE_FILL}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photo.photoUrl}
             alt={`@${photo.handle}’s ${photo.recipeTitle}`}
             loading="lazy"
-            className={FEED_IMAGE_CLASS}
+            className="h-full w-full object-cover"
           />
         </button>
       }
