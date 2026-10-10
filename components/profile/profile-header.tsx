@@ -57,7 +57,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
   return (
     <>
       <div className={`px-5 pt-1 ${isOwn ? 'pb-4' : 'pb-3'}`}>
-        <div className="flex items-center gap-3 max-[374px]:gap-2">
+        <div className="flex items-center gap-3">
           {person.avatarUrl ? (
             <button type="button" onClick={() => setPhotoOpen(true)} aria-label="View photo" className="flex-shrink-0">
               {avatar}
@@ -71,7 +71,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
               const body = (
                 <>
                   <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>
-                  <div className="mt-0.5 font-display text-[11px] font-bold uppercase tracking-tight text-ink max-[374px]:text-[10px]">
+                  <div className="mt-0.5 font-display text-[11px] font-bold tracking-wide text-ink">
                     {label}
                   </div>
                 </>
