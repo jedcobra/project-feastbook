@@ -149,7 +149,7 @@ export function NotesScreen({ id }: { id: string }) {
               key={key}
               type="button"
               onClick={() => setFilter(key)}
-              className={`rounded border border-ink px-2 py-[3px] font-mono text-[11px] ${
+              className={`rounded border border-ink px-2.5 py-2 font-mono text-[12px] leading-none ${
                 filter === key ? 'bg-ink text-cream' : 'bg-transparent text-ink'
               }`}
             >
@@ -186,11 +186,11 @@ export function NotesScreen({ id }: { id: string }) {
 
       {profile && (
         <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-4 pb-[18px] pt-2.5">
-          {postError && <div className="mb-2 font-mono text-[11px] text-accent">{postError}</div>}
+          {postError && <div className="mb-2 font-mono text-[12px] text-accent">{postError}</div>}
           {replyTo && (
-            <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] text-ink-mute">
+            <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
               <span>Replying to {replyTo.by}</span>
-              <button type="button" onClick={() => setReplyTo(null)} className="text-ink">
+              <button type="button" onClick={() => setReplyTo(null)} className="px-1 text-[16px] leading-none text-ink">
                 ×
               </button>
             </div>
@@ -215,9 +215,9 @@ export function NotesScreen({ id }: { id: string }) {
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoUploading}
-                  className="flex items-center gap-1.5 font-mono text-[11px] text-ink-mute disabled:opacity-60"
+                  className="flex items-center gap-1.5 font-mono text-[12px] text-ink-mute disabled:opacity-60"
                 >
-                  <CameraIcon size={13} />
+                  <CameraIcon size={14} />
                   {photoUploading ? 'Uploading…' : 'Add a photo of it'}
                 </button>
               )}
@@ -239,13 +239,13 @@ export function NotesScreen({ id }: { id: string }) {
               rows={1}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={replyTo ? 'Write a reply…' : 'Leave a note…'}
-              className="max-h-20 flex-1 resize-none border-none bg-transparent font-mono text-[12.5px] leading-[1.5] text-ink outline-none"
+              className="max-h-28 flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none"
             />
             <button
               type="button"
               onClick={handlePost}
               disabled={!draft.trim() || posting}
-              className={`rounded-button border border-ink px-2.5 py-1 font-mono text-[11px] ${
+              className={`rounded-button border border-ink px-3 py-1.5 font-mono text-[13px] ${
                 draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
               }`}
             >
@@ -286,54 +286,58 @@ function NoteRow({
 }) {
   const mine = viewerId === comment.authorId;
   return (
-    <div className={depth ? 'border-l border-dashed border-rule pl-[22px]' : ''}>
-      <div className="py-[11px]">
-        <div className="mb-1 flex items-center gap-1.5">
-          <Avatar name={comment.by} size={depth ? 16 : 20} />
-          <button type="button" onClick={() => onOpenProfile(comment.handle)} className="font-mono text-[11.5px] text-ink">
-            {comment.by}
-          </button>
-          {comment.cooked && !depth && (
-            <span className="border border-accent px-1 font-mono text-[9px] uppercase tracking-[0.08em] text-accent">
-              cooked it
-            </span>
-          )}
-          <span className="flex-1" />
-          <span className="font-mono text-[10px] text-ink-mute">{comment.at}</span>
-        </div>
-        <div className={`mb-1.5 font-mono text-[12.5px] leading-[1.55] text-ink ${depth ? '' : 'pl-[26px]'}`}>
-          {comment.text}
-        </div>
-        {comment.photoUrl && (
-          <div className={depth ? 'mb-1.5' : 'mb-1.5 pl-[26px]'}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+    <div className={depth ? 'ml-[42px]' : ''}>
+      <div className="flex items-start gap-2.5 py-3">
+        <button type="button" onClick={() => onOpenProfile(comment.handle)} className="flex-shrink-0">
+          <Avatar name={comment.by} size={depth ? 24 : 32} />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onOpenProfile(comment.handle)}
+              className="font-mono text-[14px] font-semibold text-ink"
+            >
+              {comment.by}
+            </button>
+            {comment.cooked && !depth && (
+              <span className="border border-accent px-1 font-mono text-[10px] uppercase tracking-[0.08em] text-accent">
+                cooked it
+              </span>
+            )}
+            <span className="flex-1" />
+            <span className="font-mono text-[12px] text-ink-mute">{comment.at}</span>
+          </div>
+          <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>
+          {comment.photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={comment.photoUrl}
               alt=""
-              className="h-20 w-20 rounded-button border border-rule object-cover"
+              className="mt-2 h-24 w-24 rounded-button border border-rule object-cover"
             />
+          )}
+          <div className="mt-1.5 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => onLike(comment)}
+              disabled={!viewerId}
+              className={`flex items-center gap-1 font-mono text-[12px] ${comment.likedByMe ? 'text-accent' : 'text-ink-mute'}`}
+            >
+              <HeartIcon size={14} filled={comment.likedByMe} />
+              {comment.likes > 0 ? comment.likes : ''}
+            </button>
+            {depth === 0 && viewerId && (
+              <button type="button" onClick={() => onReply(comment)} className="font-mono text-[12px] text-ink-mute">
+                Reply
+              </button>
+            )}
+            {mine && (
+              <button type="button" onClick={() => onDelete(comment)} className="font-mono text-[12px] text-ink-mute">
+                Delete
+              </button>
+            )}
           </div>
-        )}
-        <div className={`flex items-center gap-3.5 ${depth ? '' : 'pl-[26px]'}`}>
-          <button
-            type="button"
-            onClick={() => onLike(comment)}
-            disabled={!viewerId}
-            className={`flex items-center gap-1 font-mono text-[11px] ${comment.likedByMe ? 'text-accent' : 'text-ink-mute'}`}
-          >
-            <HeartIcon size={12} filled={comment.likedByMe} />
-            {comment.likes > 0 ? comment.likes : ''}
-          </button>
-          {depth === 0 && viewerId && (
-            <button type="button" onClick={() => onReply(comment)} className="font-mono text-[11px] text-ink-mute">
-              Reply
-            </button>
-          )}
-          {mine && (
-            <button type="button" onClick={() => onDelete(comment)} className="font-mono text-[11px] text-ink-mute">
-              Delete
-            </button>
-          )}
         </div>
       </div>
       {comment.replies.map((reply) => (
