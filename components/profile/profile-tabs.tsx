@@ -168,6 +168,8 @@ export function ProfileTabs({
   );
 }
 
+const SAVED_SHELF_TITLE = 'Saved';
+
 // Like Recipes, a long press on your own shelves switches to edit mode:
 // drag a shelf by its handle to reorder, or swipe it left to archive
 // (instant, reversible from the Archived list) or delete (a shelf's recipes
@@ -191,9 +193,14 @@ function ShelvesTab({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  // The "Saved" shelf (where the heart button files recipes) is pinned
+  // first: it can't be dragged, archived or deleted, and the rest reorder
+  // beneath it.
+  const pinned = shelves.find((s) => s.title === SAVED_SHELF_TITLE);
+  const movable = shelves.filter((s) => s !== pinned);
   const reorder = useLongPressReorder({
-    ids: shelves.map((s) => s.id),
-    onReorder,
+    ids: movable.map((s) => s.id),
+    onReorder: onReorder && ((ids) => onReorder(pinned ? [pinned.id, ...ids] : ids)),
     onStart: () => setOpenId(null),
   });
 
@@ -245,6 +252,12 @@ function ShelvesTab({
             reorder.stop();
           }}
         />
+        {pinned && (
+          <div className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5">
+            {shelfBody(pinned)}
+            <span className="self-center font-mono text-meta text-ink-mute">Pinned</span>
+          </div>
+        )}
         {reorder.reorderIds
           .map((id) => shelfById.get(id))
           .filter((s): s is Shelf => !!s)
@@ -292,7 +305,7 @@ function ShelvesTab({
           </Link>
         </div>
       )}
-      {shelves.map((shelf) => (
+      {[...(pinned ? [pinned] : []), ...movable].map((shelf) => (
         <div key={shelf.id} {...reorder.pressProps}>
           <Link
             href={`/shelf/${shelf.id}`}
