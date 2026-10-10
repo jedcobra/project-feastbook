@@ -44,8 +44,8 @@ function isStandalone() {
 
 // On the welcome screen, for someone in a phone's browser rather than the
 // app opened from their home screen: a nudge to add it (it's also what iOS
-// needs before it'll send push notifications), with an arrow at the browser
-// button that does it — or, where Chrome offers it, a button that does it.
+// needs before it'll send push notifications), with the steps for their
+// browser — or, where Chrome offers it, a button that does it.
 export function InstallHint() {
   const [platform, setPlatform] = useState<Platform | null>(null);
   const [promptEvent, setPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
@@ -99,52 +99,31 @@ export function InstallHint() {
     'android-menu': <>Open your browser menu &#8942; above, then &ldquo;Add to Home screen&rdquo;.</>,
   };
 
-  // Where the browser's button is, for the arrow to point at.
-  const arrow =
-    platform === 'ios-safari' ? 'bottom-center' : platform === 'ios-safari-26' ? 'bottom-right' : platform === 'android-prompt' ? null : 'top-right';
-
   return (
-    <>
-      <div className="relative mx-5 mb-4 rounded-button border border-dashed border-ink bg-cream-surface px-4 py-3.5 pr-10">
+    <div className="relative mx-5 mb-4 rounded-button border border-dashed border-ink bg-cream-surface px-4 py-3.5 pr-10">
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss"
+        className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-ink-mute"
+      >
+        <XIcon size={11} />
+      </button>
+      <div className="font-display text-[16px] font-bold text-ink">Best on your home screen</div>
+      <p className="mt-1 font-mono text-[12px] leading-[1.55] text-ink-mute">
+        Special Spoon works best added to your home screen, and that&rsquo;s where notifications work too.{' '}
+        {steps[platform]}
+      </p>
+      {platform === 'android-prompt' && (
         <button
           type="button"
-          onClick={dismiss}
-          aria-label="Dismiss"
-          className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-ink-mute"
+          onClick={install}
+          className="mt-2.5 inline-flex items-center gap-1.5 rounded-button border border-ink px-3 py-1.5 font-mono text-[12px] font-semibold text-ink"
         >
-          <XIcon size={11} />
+          <PlusIcon size={11} />
+          Add to home screen
         </button>
-        <div className="font-display text-[16px] font-bold text-ink">Best on your home screen</div>
-        <p className="mt-1 font-mono text-[12px] leading-[1.55] text-ink-mute">
-          Special Spoon works best added to your home screen, and that&rsquo;s where notifications work too.{' '}
-          {steps[platform]}
-        </p>
-        {platform === 'android-prompt' && (
-          <button
-            type="button"
-            onClick={install}
-            className="mt-2.5 inline-flex items-center gap-1.5 rounded-button border border-ink px-3 py-1.5 font-mono text-[12px] font-semibold text-ink"
-          >
-            <PlusIcon size={11} />
-            Add to home screen
-          </button>
-        )}
-      </div>
-
-      {arrow && (
-        <div
-          aria-hidden
-          className={`pointer-events-none fixed z-40 animate-bounce font-mono text-[28px] leading-none text-ink ${
-            arrow === 'bottom-center'
-              ? 'bottom-1 left-1/2 -translate-x-1/2'
-              : arrow === 'bottom-right'
-                ? 'bottom-1 right-5'
-                : 'right-4 top-1'
-          }`}
-        >
-          {arrow === 'top-right' ? '↑' : '↓'}
-        </div>
       )}
-    </>
+    </div>
   );
 }
