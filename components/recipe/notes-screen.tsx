@@ -72,7 +72,7 @@ export function NotesScreen({ id }: { id: string }) {
   }
 
   const { recipe } = data;
-  const canAttachPhoto = editing ? true : !replyTo && cookedMark;
+  const canAttachPhoto = !!editing || !!replyTo || cookedMark;
   const total = recipe.comments.reduce((n, c) => n + 1 + c.replies.length, 0);
   const shown = recipe.comments.filter((c) =>
     filter === 'all' ? true : filter === 'cooked' ? c.cooked : c.isQuestion,
@@ -154,7 +154,7 @@ export function NotesScreen({ id }: { id: string }) {
         parentId: replyTo?.id,
         cooked: !replyTo && cookedMark,
         recipeAuthorId: data.author.id,
-        photoUrl: !replyTo && cookedMark ? photoUrl || undefined : undefined,
+        photoUrl: canAttachPhoto ? photoUrl || undefined : undefined,
       });
     } catch (err) {
       console.error('handlePost', err);
@@ -252,7 +252,14 @@ export function NotesScreen({ id }: { id: string }) {
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
               <span>Replying to @{replyTo.handle}</span>
-              <button type="button" onClick={() => setReplyTo(null)} className="px-1 text-[16px] leading-none text-ink">
+              <button
+                type="button"
+                onClick={() => {
+                  setReplyTo(null);
+                  setPhotoUrl('');
+                }}
+                className="px-1 text-[16px] leading-none text-ink"
+              >
                 ×
               </button>
             </div>
@@ -280,8 +287,9 @@ export function NotesScreen({ id }: { id: string }) {
             </div>
           )}
           <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
-            {/* New notes take a photo only alongside "I cooked it"; any
-                note of yours can gain (or lose) one when you edit it. */}
+            {/* New top-level notes take a photo only alongside "I cooked
+                it"; replies always can, and any note of yours can gain (or
+                lose) one when you edit it. */}
             {canAttachPhoto && (
               <>
                 <button

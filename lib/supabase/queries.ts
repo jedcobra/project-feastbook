@@ -1006,7 +1006,7 @@ export async function postComment(
       text,
       parent_id: opts.parentId ?? null,
       cooked: !!opts.cooked,
-      photo_url: opts.cooked ? (opts.photoUrl ?? null) : null,
+      photo_url: opts.cooked || opts.parentId ? (opts.photoUrl ?? null) : null,
     })
     .select('*, author:profiles!comments_author_id_fkey(id, name, handle)')
     .single();
