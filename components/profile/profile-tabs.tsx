@@ -9,6 +9,7 @@ import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
+import { formatCount } from '@/lib/format';
 import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
@@ -359,24 +360,29 @@ function RecipesTab({
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2.5">
           <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-          {saved ? (
+          {saved && (
             <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
               <HeartIcon size={10} />@{r.author}
             </span>
-          ) : (
-            <span
-              aria-label={`${r.saves} save${r.saves === 1 ? '' : 's'}`}
-              className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute"
-            >
-              {r.saves}
-              <HeartIcon size={10} filled className="text-accent" />
-            </span>
           )}
         </div>
-        <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 font-mono text-meta text-ink-mute">
           <span>{r.time}</span>
           <span>·</span>
-          <span>{r.madeIt} cooked</span>
+          <span>{formatCount(r.madeIt)} cooked</span>
+          <span>·</span>
+          <span aria-label={`${r.saves} save${r.saves === 1 ? '' : 's'}`} className="flex items-center gap-1">
+            {formatCount(r.saves)}
+            <HeartIcon size={10} filled className="text-accent" />
+          </span>
+          {r.ratingCount > 0 && (
+            <>
+              <span>·</span>
+              <span aria-label={`Rated ${r.rating.toFixed(1)} out of 5`}>
+                {r.rating.toFixed(1)} <span className="text-ink">★</span>
+              </span>
+            </>
+          )}
           <span>·</span>
           <span>{r.difficulty}</span>
         </div>
