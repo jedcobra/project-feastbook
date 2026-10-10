@@ -15,7 +15,7 @@ interface AddToShelfSheetProps {
   onSaved: (shelved: boolean) => void;
 }
 
-// What the bookmark button opens once a recipe's already saved (a first
+// What the heart button opens once a recipe's already saved (a first
 // save is a one-tap default to the "Saved" shelf instead — see
 // quickSaveRecipe). A recipe can sit on 0..n of the viewer's own shelves;
 // picking any at all is what keeps it "saved" (recipe_stats, feed

@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { CommentsBlock } from '@/components/recipe/comments-block';
-import { CookedMarker } from '@/components/recipe/cooked-marker';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
 import { Label } from '@/components/label';
 import { MethodBlock } from '@/components/recipe/method-block';
-import { RatingWidget } from '@/components/recipe/rating-widget';
+import { RecipeActions } from '@/components/recipe/recipe-actions';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { Tag } from '@/components/tag';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
@@ -54,9 +53,7 @@ export function DocumentDetail({
 
       <RecipeMeta recipe={recipe} />
 
-      <CookedMarker recipeId={recipe.id} authorId={author.id} madeIt={recipe.madeIt} />
-
-      <RatingWidget recipeId={recipe.id} ratingCount={recipe.ratingCount} />
+      <RecipeActions recipe={recipe} authorId={author.id} />
 
       {recipe.intro && (
         <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">

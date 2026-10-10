@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BookmarkIcon, ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
@@ -243,7 +243,7 @@ function DeleteShelfConfirm({
 }
 
 // Authored recipes and recipes saved from other cooks, in one list — a
-// saved-from-someone-else row carries a bookmark badge with their handle
+// saved-from-someone-else row carries a heart badge with their handle
 // instead of a saves count, rather than living in a separate tab. Own
 // authored rows can be swiped left to delete; saved rows and anyone else's
 // cookbook aren't yours to delete from here.
@@ -296,7 +296,7 @@ function RecipesTab({
                 <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
                 {saved ? (
                   <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
-                    <BookmarkIcon size={10} />@{r.author}
+                    <HeartIcon size={10} />@{r.author}
                   </span>
                 ) : (
                   <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>

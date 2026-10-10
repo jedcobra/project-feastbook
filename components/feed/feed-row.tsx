@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
-import { BookmarkIcon, CookIcon, PlusIcon } from '@/components/icons';
+import { CookIcon, HeartIcon, PlusIcon } from '@/components/icons';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
@@ -16,7 +16,7 @@ const VERB: Record<FeedActivity['kind'], string> = {
 const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => React.ReactElement> = {
   new: PlusIcon,
   madeit: CookIcon,
-  saved: BookmarkIcon,
+  saved: HeartIcon,
 };
 
 // Index feed row — noods-style activity line: author + verb, title, optional

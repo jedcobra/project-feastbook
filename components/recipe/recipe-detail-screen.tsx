@@ -3,25 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ErrorScreen } from '@/components/error-screen';
-import { BookmarkIcon, MoreIcon, SendIcon } from '@/components/icons';
+import { MoreIcon, SendIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { CookButton } from '@/components/recipe/cook-button';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { OwnerSheet } from '@/components/recipe/owner-sheet';
 import { ShareSheet } from '@/components/share/share-sheet';
 import { TopBar } from '@/components/top-bar';
-import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
-import { checkRecipeAccess, fetchRecipeFull, isSaved, quickSaveRecipe } from '@/lib/supabase/queries';
+import { checkRecipeAccess, fetchRecipeFull } from '@/lib/supabase/queries';
 import type { Person, Recipe } from '@/lib/types';
 
 export function RecipeDetailScreen({ id }: { id: string }) {
   const { profile } = useAuth();
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [access, setAccess] = useState<'checking' | 'ok' | 'private'>('checking');
-  const [saved, setSavedState] = useState(false);
-  const [quickSaving, setQuickSaving] = useState(false);
   const [ownerSheetOpen, setOwnerSheetOpen] = useState(false);
-  const [shelfSheetOpen, setShelfSheetOpen] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -35,27 +31,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
       setAccess(ok ? 'ok' : 'private'),
     );
   }, [data, profile?.id]);
-
-  useEffect(() => {
-    if (profile) {
-      isSaved(profile.id, id).then(setSavedState);
-    } else {
-      setSavedState(false);
-    }
-  }, [profile, id]);
-
-  // The bookmark button's default action: one tap files it on "Saved"
-  // rather than opening the shelf picker. Once it's saved, the same
-  // button opens "manage shelves" instead, where a different shelf is
-  // still one tap away.
-  const handleQuickSave = async () => {
-    if (!profile || quickSaving) return;
-    setQuickSaving(true);
-    setSavedState(true);
-    const ok = await quickSaveRecipe(profile.id, id);
-    setQuickSaving(false);
-    if (!ok) setSavedState(false);
-  };
 
   if (data === undefined || access === 'checking') {
     return (
@@ -97,16 +72,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         backHref="/feed"
         trailing={
           <>
-            {!isOwner && (
-              <OutlineBox
-                compact
-                filled={saved}
-                aria-label={saved ? 'Manage shelves' : 'Save'}
-                onClick={saved ? () => setShelfSheetOpen(true) : handleQuickSave}
-              >
-                <BookmarkIcon size={14} />
-              </OutlineBox>
-            )}
             <OutlineBox compact aria-label="Share" onClick={() => setShareSheetOpen(true)}>
               <SendIcon size={14} />
             </OutlineBox>
@@ -138,15 +103,6 @@ export function RecipeDetailScreen({ id }: { id: string }) {
             setData((d) => (d ? { ...d, recipe: { ...d.recipe, visibility: v } } : d))
           }
           onClose={() => setOwnerSheetOpen(false)}
-        />
-      )}
-      {shelfSheetOpen && profile && (
-        <AddToShelfSheet
-          ownerId={profile.id}
-          recipeId={id}
-          recipeTitle={data.recipe.title}
-          onSaved={setSavedState}
-          onClose={() => setShelfSheetOpen(false)}
         />
       )}
     </>

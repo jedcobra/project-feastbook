@@ -5,11 +5,10 @@ export function RecipeMeta({ recipe }: { recipe: Recipe }) {
     ['Time', recipe.time],
     ['Serves', recipe.serves],
     ['Level', recipe.difficulty],
-    ['Rating', recipe.ratingCount > 0 ? `${recipe.rating} ★` : '—'],
   ];
 
   return (
-    <div className="my-3.5 grid grid-cols-4 border-y border-dashed border-rule">
+    <div className="my-3.5 grid grid-cols-3 border-y border-dashed border-rule">
       {cols.map(([k, v], i) => (
         <div
           key={k}

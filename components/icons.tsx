@@ -51,14 +51,6 @@ export function BackIcon(props: StrokeIconProps) {
   );
 }
 
-export function BookmarkIcon(props: StrokeIconProps) {
-  return (
-    <StrokeIcon {...props}>
-      <path d="M6 3h12v18l-6-4-6 4V3z" />
-    </StrokeIcon>
-  );
-}
-
 export function ShareIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

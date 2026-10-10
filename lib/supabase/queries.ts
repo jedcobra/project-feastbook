@@ -1132,7 +1132,7 @@ async function ensureDefaultShelf(ownerId: string): Promise<string | null> {
   return created?.id ?? null;
 }
 
-// The bookmark button's one-tap default: files the recipe on the caller's
+// The heart button's one-tap default: files the recipe on the caller's
 // "Saved" shelf without opening the shelf picker, on top of whatever
 // shelves it's already on (so it never undoes a deliberate choice made
 // via "manage shelves"). Picking a different shelf instead is still one
@@ -1153,7 +1153,7 @@ export async function quickSaveRecipe(ownerId: string, recipeId: string): Promis
 
 // Files recipes already in the caller's cookbook (their own, or saved)
 // onto a shelf, on top of whatever other shelves each one is already on —
-// same "union, don't replace" rule quickSaveRecipe uses for the bookmark
+// same "union, don't replace" rule quickSaveRecipe uses for the heart
 // button. Intersecting with the caller's own shelves before the union
 // matters here: fetchShelfIdsForRecipe can include another owner's shelf
 // if that recipe happens to be saved there too, and setRecipeShelves'
