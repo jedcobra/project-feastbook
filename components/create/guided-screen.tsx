@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
+import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
 import { TimeField } from '@/components/create/time-field';
 import { ChevronIcon } from '@/components/icons';
@@ -282,7 +283,8 @@ export function GuidedScreen() {
             </div>
           </div>
         ) : cur.multiline ? (
-          <textarea
+          <AutoGrowTextarea
+            key={cur.key}
             rows={cur.rows}
             value={values[cur.field as TextField]}
             placeholder={cur.placeholder}

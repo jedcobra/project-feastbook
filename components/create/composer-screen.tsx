@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
 import { PhotoField } from '@/components/create/photo-field';
 import { TimeField } from '@/components/create/time-field';
@@ -277,7 +278,7 @@ export function ComposerScreen() {
                     placeholder="Brown the butter"
                     className="mb-1 w-full border-none bg-transparent p-0 font-display text-[16px] font-bold text-ink outline-none"
                   />
-                  <textarea
+                  <AutoGrowTextarea
                     value={step.d}
                     rows={2}
                     maxLength={STEP_DESCRIPTION_LIMIT}
