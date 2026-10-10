@@ -51,9 +51,9 @@ export function DocumentDetail({
         <span className="font-mono text-meta text-ink-mute">@{author.handle}</span>
       </Link>
 
-      <RecipeMeta recipe={recipe} />
-
       <RecipeActions recipe={recipe} authorId={author.id} />
+
+      <RecipeMeta recipe={recipe} />
 
       {recipe.intro && (
         <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">
