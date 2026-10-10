@@ -9,6 +9,7 @@ import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
 import { deleteConversationForMe, fetchArchivedConversations, setConversationArchived } from '@/lib/supabase/queries';
 import type { ConversationSummary } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 export function ArchivedScreen() {
   const { profile } = useAuth();
@@ -62,7 +63,7 @@ export function ArchivedScreen() {
                 <Avatar name={c.person.handle} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-[16px] font-bold text-ink">@{c.person.handle}</span>
+                    <HandleLink nested handle={c.person.handle} className="font-display text-[16px] font-bold text-ink" />
                   </div>
                   <div className="truncate font-mono text-[14px] text-ink-mute">{c.lastMessage || 'Say hello…'}</div>
                 </div>

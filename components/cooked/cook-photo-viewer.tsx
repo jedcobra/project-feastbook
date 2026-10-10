@@ -15,6 +15,7 @@ import {
   setCookPhotoKiss,
 } from '@/lib/supabase/queries';
 import type { CookPhoto, CookPhotoComment } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 const kissLabel = (n: number) => `${n} kiss${n === 1 ? '' : 'es'}`;
 
@@ -157,12 +158,13 @@ export function CookPhotoViewer({
                 aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
                 className={photo.kissedByMe ? 'text-accent' : 'text-ink'}
               >
-                <ChefKissIcon size={22} filled={photo.kissedByMe} />
+                <ChefKissIcon size={17} weight={1.1} filled={photo.kissedByMe} />
               </button>
               <span className="font-mono text-[14px] font-semibold text-ink">{kissLabel(photo.kisses)}</span>
             </div>
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
-              <span className="font-semibold">@{photo.handle}</span> <span className="text-ink-mute">cooked</span>{' '}
+              <HandleLink handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
+              <span className="text-ink-mute">cooked</span>{' '}
               <Link
                 href={`/recipe/${photo.recipeId}`}
                 onClick={onClose}

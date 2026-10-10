@@ -105,7 +105,7 @@ const CHEF_KISS_SCALE = 24 / 512;
 export function ChefKissIcon({ filled, ...props }: StrokeIconProps & { filled?: boolean }) {
   return (
     <StrokeIcon {...props}>
-      <g transform={`scale(${CHEF_KISS_SCALE})`} strokeWidth={((props.weight ?? 1.4) * (filled ? 1.35 : 1)) / CHEF_KISS_SCALE}>
+      <g transform={`scale(${CHEF_KISS_SCALE})`} strokeWidth={((props.weight ?? 1.4) * (filled ? 1.25 : 1)) / CHEF_KISS_SCALE}>
         <path d="M100 30L117 52M133 8L134 38M184 18L163 44" />
         <path d="M108 82C95 74 70 82 62 100C45 130 30 190 28 255C26 300 50 330 90 375C115 405 130 440 145 458C220 470 300 478 378 492" />
         <path d="M108 82C112 100 98 120 92 140C82 180 85 240 100 290C110 320 120 350 128 372" />

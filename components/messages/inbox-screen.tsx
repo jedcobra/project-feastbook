@@ -15,6 +15,7 @@ import {
   setConversationArchived,
 } from '@/lib/supabase/queries';
 import type { ConversationSummary } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 export function InboxScreen() {
   const { profile } = useAuth();
@@ -95,7 +96,7 @@ export function InboxScreen() {
                 <Avatar name={c.person.handle} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display text-[16px] font-bold text-ink">@{c.person.handle}</span>
+                    <HandleLink nested handle={c.person.handle} className="font-display text-[16px] font-bold text-ink" />
                   </div>
                   <div
                     className={`truncate font-mono text-[14px] ${c.unread > 0 ? 'font-semibold text-ink' : 'text-ink-mute'}`}

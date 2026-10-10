@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { BackButton } from '@/components/back-button';
 
 interface TopBarProps {
-  title?: string;
+  title?: ReactNode;
   subtitle?: string;
   trailing?: ReactNode;
   backHref?: string;

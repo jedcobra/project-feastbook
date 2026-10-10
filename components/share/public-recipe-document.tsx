@@ -2,6 +2,7 @@ import { Avatar } from '@/components/avatar';
 import { Label } from '@/components/label';
 import { Tag } from '@/components/tag';
 import type { Person, Recipe } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 // The whole recipe, readable by anyone with the link — no sign-in wall, no
 // interactivity (no checklists, no cook mode, no comments). Just what's on
@@ -33,7 +34,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
 
       <div className="mb-3.5 flex items-center gap-2">
         <Avatar name={author.handle} src={author.avatarUrl} size={24} />
-        <span className="font-mono text-[14px] text-ink">@{author.handle}</span>
+        <HandleLink handle={author.handle} className="font-mono text-[14px] text-ink underline decoration-dashed underline-offset-[3px]" />
       </div>
 
       <div className="mb-4 grid grid-cols-3 border-y border-dashed border-rule">

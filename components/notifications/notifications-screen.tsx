@@ -14,6 +14,7 @@ import {
   markNotificationsRead,
 } from '@/lib/supabase/queries';
 import type { AppNotification, NotificationKind } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 type FilterKey = 'all' | 'unread' | 'note' | 'follow';
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -214,7 +215,11 @@ export function NotificationsScreen() {
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="font-mono text-[14px] leading-[1.45] text-ink">
-                            {n.actorHandle && <span className="font-semibold">@{n.actorHandle} </span>}
+                            {n.actorHandle && (
+                              <>
+                                <HandleLink nested handle={n.actorHandle} className="font-semibold" />{' '}
+                              </>
+                            )}
                             <span className="text-ink-mute">{describe(n)}</span>
                             {n.recipeTitle && !n.cookPhotoId && <span> {n.recipeTitle}</span>}
                           </div>

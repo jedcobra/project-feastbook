@@ -21,6 +21,7 @@ import {
 } from '@/lib/supabase/queries';
 import { uploadPhoto } from '@/lib/supabase/storage';
 import type { DirectMessage, Person } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 export function ThreadScreen({ conversationId }: { conversationId: string }) {
   const { profile } = useAuth();
@@ -147,7 +148,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   return (
     <>
       <TopBar
-        title={`@${peer.handle}`}
+        title={<HandleLink handle={peer.handle} />}
         backHref="/messages"
         trailing={
           <OutlineBox compact aria-label="Conversation options" onClick={() => setMenuOpen(true)}>
@@ -244,7 +245,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
           {blockedByMe ? (
             <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
               <span className="flex-1 font-mono text-[12px] text-ink-mute">
-                You&rsquo;ve blocked @{peer.handle}.
+                You&rsquo;ve blocked <HandleLink handle={peer.handle} className="text-ink" />.
               </span>
               <OutlineBox compact onClick={toggleBlock}>
                 Unblock
@@ -329,7 +330,9 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
             onClick={(e) => e.stopPropagation()}
             className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
           >
-            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">@{peer.handle}</h3>
+            <h3 className="mb-3 font-display text-[17px] font-bold text-ink">
+              <HandleLink handle={peer.handle} />
+            </h3>
             <button
               type="button"
               onClick={toggleBlock}

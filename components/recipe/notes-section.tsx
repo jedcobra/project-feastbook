@@ -10,6 +10,7 @@ import { NoteComposer } from '@/components/recipe/note-composer';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import { deleteComment, hasCooked, postComment, toggleCommentLike, updateComment } from '@/lib/supabase/queries';
 import type { RecipeComment } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 type Filter = 'all' | 'cooked' | 'questions';
 
@@ -164,7 +165,9 @@ export function NotesSection({
           {postError && <div className="mb-2 font-mono text-[12px] text-accent">{postError}</div>}
           {replyTo && (
             <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
-              <span>Replying to @{replyTo.handle}</span>
+              <span>
+                Replying to <HandleLink handle={replyTo.handle} className="text-ink" />
+              </span>
               <button
                 type="button"
                 onClick={() => {

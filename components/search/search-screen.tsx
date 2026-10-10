@@ -11,6 +11,7 @@ import { Tag } from '@/components/tag';
 import { parseDurationMinutes } from '@/lib/format';
 import { addRecentSearch, clearRecentSearches, listRecentSearches, removeRecentSearch } from '@/lib/search-history';
 import { fetchTrendingTags, searchAll, type SearchResults } from '@/lib/supabase/queries';
+import { HandleLink } from '@/components/handle-link';
 
 type Scope = 'all' | 'recipes' | 'people' | 'shelves';
 type QuickFilter = 'under30' | 'easy';
@@ -211,7 +212,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                     <div className="min-w-0 flex-1">
                       <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
                       <div className="font-mono text-[12px] text-ink-mute">
-                        @{r.author} · {r.time} · {r.madeIt} cooked
+                        <HandleLink nested handle={r.author} /> · {r.time} · {r.madeIt} cooked
                       </div>
                     </div>
                     <ChevronIcon size={13} className="flex-shrink-0 text-rule" />

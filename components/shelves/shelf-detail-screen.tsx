@@ -20,6 +20,7 @@ import {
 } from '@/lib/supabase/queries';
 import type { Recipe } from '@/lib/types';
 import { shelfVisibilityLabel } from '@/lib/visibility';
+import { HandleLink } from '@/components/handle-link';
 
 type SortKey = 'added' | 'title' | 'time';
 const SORTS: { key: SortKey; label: string }[] = [
@@ -154,7 +155,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
                   <div className="font-mono text-[12px] text-ink-mute">
-                    @{r.author} · {r.time} · {r.difficulty}
+                    <HandleLink nested handle={r.author} /> · {r.time} · {r.difficulty}
                   </div>
                 </div>
                 <button
@@ -170,7 +171,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
                   <div className="font-mono text-[12px] text-ink-mute">
-                    @{r.author} · {r.time} · {r.difficulty}
+                    <HandleLink nested handle={r.author} /> · {r.time} · {r.difficulty}
                   </div>
                 </div>
                 <ChevronIcon size={13} className="flex-shrink-0 text-rule" />

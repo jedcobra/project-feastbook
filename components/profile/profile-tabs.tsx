@@ -12,6 +12,7 @@ import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } 
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
+import { HandleLink } from '@/components/handle-link';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
 
@@ -441,7 +442,8 @@ function RecipesTab({
           <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
           {saved && (
             <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
-              <HeartIcon size={10} />@{r.author}
+              <HeartIcon size={10} />
+              <HandleLink nested handle={r.author} />
             </span>
           )}
         </div>
