@@ -8,7 +8,7 @@ import { Avatar } from '@/components/avatar';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
 import { HandleLink } from '@/components/handle-link';
-import { ChefHatIcon, MessageIcon } from '@/components/icons';
+import { ChefHatIcon } from '@/components/icons';
 import { deleteCookPhotoComment, fetchCookPhotoComments, postCookPhotoComment } from '@/lib/supabase/queries';
 import type { CookPhoto, CookPhotoComment } from '@/lib/types';
 
@@ -109,18 +109,6 @@ export function FeedPhotoPost({
           <KissButton photo={photo} onChange={onChange} onError={setError} />
           <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            expandComments();
-            document.getElementById(inputId)?.focus();
-          }}
-          aria-label="Comments"
-          className="flex items-center gap-1.5 font-mono text-[14px] text-ink"
-        >
-          <MessageIcon size={16} weight={0.9} />
-          {photo.commentCount > 0 && photo.commentCount}
-        </button>
       </div>
       {error && <div className="px-5 pt-1.5 font-mono text-[12px] text-accent">{error}</div>}
 
@@ -166,7 +154,7 @@ export function FeedPhotoPost({
             value={draft}
             rows={1}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={photo.commentCount === 0 ? 'Be the first to comment…' : 'Add a comment…'}
+            placeholder={isOwner ? 'Add a comment…' : `Leave a comment for @${photo.handle}`}
             className="max-h-[30dvh] flex-1 resize-none border-none bg-transparent py-1 font-mono text-[16px] leading-[1.4] text-ink outline-none placeholder:text-[14px] placeholder:text-ink-mute"
           />
           {draft.trim() && (
