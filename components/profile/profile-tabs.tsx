@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { ChevronIcon, DragIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
-import { OutlineBox } from '@/components/outline-box';
+import { useEffect, useState } from 'react';
+import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
-import { moveItem, sortByCookbookOrder } from '@/lib/cookbook-order';
+import { sortByCookbookOrder } from '@/lib/cookbook-order';
 import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
@@ -23,6 +23,7 @@ export function ProfileTabs({
   isOwn,
   recipeOrder = [],
   onReorderRecipes,
+  onReorderShelves,
   onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
@@ -36,6 +37,7 @@ export function ProfileTabs({
   isOwn: boolean;
   recipeOrder?: string[];
   onReorderRecipes?: (recipeIds: string[]) => void;
+  onReorderShelves?: (shelfIds: string[]) => void;
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
@@ -82,6 +84,7 @@ export function ProfileTabs({
           shelves={shelves}
           isOwn={isOwn}
           archivedShelfCount={archivedShelfCount}
+          onReorder={isOwn ? onReorderShelves : undefined}
           onShelfRemoved={onShelfRemoved}
           onShelfArchived={onShelfArchived}
         />
@@ -95,21 +98,29 @@ export function ProfileTabs({
 // Archived list) or delete (a shelf's recipes aren't going anywhere, so a
 // swipe plus one confirm tap is enough — no async impact check needed,
 // unlike a recipe). Someone else's shelves aren't yours to touch here.
+// Like Recipes, a long press on your own shelves switches to reorder mode.
 function ShelvesTab({
   shelves,
   isOwn,
   archivedShelfCount,
+  onReorder,
   onShelfRemoved,
   onShelfArchived,
 }: {
   shelves: Shelf[];
   isOwn: boolean;
   archivedShelfCount: number;
+  onReorder?: (shelfIds: string[]) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const reorder = useLongPressReorder({
+    ids: shelves.map((s) => s.id),
+    onReorder,
+    onStart: () => setOpenId(null),
+  });
 
   const handleArchive = async (shelfId: string) => {
     onShelfRemoved?.(shelfId);
@@ -118,6 +129,50 @@ function ShelvesTab({
   };
 
   const confirmingShelf = confirmingId ? shelves.find((s) => s.id === confirmingId) : undefined;
+
+  const shelfBody = (shelf: Shelf) => (
+    <>
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
+        <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
+        <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
+        <div className="flex flex-wrap gap-1.5">
+          {shelf.recipes.slice(0, 3).map((r) => (
+            <Tag key={r.id}>{r.title}</Tag>
+          ))}
+          {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
+        </div>
+      </div>
+    </>
+  );
+
+  if (reorder.reorderIds) {
+    const shelfById = new Map(shelves.map((s) => [s.id, s]));
+    return (
+      <div className="mx-5 select-none pb-8">
+        <ReorderBar label="Drag a shelf up or down" onDone={reorder.stop} />
+        {reorder.reorderIds
+          .map((id) => shelfById.get(id))
+          .filter((s): s is Shelf => !!s)
+          .map((shelf) => (
+            <div
+              key={shelf.id}
+              ref={reorder.rowRef(shelf.id)}
+              className={`flex items-start gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                reorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
+              }`}
+            >
+              {shelfBody(shelf)}
+              <div className="self-center">
+                <DragHandle label={`Move ${shelf.title}`} onStart={() => reorder.startDrag(shelf.id)} />
+              </div>
+            </div>
+          ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mx-5 pb-8">
@@ -134,19 +189,7 @@ function ShelvesTab({
             href={`/shelf/${shelf.id}`}
             className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5"
           >
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
-              <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
-              <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
-              <div className="flex flex-wrap gap-1.5">
-                {shelf.recipes.slice(0, 3).map((r) => (
-                  <Tag key={r.id}>{r.title}</Tag>
-                ))}
-                {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
-              </div>
-            </div>
+            {shelfBody(shelf)}
             <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
           </Link>
         );
@@ -154,18 +197,19 @@ function ShelvesTab({
         if (!isOwn) return <div key={shelf.id}>{row}</div>;
 
         return (
-          <SwipeableRow
-            key={shelf.id}
-            open={openId === shelf.id}
-            onOpen={() => setOpenId(shelf.id)}
-            onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
-            actions={[
-              { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
-              { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
-            ]}
-          >
-            {row}
-          </SwipeableRow>
+          <div key={shelf.id} {...reorder.pressProps}>
+            <SwipeableRow
+              open={openId === shelf.id}
+              onOpen={() => setOpenId(shelf.id)}
+              onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
+              actions={[
+                { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
+                { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
+              ]}
+            >
+              {row}
+            </SwipeableRow>
+          </div>
         );
       })}
       {isOwn && (
@@ -250,9 +294,6 @@ function DeleteShelfConfirm({
   );
 }
 
-const LONG_PRESS_MS = 450;
-const PRESS_MOVE_TOLERANCE = 8;
-
 // Authored recipes and recipes saved from other cooks, in one list — a
 // saved-from-someone-else row carries a heart badge with their handle
 // instead of a saves count, rather than living in a separate tab. Own
@@ -277,15 +318,6 @@ function RecipesTab({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  // Non-null while reordering: the live order, ahead of what's saved.
-  const [reorderIds, setReorderIds] = useState<string[] | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const reorderIdsRef = useRef<string[] | null>(null);
-  const dragStartIds = useRef<string[]>([]);
-  const rowEls = useRef(new Map<string, HTMLDivElement>());
-  const press = useRef<{ timer: ReturnType<typeof setTimeout>; x: number; y: number } | null>(null);
-
-  reorderIdsRef.current = reorderIds;
 
   // Saving your own recipe to one of your own shelves (the shelf "Add
   // recipes" picker allows this) marks it saved without un-authoring it —
@@ -299,69 +331,15 @@ function RecipesTab({
     (row) => row.recipe.id,
     recipeOrder,
   );
+  const reorder = useLongPressReorder({
+    ids: sortedRows.map((row) => row.recipe.id),
+    onReorder,
+    onStart: () => setOpenId(null),
+  });
   const rowById = new Map(sortedRows.map((row) => [row.recipe.id, row]));
-  const rows = reorderIds
-    ? reorderIds.map((id) => rowById.get(id)).filter((row): row is (typeof sortedRows)[number] => !!row)
+  const rows = reorder.reorderIds
+    ? reorder.reorderIds.map((id) => rowById.get(id)).filter((row): row is (typeof sortedRows)[number] => !!row)
     : sortedRows;
-
-  // While a row is held, follow the pointer on the window rather than the
-  // handle: reordering moves the row's DOM node, which would drop any
-  // pointer capture taken on the handle itself.
-  useEffect(() => {
-    if (!draggingId) return;
-    const onMove = (e: PointerEvent) => {
-      const ids = reorderIdsRef.current;
-      if (!ids) return;
-      const others = ids.filter((id) => id !== draggingId);
-      let target = 0;
-      for (const id of others) {
-        const rect = rowEls.current.get(id)?.getBoundingClientRect();
-        if (rect && rect.top + rect.height / 2 < e.clientY) target++;
-      }
-      const from = ids.indexOf(draggingId);
-      if (target !== from) setReorderIds(moveItem(ids, from, target));
-    };
-    const onUp = () => {
-      setDraggingId(null);
-      const ids = reorderIdsRef.current;
-      if (ids && ids.join() !== dragStartIds.current.join()) onReorder?.(ids);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-    };
-  }, [draggingId, onReorder]);
-
-  useEffect(() => () => clearPress(), []);
-
-  function clearPress() {
-    if (press.current) clearTimeout(press.current.timer);
-    press.current = null;
-  }
-
-  const startPress = (e: React.PointerEvent) => {
-    if (!onReorder || e.button !== 0) return;
-    clearPress();
-    press.current = {
-      x: e.clientX,
-      y: e.clientY,
-      timer: setTimeout(() => {
-        press.current = null;
-        setOpenId(null);
-        setReorderIds(sortedRows.map((row) => row.recipe.id));
-        navigator.vibrate?.(15);
-      }, LONG_PRESS_MS),
-    };
-  };
-
-  const movePress = (e: React.PointerEvent) => {
-    const p = press.current;
-    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > PRESS_MOVE_TOLERANCE) clearPress();
-  };
 
   if (rows.length === 0) {
     return (
@@ -400,39 +378,20 @@ function RecipesTab({
     </>
   );
 
-  if (reorderIds) {
+  if (reorder.reorderIds) {
     return (
       <div className="mx-5 select-none pb-8">
-        <div className="flex items-center justify-between gap-3 border-b border-dashed border-rule py-2.5">
-          <span className="font-mono text-meta text-ink-mute">Drag a recipe up or down</span>
-          <OutlineBox compact filled onClick={() => setReorderIds(null)}>
-            Done
-          </OutlineBox>
-        </div>
+        <ReorderBar label="Drag a recipe up or down" onDone={reorder.stop} />
         {rows.map(({ recipe: r, saved }) => (
           <div
             key={r.id}
-            ref={(el) => {
-              if (el) rowEls.current.set(r.id, el);
-              else rowEls.current.delete(r.id);
-            }}
+            ref={reorder.rowRef(r.id)}
             className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
-              draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
+              reorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
             }`}
           >
             {rowBody(r, saved)}
-            <button
-              type="button"
-              aria-label={`Move ${r.title}`}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                dragStartIds.current = reorderIds;
-                setDraggingId(r.id);
-              }}
-              className="-mr-1 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"
-            >
-              <DragIcon size={16} />
-            </button>
+            <DragHandle label={`Move ${r.title}`} onStart={() => reorder.startDrag(r.id)} />
           </div>
         ))}
       </div>
@@ -451,30 +410,16 @@ function RecipesTab({
           </Link>
         );
 
-        // Long press only in your own cookbook; also stops iOS's link
-        // preview and Android's context menu from claiming the hold.
-        const pressable = onReorder
-          ? {
-              onPointerDown: startPress,
-              onPointerMove: movePress,
-              onPointerUp: clearPress,
-              onPointerCancel: clearPress,
-              onPointerLeave: clearPress,
-              onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
-              className: 'select-none [-webkit-touch-callout:none]',
-            }
-          : {};
-
         if (!isOwn || saved) {
           return (
-            <div key={r.id} {...pressable}>
+            <div key={r.id} {...reorder.pressProps}>
               {row}
             </div>
           );
         }
 
         return (
-          <div key={r.id} {...pressable}>
+          <div key={r.id} {...reorder.pressProps}>
             <SwipeableRow
               open={openId === r.id}
               onOpen={() => setOpenId(r.id)}

@@ -501,7 +501,9 @@ export async function fetchProfileByHandle(handle: string) {
       .from('shelves')
       .select('id, title, subtitle, visibility, shelf_recipes(recipe_id, position, recipes(title))')
       .eq('owner_id', profileRow.id)
-      .is('archived_at', null),
+      .is('archived_at', null)
+      .order('position', { ascending: true, nullsFirst: true })
+      .order('created_at', { ascending: false }),
   ]);
 
   const person = mapPerson(profileRow, stats.get(profileRow.id));
@@ -582,6 +584,20 @@ export async function saveCookbookOrder(ownerId: string, recipeIds: string[]): P
     );
   if (error) {
     console.error('saveCookbookOrder', error);
+    return false;
+  }
+  return true;
+}
+
+export async function saveShelfOrder(ownerId: string, shelfIds: string[]): Promise<boolean> {
+  const results = await Promise.all(
+    shelfIds.map((id, position) =>
+      supabase.from('shelves').update({ position }).eq('id', id).eq('owner_id', ownerId),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed) {
+    console.error('saveShelfOrder', failed.error);
     return false;
   }
   return true;

@@ -13,6 +13,7 @@ import {
   fetchProfileByHandle,
   fetchSavedRecipes,
   saveCookbookOrder,
+  saveShelfOrder,
 } from '@/lib/supabase/queries';
 import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
 
@@ -96,6 +97,14 @@ export function OwnCookbook() {
         onReorderRecipes={(ids) => {
           setRecipeOrder(ids);
           void saveCookbookOrder(profile.id, ids);
+        }}
+        onReorderShelves={(ids) => {
+          setData((cur) => {
+            if (!cur) return cur;
+            const byId = new Map(cur.shelves.map((shelf) => [shelf.id, shelf]));
+            return { ...cur, shelves: ids.map((id) => byId.get(id)).filter((shelf): shelf is Shelf => !!shelf) };
+          });
+          void saveShelfOrder(profile.id, ids);
         }}
         onRecipeDeleted={(recipeId) =>
           setData((cur) => (cur ? { ...cur, recipes: cur.recipes.filter((r) => r.id !== recipeId) } : cur))
