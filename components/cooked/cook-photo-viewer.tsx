@@ -153,16 +153,20 @@ export function CookPhotoViewer({
 
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
-              {/* Thin lines until you've kissed the photo, bolder once you have. */}
+              {/* Thin ink lines until you've kissed the photo; once you have,
+                  it inverts to a cream hand in a solid ink circle. The circle's
+                  box is always there, so the count beside it never shifts. */}
               <button
                 type="button"
                 onClick={toggleKiss}
                 disabled={!profile}
                 aria-pressed={photo.kissedByMe}
                 aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
-                className="-m-1 p-1 text-ink"
+                className={`-ml-1.5 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                  photo.kissedByMe ? 'bg-ink text-cream' : 'bg-transparent text-ink'
+                }`}
               >
-                <ChefKissIcon size={16} weight={photo.kissedByMe ? 1.6 : 0.8} />
+                <ChefKissIcon size={15} weight={photo.kissedByMe ? 1 : 0.8} />
               </button>
               <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
             </div>
