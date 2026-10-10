@@ -1678,6 +1678,16 @@ export async function markAllNotificationsRead(recipientId: string) {
   if (error) console.error('markAllNotificationsRead', error);
 }
 
+export async function markNotificationsRead(ids: string[]) {
+  if (ids.length === 0) return;
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .in('id', ids)
+    .is('read_at', null);
+  if (error) console.error('markNotificationsRead', error);
+}
+
 export async function markNotificationRead(id: string) {
   const { error } = await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
   if (error) console.error('markNotificationRead', error);

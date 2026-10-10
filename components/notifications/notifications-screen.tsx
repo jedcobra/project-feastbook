@@ -1,13 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import { BookIcon, CookIcon, HeartIcon, MessageIcon, UserIcon } from '@/components/icons';
 import { Avatar } from '@/components/avatar';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { fetchNotifications, markAllNotificationsRead, markNotificationRead } from '@/lib/supabase/queries';
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  markNotificationsRead,
+} from '@/lib/supabase/queries';
 import type { AppNotification, NotificationKind } from '@/lib/types';
 
 type FilterKey = 'all' | 'unread' | 'note' | 'follow';
@@ -67,6 +72,52 @@ export function NotificationsScreen() {
     if (profile) fetchNotifications(profile.id).then(setItems);
   }, [profile]);
 
+  // A notification counts as read once it's actually been on screen, tapped
+  // or not, so the bell's dot clears. Rows keep their dot for the rest of
+  // this visit so it's still clear what was new; they come back read next
+  // time. Seen ids are saved in small batches, and any still pending are
+  // flushed on the way out.
+  const seenRef = useRef(new Set<string>());
+  const pendingRef = useRef<string[]>([]);
+  const flushTimer = useRef<ReturnType<typeof setTimeout>>();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    const flush = () => {
+      clearTimeout(flushTimer.current);
+      const ids = pendingRef.current;
+      pendingRef.current = [];
+      void markNotificationsRead(ids);
+    };
+    if (typeof IntersectionObserver !== 'undefined') {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            const id = (e.target as HTMLElement).dataset.unreadId;
+            if (!e.isIntersecting || !id || seenRef.current.has(id)) continue;
+            seenRef.current.add(id);
+            pendingRef.current.push(id);
+            observerRef.current?.unobserve(e.target);
+          }
+          if (pendingRef.current.length > 0) {
+            clearTimeout(flushTimer.current);
+            flushTimer.current = setTimeout(flush, 400);
+          }
+        },
+        { threshold: 0.6 },
+      );
+    }
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      flush();
+    };
+  }, []);
+
+  const observeUnread = (el: HTMLElement | null) => {
+    if (el && el.dataset.unreadId && !seenRef.current.has(el.dataset.unreadId)) observerRef.current?.observe(el);
+  };
+
   const handleMarkAllRead = async () => {
     if (!profile) return;
     setItems((is) => is?.map((n) => ({ ...n, read: true })) ?? is);
@@ -93,7 +144,7 @@ export function NotificationsScreen() {
       <TopBar
         title="Notifications"
         backHref="/feed"
-        subtitle={items === null ? undefined : unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+        subtitle={items === null ? undefined : unreadCount > 0 ? `${unreadCount} new` : 'All caught up'}
         trailing={
           unreadCount > 0 && (
             <OutlineBox compact onClick={handleMarkAllRead}>
@@ -138,6 +189,8 @@ export function NotificationsScreen() {
                     return (
                       <button
                         key={n.id}
+                        ref={n.read ? undefined : observeUnread}
+                        data-unread-id={n.read ? undefined : n.id}
                         type="button"
                         onClick={() => handleOpen(n)}
                         className="flex w-full items-start gap-2.5 border-t border-dashed border-rule py-3 text-left"
