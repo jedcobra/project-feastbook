@@ -235,6 +235,29 @@ export async function fetchFeedPage(
   return { items, nextCursor };
 }
 
+// The little a feed post shows when it's expanded: the ingredient names in
+// order and how many steps there are — not the whole recipe.
+export async function fetchRecipeOverview(
+  recipeId: string,
+): Promise<{ ingredients: string[]; stepCount: number } | null> {
+  const [{ data: sections, error }, { count }] = await Promise.all([
+    supabase
+      .from('recipe_ingredient_sections')
+      .select('position, recipe_ingredients(name, position)')
+      .eq('recipe_id', recipeId)
+      .order('position'),
+    supabase.from('recipe_steps').select('*', { count: 'exact', head: true }).eq('recipe_id', recipeId),
+  ]);
+  if (error) {
+    console.error('fetchRecipeOverview', error);
+    return null;
+  }
+  const ingredients = ((sections ?? []) as { recipe_ingredients: { name: string; position: number }[] }[]).flatMap(
+    (s) => [...s.recipe_ingredients].sort((a, b) => a.position - b.position).map((i) => i.name.trim()),
+  );
+  return { ingredients: ingredients.filter(Boolean), stepCount: count ?? 0 };
+}
+
 // ─────────────────────────────────────────────────────────────
 // Discover
 // ─────────────────────────────────────────────────────────────
