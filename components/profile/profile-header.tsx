@@ -16,9 +16,10 @@ export const PROFILE_BUTTON = `${PROFILE_BUTTON_BASE} bg-transparent text-ink`;
 export const PROFILE_BUTTON_PRIMARY = `${PROFILE_BUTTON_BASE} bg-ink text-cream`;
 
 // Instagram's profile header proportions: an 86px avatar beside three
-// evenly spaced stats, then name, handle and bio, then equal-width
-// buttons — dressed in this app's dashed rules and small caps. Followers and Following open the actual list; Recipes has no
-// list of its own (that's the Recipes tab below). Only your own header
+// evenly spaced stats (split by this app's dashed rules), then name,
+// handle and bio, then equal-width buttons. Followers and Following open
+// the actual list; Recipes has no list of its own (that's the Recipes tab
+// below). Only your own header
 // gets Edit/Share here — someone else's gets Follow/Message from
 // FollowActions, styled to match.
 export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn?: boolean }) {
@@ -46,13 +47,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     }
   };
 
-  // 86px overall like Instagram's, as an 78px avatar inside a dashed ring —
-  // the same dashed rule the rest of the app draws its dividers with.
-  const avatar = (
-    <span className="flex rounded-full border border-dashed border-ink p-[3px]">
-      <Avatar name={person.name} src={person.avatarUrl} size={78} className="border border-ink bg-highlight" />
-    </span>
-  );
+  const avatar = <Avatar name={person.name} src={person.avatarUrl} size={86} className="border border-ink bg-highlight" />
 
   return (
     <>
@@ -71,7 +66,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
               const body = (
                 <>
                   <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>
-                  <div className="mt-0.5 font-display text-[11px] font-bold tracking-wide text-ink">
+                  <div className="mt-0.5 font-display text-[11px] font-bold tracking-[0.05em] text-ink">
                     {label}
                   </div>
                 </>
