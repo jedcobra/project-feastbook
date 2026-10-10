@@ -1120,6 +1120,18 @@ export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
   return mapShelfRows(data);
 }
 
+export async function updateShelf(
+  shelfId: string,
+  values: { title: string; subtitle: string; visibility: ShelfVisibility },
+): Promise<boolean> {
+  const { error } = await supabase.from('shelves').update(values).eq('id', shelfId);
+  if (error) {
+    console.error('updateShelf', error);
+    return false;
+  }
+  return true;
+}
+
 export async function setShelfArchived(shelfId: string, archived: boolean): Promise<boolean> {
   const { error } = await supabase
     .from('shelves')

@@ -8,9 +8,16 @@ import { ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { AddRecipesToShelfSheet } from '@/components/shelves/add-recipes-to-shelf-sheet';
+import { ShelfForm } from '@/components/shelves/new-shelf-form';
 import { TopBar } from '@/components/top-bar';
 import { parseDurationMinutes } from '@/lib/format';
-import { deleteShelf, fetchShelfDetail, removeRecipeFromShelf, type ShelfDetail } from '@/lib/supabase/queries';
+import {
+  deleteShelf,
+  fetchShelfDetail,
+  removeRecipeFromShelf,
+  updateShelf,
+  type ShelfDetail,
+} from '@/lib/supabase/queries';
 import type { Recipe } from '@/lib/types';
 import { shelfVisibilityLabel } from '@/lib/visibility';
 
@@ -103,7 +110,26 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         }
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        {shelf.subtitle && <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>}
+        {editing && isOwner ? (
+          <div className="mb-5 border-b border-dashed border-rule pb-5">
+            <ShelfForm
+              initial={{ title: shelf.title, subtitle: shelf.subtitle, visibility: shelf.visibility }}
+              submitLabel="Save changes"
+              submittingLabel="Saving…"
+              // The heart button finds its default shelf by this exact name.
+              titleLocked={shelf.title === 'Saved' ? 'Your heart button saves here, so this name stays.' : undefined}
+              onSubmit={async (values) => {
+                const ok = await updateShelf(id, values);
+                if (ok) setShelf((s) => (s ? { ...s, ...values } : s));
+                return ok;
+              }}
+            />
+          </div>
+        ) : (
+          shelf.subtitle && (
+            <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>
+          )
+        )}
 
         <div className="mb-1.5 flex gap-1.5">
           {SORTS.map((s) => (
