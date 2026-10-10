@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Label } from '@/components/label';
 import { OutlineBox } from '@/components/outline-box';
+import { ZoomablePhoto } from '@/components/photo-viewer';
 import type { RecipeStep } from '@/lib/types';
 
 export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
@@ -37,11 +38,10 @@ export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
                   </div>
                 )}
                 {isActive && step.photoUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <ZoomablePhoto
                     src={step.photoUrl}
-                    alt=""
-                    className="mt-2 h-28 w-28 rounded-button border border-rule object-cover"
+                    alt={`Step ${i + 1}`}
+                    className="h-28 w-28 rounded-button border border-rule object-cover"
                   />
                 )}
               </div>

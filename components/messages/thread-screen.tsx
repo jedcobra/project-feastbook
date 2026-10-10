@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { BookIcon, CameraIcon, MoreIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
+import { ZoomablePhoto } from '@/components/photo-viewer';
 import { TopBar } from '@/components/top-bar';
 import { formatRelativeTime } from '@/lib/format';
 import {
@@ -193,11 +194,10 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
                     </Link>
                   )}
                   {m.photoUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <ZoomablePhoto
                       src={m.photoUrl}
-                      alt=""
-                      className={`h-44 w-44 rounded-2xl border border-ink object-cover ${m.text ? 'mb-1' : ''}`}
+                      wrapperClassName={`block ${m.text ? 'mb-1' : ''}`}
+                      className="h-44 w-44 rounded-2xl border border-ink object-cover"
                     />
                   )}
                   {m.text && (
