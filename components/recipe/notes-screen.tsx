@@ -8,11 +8,20 @@ import { Avatar } from '@/components/avatar';
 import { CameraIcon, HeartIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
-import { fetchRecipeFull, hasCooked, postComment, toggleCommentLike, deleteComment } from '@/lib/supabase/queries';
+import {
+  deleteComment,
+  fetchRecipeFull,
+  hasCooked,
+  postComment,
+  toggleCommentLike,
+  updateComment,
+} from '@/lib/supabase/queries';
 import { uploadPhoto } from '@/lib/supabase/storage';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 type Filter = 'all' | 'cooked' | 'questions';
+
+const COMPOSER_ID = 'note-composer';
 
 export function NotesScreen({ id }: { id: string }) {
   const { profile } = useAuth();
@@ -20,6 +29,7 @@ export function NotesScreen({ id }: { id: string }) {
   const [data, setData] = useState<{ recipe: Recipe; author: Person } | null | undefined>(undefined);
   const [filter, setFilter] = useState<Filter>('all');
   const [replyTo, setReplyTo] = useState<RecipeComment | null>(null);
+  const [editing, setEditing] = useState<RecipeComment | null>(null);
   const [draft, setDraft] = useState('');
   const [cookedMark, setCookedMark] = useState(false);
   const [posting, setPosting] = useState(false);
@@ -62,6 +72,7 @@ export function NotesScreen({ id }: { id: string }) {
   }
 
   const { recipe } = data;
+  const canAttachPhoto = editing ? true : !replyTo && cookedMark;
   const total = recipe.comments.reduce((n, c) => n + 1 + c.replies.length, 0);
   const shown = recipe.comments.filter((c) =>
     filter === 'all' ? true : filter === 'cooked' ? c.cooked : c.isQuestion,
@@ -80,12 +91,61 @@ export function NotesScreen({ id }: { id: string }) {
   };
 
   const handleDelete = async (comment: RecipeComment) => {
+    if (editing?.id === comment.id) cancelEdit();
     updateComments((comments) => removeComment(comments, comment.id));
     await deleteComment(comment.id);
   };
 
+  // Editing reuses the composer at the bottom: it fills with the note's
+  // text and photo, and Post becomes Save.
+  const startEdit = (comment: RecipeComment) => {
+    setReplyTo(null);
+    setEditing(comment);
+    setDraft(comment.text);
+    setPhotoUrl(comment.photoUrl ?? '');
+    setPostError(null);
+    // Synchronous with the tap, so phones open the keyboard too.
+    document.getElementById(COMPOSER_ID)?.focus();
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setDraft('');
+    setPhotoUrl('');
+  };
+
+  const startReply = (comment: RecipeComment) => {
+    if (editing) cancelEdit();
+    setReplyTo(comment);
+  };
+
+  const handleSaveEdit = async (comment: RecipeComment) => {
+    const text = draft.trim();
+    setPosting(true);
+    setPostError(null);
+    const ok = await updateComment(comment.id, text, photoUrl || null);
+    setPosting(false);
+    if (!ok) {
+      setPostError("Couldn't save that — check your connection and try again.");
+      return;
+    }
+    updateComments((comments) =>
+      comments.map((c) =>
+        applyToComment(c, comment.id, (m) => ({
+          ...m,
+          text,
+          photoUrl: photoUrl || undefined,
+          isQuestion: text.endsWith('?'),
+          edited: m.edited || text !== m.text || (photoUrl || undefined) !== m.photoUrl,
+        })),
+      ),
+    );
+    cancelEdit();
+  };
+
   const handlePost = async () => {
     if (!draft.trim() || !profile || posting) return;
+    if (editing) return handleSaveEdit(editing);
     setPosting(true);
     setPostError(null);
     let comment: RecipeComment | null = null;
@@ -176,7 +236,8 @@ export function NotesScreen({ id }: { id: string }) {
                 depth={0}
                 viewerId={profile?.id ?? null}
                 onLike={handleLike}
-                onReply={setReplyTo}
+                onReply={startReply}
+                onEdit={startEdit}
                 onDelete={handleDelete}
                 onOpenProfile={(handle) => router.push(`/${handle}`)}
               />
@@ -196,7 +257,15 @@ export function NotesScreen({ id }: { id: string }) {
               </button>
             </div>
           )}
-          {!replyTo && cookedMark && photoUrl && (
+          {editing && (
+            <div className="mb-2 flex items-center gap-1.5 font-mono text-[12px] text-ink-mute">
+              <span>Editing your note</span>
+              <button type="button" onClick={cancelEdit} className="px-1 text-[16px] leading-none text-ink">
+                ×
+              </button>
+            </div>
+          )}
+          {canAttachPhoto && photoUrl && (
             <div className="relative mb-2 h-16 w-16">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
@@ -211,8 +280,9 @@ export function NotesScreen({ id }: { id: string }) {
             </div>
           )}
           <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
-            {/* Only people who've cooked it can attach a photo of theirs. */}
-            {!replyTo && cookedMark && (
+            {/* New notes take a photo only alongside "I cooked it"; any
+                note of yours can gain (or lose) one when you edit it. */}
+            {canAttachPhoto && (
               <>
                 <button
                   type="button"
@@ -236,10 +306,11 @@ export function NotesScreen({ id }: { id: string }) {
               </>
             )}
             <AutoGrowTextarea
+              id={COMPOSER_ID}
               value={draft}
               rows={1}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={photoUploading ? 'Uploading photo…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
+              placeholder={photoUploading ? 'Uploading photo…' : editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
               className="max-h-[40dvh] flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none"
             />
             <button
@@ -250,7 +321,7 @@ export function NotesScreen({ id }: { id: string }) {
                 draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
               }`}
             >
-              Post
+              {editing ? 'Save' : 'Post'}
             </button>
           </div>
         </div>
@@ -274,6 +345,7 @@ function NoteRow({
   viewerId,
   onLike,
   onReply,
+  onEdit,
   onDelete,
   onOpenProfile,
 }: {
@@ -282,6 +354,7 @@ function NoteRow({
   viewerId: string | null;
   onLike: (c: RecipeComment) => void;
   onReply: (c: RecipeComment) => void;
+  onEdit: (c: RecipeComment) => void;
   onDelete: (c: RecipeComment) => void;
   onOpenProfile: (handle: string) => void;
 }) {
@@ -307,7 +380,10 @@ function NoteRow({
               </span>
             )}
             <span className="flex-1" />
-            <span className="font-mono text-[12px] text-ink-mute">{comment.at}</span>
+            <span className="font-mono text-[12px] text-ink-mute">
+              {comment.at}
+              {comment.edited && ' · edited'}
+            </span>
           </div>
           <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>
           {comment.photoUrl && (
@@ -334,6 +410,11 @@ function NoteRow({
               </button>
             )}
             {mine && (
+              <button type="button" onClick={() => onEdit(comment)} className="font-mono text-[12px] text-ink-mute">
+                Edit
+              </button>
+            )}
+            {mine && (
               <button type="button" onClick={() => onDelete(comment)} className="font-mono text-[12px] text-ink-mute">
                 Delete
               </button>
@@ -349,6 +430,7 @@ function NoteRow({
           viewerId={viewerId}
           onLike={onLike}
           onReply={onReply}
+          onEdit={onEdit}
           onDelete={onDelete}
           onOpenProfile={onOpenProfile}
         />

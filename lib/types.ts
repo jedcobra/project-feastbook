@@ -46,6 +46,7 @@ export interface RecipeComment {
   cooked: boolean;
   isQuestion: boolean;
   photoUrl?: string;
+  edited: boolean;
   replies: RecipeComment[];
 }
 

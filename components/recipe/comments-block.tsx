@@ -69,6 +69,7 @@ export function CommentsBlock({
             <div className="flex items-baseline gap-1.5">
               <span className="font-mono text-[14px] font-semibold text-ink">@{comment.handle}</span>
               {comment.likes > 0 && <span className="font-mono text-[12px] text-ink-mute">· {comment.likes} ♥</span>}
+              {comment.edited && <span className="font-mono text-[12px] text-ink-mute">· edited</span>}
             </div>
             <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>
             {comment.photoUrl && (

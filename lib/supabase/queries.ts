@@ -646,6 +646,7 @@ async function mapCommentRows(
     cooked: boolean;
     photo_url: string | null;
     created_at: string;
+    edited_at?: string | null;
     author: { id: string; name: string; handle: string } | { id: string; name: string; handle: string }[] | null;
   }[],
   viewerId: string | null,
@@ -674,6 +675,7 @@ async function mapCommentRows(
       cooked: r.cooked,
       isQuestion: r.text.trim().endsWith('?'),
       photoUrl: r.photo_url ?? undefined,
+      edited: !!r.edited_at,
       replies: [],
     });
   }
@@ -709,7 +711,7 @@ export async function fetchRecipeFull(id: string, viewerId: string | null = null
       supabase.from('recipe_notes').select('*').eq('recipe_id', id).order('position'),
       supabase
         .from('comments')
-        .select('id, parent_id, text, cooked, photo_url, created_at, author:profiles!comments_author_id_fkey(id, name, handle)')
+        .select('id, parent_id, text, cooked, photo_url, created_at, edited_at, author:profiles!comments_author_id_fkey(id, name, handle)')
         .eq('recipe_id', id)
         .order('created_at'),
       supabase.from('profiles').select('id, name, handle, bio, avatar_url').eq('id', recipeRow.author_id).maybeSingle(),
@@ -1036,6 +1038,7 @@ export async function postComment(
     cooked: data.cooked,
     isQuestion: text.trim().endsWith('?'),
     photoUrl: data.photo_url ?? undefined,
+    edited: false,
     replies: [],
   };
 }
@@ -1052,6 +1055,20 @@ export async function toggleCommentLike(commentId: string, userId: string, liked
       .eq('user_id', userId);
     if (error) console.error('toggleCommentLike delete', error);
   }
+}
+
+// Edits the text and/or photo of one of your own notes. The DB trigger
+// (0025) stamps edited_at and keeps everything else about the note as it
+// was. Returns false if nothing was saved — an RLS-filtered update errors
+// silently as zero rows, hence the select.
+export async function updateComment(commentId: string, text: string, photoUrl: string | null): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('comments')
+    .update({ text, photo_url: photoUrl })
+    .eq('id', commentId)
+    .select('id');
+  if (error) console.error('updateComment', error);
+  return !error && (data?.length ?? 0) > 0;
 }
 
 export async function deleteComment(commentId: string) {
