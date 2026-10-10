@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
@@ -13,6 +13,7 @@ import { OutlineBox } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import { useBackNav } from '@/lib/back-nav';
+import { moveItem } from '@/lib/cookbook-order';
 import { clampServingsInput } from '@/lib/format';
 import {
   createDraft,
@@ -35,6 +36,14 @@ export function ComposerScreen() {
   const { loading, user, profile } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
   const [tagInput, setTagInput] = useState('');
+  // The ingredient being dragged by its handle, tracked by its live
+  // position (it moves as the rows reorder under it).
+  const [dragging, setDragging] = useState<{ si: number; ii: number } | null>(null);
+  const draggingRef = useRef(dragging);
+  draggingRef.current = dragging;
+  const ingredientRows = useRef(new Map<string, HTMLElement>());
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -69,6 +78,47 @@ export function ComposerScreen() {
   useEffect(() => {
     if (draft) saveDraft(draft);
   }, [draft]);
+
+  // While an ingredient is held, follow the pointer on the window (moving
+  // the row's DOM node would drop pointer capture on the handle) and slot
+  // it in wherever it's dragged within its section.
+  const isDragging = !!dragging;
+  useEffect(() => {
+    if (!isDragging) return;
+    const onMove = (e: PointerEvent) => {
+      const cur = draggingRef.current;
+      const count = draftRef.current?.sections[cur?.si ?? -1]?.items.length;
+      if (!cur || !count) return;
+      let target = 0;
+      for (let j = 0; j < count; j++) {
+        if (j === cur.ii) continue;
+        const rect = ingredientRows.current.get(`${cur.si}:${j}`)?.getBoundingClientRect();
+        if (rect && rect.top + rect.height / 2 < e.clientY) target++;
+      }
+      if (target === cur.ii) return;
+      draggingRef.current = { si: cur.si, ii: target };
+      setDragging(draggingRef.current);
+      setDraft((d) =>
+        d
+          ? {
+              ...d,
+              sections: d.sections.map((s, i) =>
+                i !== cur.si ? s : { ...s, items: moveItem(s.items, cur.ii, target) },
+              ),
+            }
+          : d,
+      );
+    };
+    const onUp = () => setDragging(null);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [isDragging]);
 
   if (loading || !draft) {
     return (
@@ -234,8 +284,30 @@ export function ComposerScreen() {
                 className="mb-1.5 w-full border-none bg-transparent p-0 font-mono text-[11px] uppercase tracking-wide text-ink-mute outline-none"
               />
               {section.items.map((item, ii) => (
-                <div key={ii} className="flex items-center gap-2 border-t border-dotted border-rule py-1.5">
-                  <DragIcon size={12} className="flex-shrink-0 text-rule" />
+                <div
+                  key={ii}
+                  ref={(el) => {
+                    if (el) ingredientRows.current.set(`${si}:${ii}`, el);
+                    else ingredientRows.current.delete(`${si}:${ii}`);
+                  }}
+                  className={`flex items-center gap-2 border-t border-dotted border-rule py-1.5 ${
+                    dragging?.si === si && dragging.ii === ii ? 'bg-cream-deep' : ''
+                  }`}
+                >
+                  <button
+                    type="button"
+                    aria-label="Drag to reorder"
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.preventDefault();
+                      (document.activeElement as HTMLElement | null)?.blur();
+                      draggingRef.current = { si, ii };
+                      setDragging({ si, ii });
+                    }}
+                    className="-my-1.5 -ml-1.5 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"
+                  >
+                    <DragIcon size={14} />
+                  </button>
                   <input
                     value={item.q}
                     onChange={(e) => setItem(si, ii, 'q', e.target.value)}
