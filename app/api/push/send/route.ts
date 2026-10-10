@@ -12,7 +12,7 @@ const KIND_VERB: Record<string, string> = {
   follow: 'started following you',
   digest: 'sent you a weekly digest',
   message: 'sent you a message',
-  kiss: 'sent a kiss to your photo of',
+  kiss: 'added a kiss to your photo',
   photo_comment: 'commented on your photo of',
 };
 
@@ -99,7 +99,10 @@ export async function POST(request: Request) {
   const actorName = actorHandle ? `@${actorHandle}` : 'Someone';
   const recipeTitle = unwrapOne(notifRow.recipe as { title: string } | { title: string }[] | null)?.title;
   const verb = KIND_VERB[notifRow.kind] ?? 'did something on';
-  const body = recipeTitle ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;
+  // A kiss reads as a complete sentence on its own ("@sam added a kiss to
+  // your photo"), so it doesn't name the recipe.
+  const body =
+    recipeTitle && notifRow.kind !== 'kiss' ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;
   const url = notifRow.cook_photo_id
     ? `/me?photo=${notifRow.cook_photo_id}`
     : notifRow.conversation_id
