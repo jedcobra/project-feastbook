@@ -135,6 +135,9 @@ export function DragHandle({ label, onStart }: { label: string; onStart: () => v
       aria-label={label}
       onPointerDown={(e) => {
         e.preventDefault();
+        // Keep a surrounding swipe-to-delete row from treating the drag as
+        // a sideways swipe.
+        e.stopPropagation();
         onStart();
       }}
       className="-mr-1 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"

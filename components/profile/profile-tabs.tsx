@@ -405,76 +405,82 @@ function RecipesTab({
     </>
   );
 
+  const confirmSheet = confirmingRecipe && (
+    <DeleteRecipeConfirm
+      recipe={confirmingRecipe}
+      onCancel={() => setConfirmingId(null)}
+      onDeleted={() => {
+        setConfirmingId(null);
+        onRecipeDeleted?.(confirmingRecipe.id);
+      }}
+    />
+  );
+
+  // Long press puts the list into edit mode: drag a row by its handle to
+  // reorder it, or swipe one of your own recipes left to delete it. Outside
+  // edit mode rows are plain links, so a stray swipe can't delete anything.
   if (reorder.reorderIds) {
     return (
       <div className="mx-5 select-none pb-8">
-        <ReorderBar label="Drag a recipe up or down" onDone={reorder.stop} />
-        {rows.map(({ recipe: r, saved }) => (
-          <div
-            key={r.id}
-            ref={reorder.rowRef(r.id)}
-            className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
-              reorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
-            }`}
-          >
-            {rowBody(r, saved)}
-            <DragHandle label={`Move ${r.title}`} onStart={() => reorder.startDrag(r.id)} />
-          </div>
-        ))}
+        <ReorderBar
+          label={isOwn ? 'Drag to reorder · swipe left to delete' : 'Drag a recipe up or down'}
+          onDone={() => {
+            setOpenId(null);
+            reorder.stop();
+          }}
+        />
+        {rows.map(({ recipe: r, saved }) => {
+          const row = (
+            <div
+              className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                reorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
+              }`}
+            >
+              {rowBody(r, saved)}
+              <DragHandle
+                label={`Move ${r.title}`}
+                onStart={() => {
+                  setOpenId(null);
+                  reorder.startDrag(r.id);
+                }}
+              />
+            </div>
+          );
+          return (
+            <div key={r.id} ref={reorder.rowRef(r.id)}>
+              {isOwn && !saved ? (
+                <SwipeableRow
+                  open={openId === r.id}
+                  onOpen={() => setOpenId(r.id)}
+                  onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
+                  actions={[{ label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(r.id) }]}
+                >
+                  {row}
+                </SwipeableRow>
+              ) : (
+                row
+              )}
+            </div>
+          );
+        })}
+        {confirmSheet}
       </div>
     );
   }
 
   return (
     <div className="mx-5 pb-8">
-      {rows.map(({ recipe: r, saved }) => {
-        const row = (
+      {rows.map(({ recipe: r, saved }) => (
+        <div key={r.id} {...reorder.pressProps}>
           <Link
             href={`/recipe/${r.id}`}
             className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
           >
             {rowBody(r, saved)}
           </Link>
-        );
-
-        if (!isOwn || saved) {
-          return (
-            <div key={r.id} {...reorder.pressProps}>
-              {row}
-            </div>
-          );
-        }
-
-        return (
-          <div key={r.id} {...reorder.pressProps}>
-            <SwipeableRow
-              open={openId === r.id}
-              onOpen={() => setOpenId(r.id)}
-              onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
-              actions={[
-                {
-                  label: 'Delete',
-                  className: 'bg-accent',
-                  onClick: () => setConfirmingId(r.id),
-                },
-              ]}
-            >
-              {row}
-            </SwipeableRow>
-          </div>
-        );
-      })}
-
-      {confirmingRecipe && (
-        <DeleteRecipeConfirm
-          recipe={confirmingRecipe}
-          onCancel={() => setConfirmingId(null)}
-          onDeleted={() => {
-            setConfirmingId(null);
-            onRecipeDeleted?.(confirmingRecipe.id);
-          }}
-        />
-      )}
+        </div>
+      ))}
+      {confirmSheet}
     </div>
   );
 }
