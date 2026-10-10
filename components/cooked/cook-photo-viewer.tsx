@@ -6,18 +6,16 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
-import { ChefKissIcon, XIcon } from '@/components/icons';
+import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
+import { XIcon } from '@/components/icons';
 import {
   deleteCookPhoto,
   deleteCookPhotoComment,
   fetchCookPhotoComments,
   postCookPhotoComment,
-  setCookPhotoKiss,
 } from '@/lib/supabase/queries';
 import type { CookPhoto, CookPhotoComment } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
-
-const kissLabel = (n: number) => `${n} kiss${n === 1 ? '' : 'es'}`;
 
 // The enlarged view of one photo from a Cooked grid: the photo, a chef's
 // kiss (like) with its count, which recipe it was, and comments with a box
@@ -39,7 +37,6 @@ export function CookPhotoViewer({
   const [draft, setDraft] = useState('');
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [kissBusy, setKissBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isOwner = profile?.id === photo.userId;
 
@@ -55,20 +52,6 @@ export function CookPhotoViewer({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const toggleKiss = async () => {
-    if (!profile || kissBusy) return;
-    const next = !photo.kissedByMe;
-    const optimistic = { ...photo, kissedByMe: next, kisses: Math.max(0, photo.kisses + (next ? 1 : -1)) };
-    setKissBusy(true);
-    onChange(optimistic);
-    const ok = await setCookPhotoKiss(photo, profile.id, next);
-    setKissBusy(false);
-    if (!ok) {
-      onChange(photo);
-      setError(next ? "Couldn't send that kiss — try again." : "Couldn't take that kiss back — try again.");
-    }
-  };
-
   const post = async () => {
     const text = draft.trim();
     if (!profile || !text || posting) return;
@@ -81,13 +64,16 @@ export function CookPhotoViewer({
       return;
     }
     setComments((cs) => [...(cs ?? []), comment]);
+    onChange({ ...photo, commentCount: photo.commentCount + 1 });
     setDraft('');
   };
 
   const removeComment = async (comment: CookPhotoComment) => {
     setComments((cs) => cs?.filter((c) => c.id !== comment.id) ?? cs);
+    onChange({ ...photo, commentCount: Math.max(0, photo.commentCount - 1) });
     if (!(await deleteCookPhotoComment(comment.id))) {
       setComments((cs) => (cs ? [...cs, comment] : cs));
+      onChange({ ...photo });
     }
   };
 
@@ -153,18 +139,7 @@ export function CookPhotoViewer({
 
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
-              {/* Thin lines until you've kissed the photo; once you have, the
-                  hand fills in ink with its detail lines in cream. */}
-              <button
-                type="button"
-                onClick={toggleKiss}
-                disabled={!profile}
-                aria-pressed={photo.kissedByMe}
-                aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
-                className="-m-1 p-1 text-ink"
-              >
-                <ChefKissIcon size={16} weight={photo.kissedByMe ? 1 : 0.8} filled={photo.kissedByMe} />
-              </button>
+              <KissButton photo={photo} onChange={onChange} onError={setError} />
               <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
             </div>
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">

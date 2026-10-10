@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { ChefHatIcon, HeartIcon, PlusIcon } from '@/components/icons';
-import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
 
@@ -19,50 +18,64 @@ const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => Reac
   saved: HeartIcon,
 };
 
-// Index feed row — noods-style activity line: author + verb, title, optional
-// caption, meta + tags. The default Feed layout.
-export function FeedRow({
-  item,
-  recipe,
-  author,
+// The header every feed post shares: who, what they did, and when.
+export function FeedPostHeader({
+  handle,
+  avatarUrl,
+  verb,
+  when,
 }: {
-  item: FeedActivity;
-  recipe: Recipe;
-  author: Person;
+  handle: string;
+  avatarUrl?: string;
+  verb: React.ReactNode;
+  when: string;
 }) {
+  return (
+    <div className="flex items-center gap-2 px-5 pb-2.5 pt-3.5">
+      <Link href={`/${handle}`} className="flex min-w-0 items-center gap-2">
+        <Avatar name={handle} src={avatarUrl} size={28} />
+        <span className="truncate font-mono text-[14px] font-semibold text-ink">@{handle}</span>
+      </Link>
+      <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">{verb}</span>
+      <span className="ml-auto flex-shrink-0 font-mono text-meta text-ink-mute">{when}</span>
+    </div>
+  );
+}
+
+// A recipe activity post (added / cooked / saved), led by the recipe's
+// cover photo when it has one; without one, the title carries the post.
+export function FeedRow({ item, recipe, author }: { item: FeedActivity; recipe: Recipe; author: Person }) {
   const VerbIcon = VERB_ICON[item.kind];
   return (
-    <div className="rule-y">
-      <div className="flex items-center gap-2 px-5 pt-3">
-        <Link href={`/${author.handle}`} className="flex items-center gap-2">
-          <Avatar name={author.handle} src={author.avatarUrl} size={22} />
-          <span className="font-mono text-[14px] text-ink underline decoration-dashed underline-offset-[3px]">
-            @{author.handle}
-          </span>
-        </Link>
-        <span className="flex items-center gap-1 font-mono text-meta text-ink-mute">
-          {item.kind === 'saved' ? (
-            <HeartIcon size={16} filled className="text-accent" />
-          ) : (
-            <VerbIcon size={16} />
-          )}
-          {VERB[item.kind]}
-        </span>
-        <span className="ml-auto font-mono text-meta text-ink-mute">{item.when}</span>
-      </div>
+    <article className="border-b border-dashed border-rule pb-3.5">
+      <FeedPostHeader
+        handle={author.handle}
+        avatarUrl={author.avatarUrl}
+        when={item.when}
+        verb={
+          <>
+            {item.kind === 'saved' ? <HeartIcon size={16} filled className="text-accent" /> : <VerbIcon size={16} />}
+            {VERB[item.kind]}
+          </>
+        }
+      />
 
-      <Link href={`/recipe/${recipe.id}`} className="flex items-start gap-2.5 px-5 pb-1 pt-2">
-        {recipe.coverPhotoUrl && <RecipeThumbnail src={recipe.coverPhotoUrl} alt={recipe.title} />}
-        <span className="min-w-0 flex-1 font-display text-feed-title font-bold text-ink">{recipe.title}</span>
+      {recipe.coverPhotoUrl && (
+        <Link href={`/recipe/${recipe.id}`} className="block bg-cream-deep">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={recipe.coverPhotoUrl} alt={recipe.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+        </Link>
+      )}
+
+      <Link href={`/recipe/${recipe.id}`} className={`block px-5 ${recipe.coverPhotoUrl ? 'pt-3' : 'pt-0.5'}`}>
+        <span className="font-display text-feed-title font-bold text-ink">{recipe.title}</span>
       </Link>
 
       {item.caption && (
-        <div className="px-5 pb-1 font-mono text-[14px] leading-relaxed text-ink-mute">
-          &ldquo;{item.caption}&rdquo;
-        </div>
+        <div className="px-5 pt-1 font-mono text-[14px] leading-relaxed text-ink-mute">&ldquo;{item.caption}&rdquo;</div>
       )}
 
-      <div className="flex flex-wrap items-center gap-2.5 px-5 pb-3.5 pt-1.5">
+      <div className="flex flex-wrap items-center gap-2.5 px-5 pt-2">
         <span className="font-mono text-meta text-ink-mute">{recipe.time}</span>
         <span className="text-rule">·</span>
         <span className="font-mono text-meta text-ink-mute">serves {recipe.serves}</span>
@@ -74,6 +87,6 @@ export function FeedRow({
           ))}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

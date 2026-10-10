@@ -103,9 +103,11 @@ export interface CookPhoto {
   recipeId: string;
   recipeTitle: string;
   photoUrl: string;
+  avatarUrl?: string;
   at: string;
   kisses: number;
   kissedByMe: boolean;
+  commentCount: number;
 }
 
 export interface CookPhotoComment {
@@ -125,6 +127,12 @@ export interface FeedActivity {
   when: string;
   caption: string;
 }
+
+// One post in the feed: an activity row (added / cooked / saved a recipe)
+// or someone's photo of a dish they cooked.
+export type FeedItem =
+  | { type: 'activity'; key: string; activity: FeedActivity; recipe: Recipe; author: Person }
+  | { type: 'photo'; key: string; photo: CookPhoto };
 
 export interface ShelfRecipeRef {
   id: string;
