@@ -65,8 +65,8 @@ export function ProfileTabs({
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'recipes', label: 'Recipes' },
-    { id: 'shelves', label: 'Shelves' },
     { id: 'cooked', label: 'Cooked' },
+    { id: 'shelves', label: 'Shelves' },
   ];
 
   // Swipe left/right anywhere on the profile's scrolling area to move to the
@@ -78,7 +78,7 @@ export function ProfileTabs({
   useEffect(() => {
     const el = contentRef.current?.closest<HTMLElement>('.overflow-y-auto') ?? contentRef.current;
     if (!el) return;
-    const order: TabId[] = ['recipes', 'shelves', 'cooked'];
+    const order: TabId[] = ['recipes', 'cooked', 'shelves'];
     let start: { x: number; y: number; t: number } | null = null;
     const onStart = (e: TouchEvent) => {
       const target = e.target as Element | null;
