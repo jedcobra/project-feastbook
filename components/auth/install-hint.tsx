@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { IosShareIcon, PlusIcon, XIcon } from '@/components/icons';
-
-const DISMISSED_KEY = 'ss-install-hint-dismissed';
+import { IosShareIcon } from '@/components/icons';
 
 // Chrome's install prompt event (not in the DOM typings).
 interface BeforeInstallPromptEvent extends Event {
@@ -52,11 +50,6 @@ export function InstallHint() {
 
   useEffect(() => {
     if (isStandalone()) return;
-    try {
-      if (window.localStorage.getItem(DISMISSED_KEY)) return;
-    } catch {
-      // Storage blocked — just show it.
-    }
     setPlatform(detectPlatform());
     const onPrompt = (e: Event) => {
       e.preventDefault();
@@ -74,15 +67,6 @@ export function InstallHint() {
 
   if (!platform) return null;
 
-  const dismiss = () => {
-    setPlatform(null);
-    try {
-      window.localStorage.setItem(DISMISSED_KEY, '1');
-    } catch {
-      // Ignore — it'll just show again next time.
-    }
-  };
-
   const install = async () => {
     if (!promptEvent) return;
     await promptEvent.prompt();
@@ -90,40 +74,24 @@ export function InstallHint() {
     if (outcome === 'accepted') setPlatform(null);
   };
 
-  const share = <IosShareIcon size={12} className="mx-0.5 inline -translate-y-0.5" />;
+  const share = <IosShareIcon size={11} className="mx-0.5 inline -translate-y-0.5" />;
   const steps: Record<Platform, React.ReactNode> = {
     'ios-safari': <>Tap {share} Share below, then &ldquo;Add to Home Screen&rdquo;.</>,
     'ios-safari-26': <>Tap &bull;&bull;&bull; below, then {share} Share, then &ldquo;Add to Home Screen&rdquo;.</>,
     'ios-other': <>Tap {share} Share at the top, then &ldquo;Add to Home Screen&rdquo;.</>,
-    'android-prompt': <>Install it like an app — it opens full screen, straight from your home screen.</>,
+    'android-prompt': <>It opens full screen, like an app.</>,
     'android-menu': <>Open your browser menu &#8942; above, then &ldquo;Add to Home screen&rdquo;.</>,
   };
 
+  // Kept quiet: one small line of body copy above the sign-in buttons.
   return (
-    <div className="relative mx-5 mb-4 rounded-button border border-dashed border-ink bg-cream-surface px-4 py-3.5 pr-10">
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label="Dismiss"
-        className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-ink-mute"
-      >
-        <XIcon size={11} />
-      </button>
-      <div className="font-display text-[16px] font-bold text-ink">Best on your home screen</div>
-      <p className="mt-1 font-mono text-[12px] leading-[1.55] text-ink-mute">
-        Special Spoon works best added to your home screen, and that&rsquo;s where notifications work too.{' '}
-        {steps[platform]}
-      </p>
+    <p className="mb-3 px-5 text-center font-mono text-[12px] leading-[1.55] text-ink-mute">
+      <span className="font-semibold text-ink">Best on your home screen.</span> {steps[platform]}{' '}
       {platform === 'android-prompt' && (
-        <button
-          type="button"
-          onClick={install}
-          className="mt-2.5 inline-flex items-center gap-1.5 rounded-button border border-ink px-3 py-1.5 font-mono text-[12px] font-semibold text-ink"
-        >
-          <PlusIcon size={11} />
-          Add to home screen
+        <button type="button" onClick={install} className="font-semibold text-ink underline underline-offset-2">
+          Add it now
         </button>
       )}
-    </div>
+    </p>
   );
 }
