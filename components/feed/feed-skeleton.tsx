@@ -1,23 +1,21 @@
 import { SkeletonLine } from '@/components/skeleton-line';
 
-// Wears the feed's own shape while it loads — a date bar and four
-// activity-row placeholders — instead of a spinner or bare "Loading…" text.
+// Wears the feed's own shape while it loads — four entries, each a square
+// picture on the left and lines of detail beside it — instead of a spinner.
 export function FeedSkeleton() {
   return (
-    <>
-      <div className="rule-y flex-shrink-0 px-5 pb-2.5">
-        <SkeletonLine width="42%" height={10} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-hidden px-5 pt-3.5">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="mb-[18px] border-b border-dashed border-rule pb-[18px]">
-            <SkeletonLine width="38%" height={9} className="mb-2" />
-            <SkeletonLine width="88%" height={19} className="mb-2.5" />
-            <SkeletonLine width="64%" height={11} className="mb-2" />
-            <SkeletonLine width="30%" height={9} />
+    <div className="min-h-0 flex-1 overflow-hidden">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="flex items-start gap-3.5 border-b border-dashed border-rule px-5 py-4">
+          <div className="aspect-square w-1/4 flex-shrink-0 animate-pulse rounded-button bg-rule-soft" />
+          <div className="min-w-0 flex-1">
+            <SkeletonLine width="55%" height={9} className="mb-2" />
+            <SkeletonLine width="85%" height={17} className="mb-2.5" />
+            <SkeletonLine width="70%" height={9} className="mb-2" />
+            <SkeletonLine width="40%" height={9} />
           </div>
-        ))}
-      </div>
-    </>
+        </div>
+      ))}
+    </div>
   );
 }
