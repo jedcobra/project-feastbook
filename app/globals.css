@@ -2,7 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The palette, as RGB triplets for tailwind.config.ts. Light is the
+   original "Cream" design; dark keeps the same ink-and-paper character with
+   the two swapped: a deep indigo page and cream type. */
 @layer base {
+  :root {
+    --c-cream: 244 238 221;
+    --c-cream-deep: 237 228 201;
+    --c-cream-surface: 251 246 230;
+    --c-ink: 35 36 89;
+    --c-ink-soft: 58 60 122;
+    --c-ink-mute: 139 138 175;
+    --c-rule: 207 196 156;
+    --c-rule-soft: 224 215 180;
+    --c-accent: 209 62 62;
+    --c-accent-2: 46 110 90;
+    --c-accent-3: 176 122 31;
+    --c-highlight: 242 226 122;
+    --c-tag: 235 225 186;
+    --c-tag-ink: 90 85 52;
+    color-scheme: light;
+  }
+
+  :root.dark {
+    --c-cream: 22 22 43;
+    --c-cream-deep: 31 31 59;
+    --c-cream-surface: 32 32 63;
+    --c-ink: 238 231 211;
+    --c-ink-soft: 207 201 230;
+    --c-ink-mute: 141 140 180;
+    --c-rule: 69 68 107;
+    --c-rule-soft: 46 45 82;
+    --c-accent: 239 106 95;
+    --c-accent-2: 93 181 150;
+    --c-accent-3: 217 165 72;
+    --c-highlight: 92 84 40;
+    --c-tag: 44 43 79;
+    --c-tag-ink: 217 207 159;
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-cream text-ink font-mono text-body antialiased;
   }

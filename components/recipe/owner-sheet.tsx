@@ -67,7 +67,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
 
   return (
     <div
-      className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30 print:hidden"
+      className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30 print:hidden"
       onClick={onClose}
     >
       <div

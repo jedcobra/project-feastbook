@@ -97,7 +97,7 @@ export function AvatarCropper({ file, onCancel, onCropped }: AvatarCropperProps)
   };
 
   return (
-    <div className="fixed inset-0 z-30 mx-auto flex max-w-column flex-col justify-end bg-ink/40" onClick={onCancel}>
+    <div className="fixed inset-0 z-30 mx-auto flex max-w-column flex-col justify-end bg-night/40" onClick={onCancel}>
       <div onClick={(e) => e.stopPropagation()} className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4">
         <h3 className="mb-3 font-display text-[17px] font-bold text-ink">Crop photo</h3>
         <div

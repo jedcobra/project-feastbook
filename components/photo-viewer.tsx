@@ -22,7 +22,7 @@ export function PhotoViewer({ src, alt = '', onClose }: { src: string; alt?: str
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-30 mx-auto flex max-w-column items-center justify-center bg-ink/95 p-4"
+      className="fixed inset-0 z-30 mx-auto flex max-w-column items-center justify-center bg-night/95 p-4"
       onClick={(e) => {
         e.stopPropagation();
         onClose();
@@ -35,7 +35,7 @@ export function PhotoViewer({ src, alt = '', onClose }: { src: string; alt?: str
           onClose();
         }}
         aria-label="Close"
-        className="absolute right-5 top-6 flex h-8 w-8 items-center justify-center rounded-full border border-cream text-cream"
+        className="absolute right-5 top-6 flex h-8 w-8 items-center justify-center rounded-full border border-paper text-paper"
       >
         <XIcon size={14} />
       </button>

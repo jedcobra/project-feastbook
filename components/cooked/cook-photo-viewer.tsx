@@ -84,7 +84,7 @@ export function CookPhotoViewer({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-30 mx-auto flex max-w-column flex-col bg-ink/40"
+      className="fixed inset-0 z-30 mx-auto flex max-w-column flex-col bg-night/40"
       onClick={(e) => {
         e.stopPropagation();
         onClose();

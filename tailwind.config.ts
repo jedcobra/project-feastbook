@@ -9,36 +9,43 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Every theme colour is an RGB triplet in a CSS variable (globals.css),
+      // so dark mode swaps the whole palette at once and opacity modifiers
+      // (bg-ink/30) keep working. `night` and `paper` are the light theme's
+      // ink and cream, fixed in both themes, for things that stay dark
+      // either way: popup backdrops, the full-screen photo view, cooking mode.
       colors: {
         cream: {
-          DEFAULT: '#F4EEDD', // --bg
-          deep: '#EDE4C9', // --bg-deep
-          surface: '#FBF6E6', // --surface
+          DEFAULT: 'rgb(var(--c-cream) / <alpha-value>)', // --bg
+          deep: 'rgb(var(--c-cream-deep) / <alpha-value>)', // --bg-deep
+          surface: 'rgb(var(--c-cream-surface) / <alpha-value>)', // --surface
         },
         ink: {
-          DEFAULT: '#232459', // --ink
-          soft: '#3A3C7A', // --ink-soft
-          mute: '#8B8AAF', // --ink-mute
+          DEFAULT: 'rgb(var(--c-ink) / <alpha-value>)', // --ink
+          soft: 'rgb(var(--c-ink-soft) / <alpha-value>)', // --ink-soft
+          mute: 'rgb(var(--c-ink-mute) / <alpha-value>)', // --ink-mute
         },
         rule: {
-          DEFAULT: '#CFC49C', // --rule
-          soft: '#E0D7B4', // --rule-soft
+          DEFAULT: 'rgb(var(--c-rule) / <alpha-value>)', // --rule
+          soft: 'rgb(var(--c-rule-soft) / <alpha-value>)', // --rule-soft
         },
         accent: {
-          DEFAULT: '#D13E3E', // --accent (vermilion)
-          2: '#2E6E5A', // --accent-2 (forest)
-          3: '#B07A1F', // --accent-3 (mustard)
+          DEFAULT: 'rgb(var(--c-accent) / <alpha-value>)', // --accent (vermilion)
+          2: 'rgb(var(--c-accent-2) / <alpha-value>)', // --accent-2 (forest)
+          3: 'rgb(var(--c-accent-3) / <alpha-value>)', // --accent-3 (mustard)
         },
-        highlight: '#F2E27A',
+        highlight: 'rgb(var(--c-highlight) / <alpha-value>)',
         tag: {
-          DEFAULT: '#EBE1BA', // --tag-bg
-          ink: '#5A5534', // --tag-ink
+          DEFAULT: 'rgb(var(--c-tag) / <alpha-value>)', // --tag-bg
+          ink: 'rgb(var(--c-tag-ink) / <alpha-value>)', // --tag-ink
         },
+        night: 'rgb(35 36 89 / <alpha-value>)',
+        paper: 'rgb(244 238 221 / <alpha-value>)',
       },
       borderColor: {
         rule: {
-          DEFAULT: '#CFC49C',
-          soft: '#E0D7B4',
+          DEFAULT: 'rgb(var(--c-rule) / <alpha-value>)',
+          soft: 'rgb(var(--c-rule-soft) / <alpha-value>)',
         },
       },
       fontFamily: {

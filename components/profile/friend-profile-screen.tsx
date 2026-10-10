@@ -169,7 +169,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
 
       {menuOpen && (
         <div
-          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30"
+          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30"
           onClick={() => setMenuOpen(false)}
         >
           <div

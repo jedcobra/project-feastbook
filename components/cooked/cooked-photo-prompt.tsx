@@ -64,7 +64,7 @@ export function CookedPhotoPrompt({
 
   return (
     <div
-      className="fixed inset-0 z-40 mx-auto flex max-w-column flex-col justify-end bg-ink/30"
+      className="fixed inset-0 z-40 mx-auto flex max-w-column flex-col justify-end bg-night/30"
       onClick={() => !busy && onClose(false)}
     >
       <div

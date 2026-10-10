@@ -108,14 +108,14 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
 
       {photoOpen && person.avatarUrl && (
         <div
-          className="fixed inset-0 z-30 mx-auto flex max-w-column items-center justify-center bg-ink/85 p-8"
+          className="fixed inset-0 z-30 mx-auto flex max-w-column items-center justify-center bg-night/85 p-8"
           onClick={() => setPhotoOpen(false)}
         >
           <button
             type="button"
             onClick={() => setPhotoOpen(false)}
             aria-label="Close"
-            className="absolute right-5 top-6 flex h-8 w-8 items-center justify-center rounded-full border border-cream text-cream"
+            className="absolute right-5 top-6 flex h-8 w-8 items-center justify-center rounded-full border border-paper text-paper"
           >
             <XIcon size={14} />
           </button>
@@ -123,7 +123,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
           <img
             src={person.avatarUrl}
             alt={`@${person.handle}`}
-            className="aspect-square w-full max-w-sm rounded-full border border-cream object-cover"
+            className="aspect-square w-full max-w-sm rounded-full border border-paper object-cover"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

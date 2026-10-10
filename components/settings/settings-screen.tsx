@@ -12,12 +12,15 @@ import { getServingsPreference, setServingsPreference } from '@/lib/servings-pre
 import { updateDefaultVisibility, updateWhoCanFollow } from '@/lib/supabase/queries';
 import type { NotificationPrefs } from '@/lib/supabase/types';
 import type { Visibility } from '@/lib/types';
+import { getThemePreference, setThemePreference, type ThemePreference } from '@/lib/theme';
 import { getUnitsPreference, setUnitsPreference } from '@/lib/units-preference';
 import { VISIBILITY_OPTIONS, visibilityLabel } from '@/lib/visibility';
 
 const UNIT_LABEL: Record<UnitSystem, string> = { original: 'As written', metric: 'Metric', imperial: 'Imperial' };
 const NEXT_UNIT: Record<UnitSystem, UnitSystem> = { original: 'metric', metric: 'imperial', imperial: 'original' };
 const SERVINGS_OPTIONS = [2, 4, 6, 8];
+const THEME_LABEL: Record<ThemePreference, string> = { light: 'Light', dark: 'Dark', system: 'Match phone' };
+const NEXT_THEME: Record<ThemePreference, ThemePreference> = { light: 'dark', dark: 'system', system: 'light' };
 
 function summarizePrefs(prefs: NotificationPrefs): string {
   const labels: [keyof NotificationPrefs, string][] = [
@@ -39,6 +42,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const [awake, setAwake] = useState(true);
   const [units, setUnits] = useState<UnitSystem>('original');
+  const [theme, setTheme] = useState<ThemePreference>('light');
   const [servingsDefault, setServingsDefault] = useState<number | null>(null);
   const [visibilityPickerOpen, setVisibilityPickerOpen] = useState(false);
   const [servingsPickerOpen, setServingsPickerOpen] = useState(false);
@@ -46,6 +50,7 @@ export function SettingsScreen() {
   useEffect(() => {
     setAwake(getKeepAwake());
     setUnits(getUnitsPreference());
+    setTheme(getThemePreference());
     setServingsDefault(getServingsPreference());
   }, []);
 
@@ -53,6 +58,12 @@ export function SettingsScreen() {
     const next = !awake;
     setAwake(next);
     setKeepAwake(next);
+  };
+
+  const cycleTheme = () => {
+    const next = NEXT_THEME[theme];
+    setTheme(next);
+    setThemePreference(next);
   };
 
   const cycleUnits = () => {
@@ -96,6 +107,11 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
+          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Appearance</Label>
+          <SettingRow label="Theme" value={THEME_LABEL[theme]} onClick={cycleTheme} first />
+        </div>
+
+        <div className="mb-[22px]">
           <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Cooking</Label>
           <SettingRow label="Units" value={UNIT_LABEL[units]} onClick={cycleUnits} first />
           <SettingRow label="Keep screen awake while cooking" value={awake ? 'On' : 'Off'} onClick={toggleAwake} />
@@ -134,7 +150,7 @@ export function SettingsScreen() {
 
       {visibilityPickerOpen && (
         <div
-          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30"
+          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30"
           onClick={() => setVisibilityPickerOpen(false)}
         >
           <div
@@ -182,7 +198,7 @@ export function SettingsScreen() {
 
       {servingsPickerOpen && (
         <div
-          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30"
+          className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30"
           onClick={() => setServingsPickerOpen(false)}
         >
           <div

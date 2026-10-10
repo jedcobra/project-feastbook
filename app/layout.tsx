@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { DismissKeyboardOnScroll } from '@/components/dismiss-keyboard-on-scroll';
+import { ThemeSync } from '@/components/theme-sync';
 import { display, mono } from '@/lib/fonts';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -24,8 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    // suppressHydrationWarning: the theme script below adds the `dark` class
+    // before React hydrates, so the server's class list won't match.
+    <html lang="en" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
+        <ThemeSync />
         <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
           <DismissKeyboardOnScroll />
           <AuthProvider>

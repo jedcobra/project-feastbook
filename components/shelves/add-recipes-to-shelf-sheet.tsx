@@ -59,7 +59,7 @@ export function AddRecipesToShelfSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-ink/30" onClick={onClose}>
+    <div className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="flex max-h-[80vh] flex-col rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
