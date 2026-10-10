@@ -43,30 +43,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
 
   return (
     <div>
-      <div className="mb-2.5 flex items-baseline justify-between">
-        <Label>Ingredients</Label>
-        {servings > 0 && (
-          <div className="flex items-center gap-1.5 print:hidden">
-            <button
-              type="button"
-              onClick={() => setTargetServings((s) => Math.max(1, s - 1))}
-              aria-label="Fewer servings"
-              className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
-            >
-              −
-            </button>
-            <span className="font-mono text-[12px] text-ink-mute">Serves {targetServings}</span>
-            <button
-              type="button"
-              onClick={() => setTargetServings((s) => s + 1)}
-              aria-label="More servings"
-              className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
-            >
-              +
-            </button>
-          </div>
-        )}
-      </div>
+      <Label className="mb-2.5">Ingredients</Label>
 
       <div className="mb-2 flex gap-1.5 print:hidden">
         {UNIT_OPTIONS.map((o) => (
@@ -83,7 +60,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
         ))}
       </div>
 
-      <div className="mb-3 flex gap-1.5 print:hidden">
+      <div className={`${servings > 0 ? 'mb-2' : 'mb-3'} flex gap-1.5 print:hidden`}>
         {DIET_OPTIONS.map((o) => (
           <button
             key={o.id}
@@ -97,6 +74,28 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
           </button>
         ))}
       </div>
+
+      {servings > 0 && (
+        <div className="mb-3 flex items-center gap-1.5 print:hidden">
+          <button
+            type="button"
+            onClick={() => setTargetServings((s) => Math.max(1, s - 1))}
+            aria-label="Fewer servings"
+            className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
+          >
+            −
+          </button>
+          <span className="font-mono text-[12px] text-ink-mute">Serves {targetServings}</span>
+          <button
+            type="button"
+            onClick={() => setTargetServings((s) => s + 1)}
+            aria-label="More servings"
+            className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
+          >
+            +
+          </button>
+        </div>
+      )}
       {dietMode !== 'original' && (
         <div className="mb-3 font-mono text-[12px] leading-snug text-ink-mute print:hidden">
           Suggested swaps only — you may need to adjust cook time or technique for what you use instead.
