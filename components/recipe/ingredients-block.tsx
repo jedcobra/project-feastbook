@@ -51,16 +51,16 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
               type="button"
               onClick={() => setTargetServings((s) => Math.max(1, s - 1))}
               aria-label="Fewer servings"
-              className="flex h-5 w-5 items-center justify-center rounded border border-ink font-mono text-[13px] leading-none text-ink"
+              className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
             >
               −
             </button>
-            <span className="font-mono text-[11px] text-ink-mute">Serves {targetServings}</span>
+            <span className="font-mono text-[12px] text-ink-mute">Serves {targetServings}</span>
             <button
               type="button"
               onClick={() => setTargetServings((s) => s + 1)}
               aria-label="More servings"
-              className="flex h-5 w-5 items-center justify-center rounded border border-ink font-mono text-[13px] leading-none text-ink"
+              className="flex h-7 w-7 items-center justify-center rounded border border-ink font-mono text-[16px] leading-none text-ink"
             >
               +
             </button>
@@ -68,13 +68,13 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
         )}
       </div>
 
-      <div className="mb-2 flex gap-1 print:hidden">
+      <div className="mb-2 flex gap-1.5 print:hidden">
         {UNIT_OPTIONS.map((o) => (
           <button
             key={o.id}
             type="button"
             onClick={() => setUnitSystem(o.id)}
-            className={`rounded border border-ink px-2 py-[3px] font-mono text-[10.5px] ${
+            className={`rounded border border-ink px-2.5 py-2 font-mono text-[12px] leading-none ${
               unitSystem === o.id ? 'bg-ink text-cream' : 'bg-transparent text-ink'
             }`}
           >
@@ -83,13 +83,13 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
         ))}
       </div>
 
-      <div className="mb-3 flex gap-1 print:hidden">
+      <div className="mb-3 flex gap-1.5 print:hidden">
         {DIET_OPTIONS.map((o) => (
           <button
             key={o.id}
             type="button"
             onClick={() => setDietMode(o.id)}
-            className={`rounded border px-2 py-[3px] font-mono text-[10.5px] ${
+            className={`rounded border px-2.5 py-2 font-mono text-[12px] leading-none ${
               dietMode === o.id ? 'border-accent-2 bg-accent-2 text-cream' : 'border-accent-2 text-accent-2'
             }`}
           >
