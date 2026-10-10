@@ -124,7 +124,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
                   noTopBorder ? '' : 'border-t border-dotted border-rule'
                 } ${done ? 'opacity-40' : 'opacity-100'}`}
               >
-                <Checkbox checked={done} className="mt-0.5" />
+                <Checkbox checked={done} size={18} />
                 <span className="w-20 flex-shrink-0 font-mono text-[11px] leading-snug text-ink-mute">
                   {displayQuantity}
                 </span>
