@@ -156,9 +156,11 @@ export function CookPhotoViewer({
                 disabled={!profile}
                 aria-pressed={photo.kissedByMe}
                 aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
-                className={photo.kissedByMe ? 'text-accent' : 'text-ink'}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border border-ink transition-colors ${
+                  photo.kissedByMe ? 'bg-ink text-cream' : 'bg-transparent text-ink'
+                }`}
               >
-                <ChefKissIcon size={17} weight={1.1} filled={photo.kissedByMe} />
+                <ChefKissIcon size={14} weight={0.9} />
               </button>
               <span className="font-mono text-[14px] font-semibold text-ink">{kissLabel(photo.kisses)}</span>
             </div>
