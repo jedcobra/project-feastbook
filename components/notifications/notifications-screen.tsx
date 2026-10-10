@@ -49,7 +49,7 @@ function describe(n: AppNotification): string {
     case 'kiss':
       return 'added a kiss to your photo';
     case 'photo_comment':
-      return 'commented on your photo of';
+      return 'commented on your photo';
     case 'digest':
       return n.excerpt ?? 'Weekly digest';
     default:
@@ -216,7 +216,7 @@ export function NotificationsScreen() {
                           <div className="font-mono text-[14px] leading-[1.45] text-ink">
                             {n.actorHandle && <span className="font-semibold">@{n.actorHandle} </span>}
                             <span className="text-ink-mute">{describe(n)}</span>
-                            {n.recipeTitle && n.kind !== 'kiss' && <span> {n.recipeTitle}</span>}
+                            {n.recipeTitle && !n.cookPhotoId && <span> {n.recipeTitle}</span>}
                           </div>
                           {n.excerpt && n.kind !== 'digest' && (
                             <div className="mt-1 border-l border-dashed border-rule pl-2.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
