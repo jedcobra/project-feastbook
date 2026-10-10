@@ -12,6 +12,7 @@ import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { TopBar } from '@/components/top-bar';
 import {
   blockUser,
+  fetchCookbookOrder,
   fetchCookedRecipes,
   fetchProfileByHandle,
   isBlockedByMe,
@@ -32,6 +33,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
+  const [recipeOrder, setRecipeOrder] = useState<string[]>([]);
 
   // A link to your own @handle — from a comment, an activity row, search,
   // wherever — should land you on your own Cookbook (with Edit/Share and
@@ -48,7 +50,9 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   }, [handle]);
 
   useEffect(() => {
-    if (data) fetchCookedRecipes(data.person.id).then(setCookedRecipes);
+    if (!data) return;
+    fetchCookedRecipes(data.person.id).then(setCookedRecipes);
+    fetchCookbookOrder(data.person.id).then(setRecipeOrder);
   }, [data]);
 
   useEffect(() => {
@@ -158,6 +162,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
           cookedRecipes={cookedRecipes}
           firstName={data.person.name.split(' ')[0]}
           isOwn={false}
+          recipeOrder={recipeOrder}
         />
       </div>
 

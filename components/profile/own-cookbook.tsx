@@ -8,9 +8,11 @@ import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import {
   fetchArchivedShelves,
+  fetchCookbookOrder,
   fetchCookedRecipes,
   fetchProfileByHandle,
   fetchSavedRecipes,
+  saveCookbookOrder,
 } from '@/lib/supabase/queries';
 import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
 
@@ -21,6 +23,7 @@ export function OwnCookbook() {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
   const [archivedShelfCount, setArchivedShelfCount] = useState(0);
+  const [recipeOrder, setRecipeOrder] = useState<string[]>([]);
 
   useEffect(() => {
     if (!profile) {
@@ -28,12 +31,14 @@ export function OwnCookbook() {
       setSavedRecipes([]);
       setCookedRecipes([]);
       setArchivedShelfCount(0);
+      setRecipeOrder([]);
       return;
     }
     fetchProfileByHandle(profile.handle).then(setData);
     fetchSavedRecipes(profile.id).then(setSavedRecipes);
     fetchCookedRecipes(profile.id).then(setCookedRecipes);
     fetchArchivedShelves(profile.id).then((rows) => setArchivedShelfCount(rows.length));
+    fetchCookbookOrder(profile.id).then(setRecipeOrder);
   }, [profile]);
 
   if (loading) {
@@ -87,6 +92,11 @@ export function OwnCookbook() {
         archivedShelfCount={archivedShelfCount}
         firstName={data.person.name.split(' ')[0]}
         isOwn
+        recipeOrder={recipeOrder}
+        onReorderRecipes={(ids) => {
+          setRecipeOrder(ids);
+          void saveCookbookOrder(profile.id, ids);
+        }}
         onRecipeDeleted={(recipeId) =>
           setData((cur) => (cur ? { ...cur, recipes: cur.recipes.filter((r) => r.id !== recipeId) } : cur))
         }

@@ -496,7 +496,7 @@ export async function fetchProfileByHandle(handle: string) {
 
   const [stats, { data: recipeRows }, { data: shelfRows }] = await Promise.all([
     fetchProfileStatsByIds([profileRow.id]),
-    supabase.from('recipes').select('*').eq('author_id', profileRow.id),
+    supabase.from('recipes').select('*').eq('author_id', profileRow.id).order('created_at', { ascending: false }),
     supabase
       .from('shelves')
       .select('id, title, subtitle, visibility, shelf_recipes(recipe_id, position, recipes(title))')
@@ -555,6 +555,36 @@ export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
     .in('id', saveRows.map((s) => s.recipe_id));
   const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
   return saveRows.map((s) => recipeById.get(s.recipe_id)).filter((r): r is Recipe => !!r);
+}
+
+// The owner's own arrangement of their cookbook's Recipes list, as recipe
+// ids in order. Recipes they haven't placed yet aren't in it — see
+// sortByCookbookOrder for where those land.
+export async function fetchCookbookOrder(ownerId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('cookbook_order')
+    .select('recipe_id')
+    .eq('owner_id', ownerId)
+    .order('position', { ascending: true });
+  if (error || !data) {
+    if (error) console.error('fetchCookbookOrder', error);
+    return [];
+  }
+  return data.map((r: { recipe_id: string }) => r.recipe_id);
+}
+
+export async function saveCookbookOrder(ownerId: string, recipeIds: string[]): Promise<boolean> {
+  const { error } = await supabase
+    .from('cookbook_order')
+    .upsert(
+      recipeIds.map((recipeId, position) => ({ owner_id: ownerId, recipe_id: recipeId, position })),
+      { onConflict: 'owner_id,recipe_id' },
+    );
+  if (error) {
+    console.error('saveCookbookOrder', error);
+    return false;
+  }
+  return true;
 }
 
 // Recipes a user has marked "I cooked it" on (see postComment's `cooked`

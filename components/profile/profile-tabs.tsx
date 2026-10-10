@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronIcon, DragIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { OutlineBox } from '@/components/outline-box';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
+import { moveItem, sortByCookbookOrder } from '@/lib/cookbook-order';
 import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
@@ -19,6 +21,8 @@ export function ProfileTabs({
   archivedShelfCount = 0,
   firstName,
   isOwn,
+  recipeOrder = [],
+  onReorderRecipes,
   onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
@@ -30,6 +34,8 @@ export function ProfileTabs({
   archivedShelfCount?: number;
   firstName: string;
   isOwn: boolean;
+  recipeOrder?: string[];
+  onReorderRecipes?: (recipeIds: string[]) => void;
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
@@ -66,6 +72,8 @@ export function ProfileTabs({
           recipes={recipes}
           savedRecipes={savedRecipes}
           isOwn={isOwn}
+          recipeOrder={recipeOrder}
+          onReorder={isOwn ? onReorderRecipes : undefined}
           onRecipeDeleted={onRecipeDeleted}
         />
       )}
@@ -242,33 +250,118 @@ function DeleteShelfConfirm({
   );
 }
 
+const LONG_PRESS_MS = 450;
+const PRESS_MOVE_TOLERANCE = 8;
+
 // Authored recipes and recipes saved from other cooks, in one list — a
 // saved-from-someone-else row carries a heart badge with their handle
 // instead of a saves count, rather than living in a separate tab. Own
 // authored rows can be swiped left to delete; saved rows and anyone else's
-// cookbook aren't yours to delete from here.
+// cookbook aren't yours to delete from here. In your own cookbook a long
+// press switches the list into reorder mode: rows stop being links, each
+// gets a drag handle, and every drop is saved as the cookbook's order.
 function RecipesTab({
   recipes,
   savedRecipes,
   isOwn,
+  recipeOrder,
+  onReorder,
   onRecipeDeleted,
 }: {
   recipes: Recipe[];
   savedRecipes: Recipe[];
   isOwn: boolean;
+  recipeOrder: string[];
+  onReorder?: (recipeIds: string[]) => void;
   onRecipeDeleted?: (recipeId: string) => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  // Non-null while reordering: the live order, ahead of what's saved.
+  const [reorderIds, setReorderIds] = useState<string[] | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const reorderIdsRef = useRef<string[] | null>(null);
+  const dragStartIds = useRef<string[]>([]);
+  const rowEls = useRef(new Map<string, HTMLDivElement>());
+  const press = useRef<{ timer: ReturnType<typeof setTimeout>; x: number; y: number } | null>(null);
+
+  reorderIdsRef.current = reorderIds;
 
   // Saving your own recipe to one of your own shelves (the shelf "Add
   // recipes" picker allows this) marks it saved without un-authoring it —
   // without this filter it'd show up twice, once from each list.
   const ownIds = new Set(recipes.map((r) => r.id));
-  const rows = [
-    ...recipes.map((r) => ({ recipe: r, saved: false })),
-    ...savedRecipes.filter((r) => !ownIds.has(r.id)).map((r) => ({ recipe: r, saved: true })),
-  ];
+  const sortedRows = sortByCookbookOrder(
+    [
+      ...recipes.map((r) => ({ recipe: r, saved: false })),
+      ...savedRecipes.filter((r) => !ownIds.has(r.id)).map((r) => ({ recipe: r, saved: true })),
+    ],
+    (row) => row.recipe.id,
+    recipeOrder,
+  );
+  const rowById = new Map(sortedRows.map((row) => [row.recipe.id, row]));
+  const rows = reorderIds
+    ? reorderIds.map((id) => rowById.get(id)).filter((row): row is (typeof sortedRows)[number] => !!row)
+    : sortedRows;
+
+  // While a row is held, follow the pointer on the window rather than the
+  // handle: reordering moves the row's DOM node, which would drop any
+  // pointer capture taken on the handle itself.
+  useEffect(() => {
+    if (!draggingId) return;
+    const onMove = (e: PointerEvent) => {
+      const ids = reorderIdsRef.current;
+      if (!ids) return;
+      const others = ids.filter((id) => id !== draggingId);
+      let target = 0;
+      for (const id of others) {
+        const rect = rowEls.current.get(id)?.getBoundingClientRect();
+        if (rect && rect.top + rect.height / 2 < e.clientY) target++;
+      }
+      const from = ids.indexOf(draggingId);
+      if (target !== from) setReorderIds(moveItem(ids, from, target));
+    };
+    const onUp = () => {
+      setDraggingId(null);
+      const ids = reorderIdsRef.current;
+      if (ids && ids.join() !== dragStartIds.current.join()) onReorder?.(ids);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [draggingId, onReorder]);
+
+  useEffect(() => () => clearPress(), []);
+
+  function clearPress() {
+    if (press.current) clearTimeout(press.current.timer);
+    press.current = null;
+  }
+
+  const startPress = (e: React.PointerEvent) => {
+    if (!onReorder || e.button !== 0) return;
+    clearPress();
+    press.current = {
+      x: e.clientX,
+      y: e.clientY,
+      timer: setTimeout(() => {
+        press.current = null;
+        setOpenId(null);
+        setReorderIds(sortedRows.map((row) => row.recipe.id));
+        navigator.vibrate?.(15);
+      }, LONG_PRESS_MS),
+    };
+  };
+
+  const movePress = (e: React.PointerEvent) => {
+    const p = press.current;
+    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > PRESS_MOVE_TOLERANCE) clearPress();
+  };
 
   if (rows.length === 0) {
     return (
@@ -282,6 +375,70 @@ function RecipesTab({
 
   const confirmingRecipe = confirmingId ? recipes.find((r) => r.id === confirmingId) : undefined;
 
+  const rowBody = (r: Recipe, saved: boolean) => (
+    <>
+      {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2.5">
+          <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
+          {saved ? (
+            <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
+              <HeartIcon size={10} />@{r.author}
+            </span>
+          ) : (
+            <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>
+          )}
+        </div>
+        <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
+          <span>{r.time}</span>
+          <span>·</span>
+          <span>{r.madeIt} cooked</span>
+          <span>·</span>
+          <span>{r.difficulty}</span>
+        </div>
+      </div>
+    </>
+  );
+
+  if (reorderIds) {
+    return (
+      <div className="mx-5 select-none pb-8">
+        <div className="flex items-center justify-between gap-3 border-b border-dashed border-rule py-2.5">
+          <span className="font-mono text-meta text-ink-mute">Drag a recipe up or down</span>
+          <OutlineBox compact filled onClick={() => setReorderIds(null)}>
+            Done
+          </OutlineBox>
+        </div>
+        {rows.map(({ recipe: r, saved }) => (
+          <div
+            key={r.id}
+            ref={(el) => {
+              if (el) rowEls.current.set(r.id, el);
+              else rowEls.current.delete(r.id);
+            }}
+            className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+              draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
+            }`}
+          >
+            {rowBody(r, saved)}
+            <button
+              type="button"
+              aria-label={`Move ${r.title}`}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                dragStartIds.current = reorderIds;
+                setDraggingId(r.id);
+              }}
+              className="-mr-1 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"
+            >
+              <DragIcon size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-5 pb-8">
       {rows.map(({ recipe: r, saved }) => {
@@ -290,47 +447,49 @@ function RecipesTab({
             href={`/recipe/${r.id}`}
             className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
           >
-            {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-2.5">
-                <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-                {saved ? (
-                  <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
-                    <HeartIcon size={10} />@{r.author}
-                  </span>
-                ) : (
-                  <span className="flex-shrink-0 font-mono text-meta text-ink-mute">{r.saves} saves</span>
-                )}
-              </div>
-              <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
-                <span>{r.time}</span>
-                <span>·</span>
-                <span>{r.madeIt} cooked</span>
-                <span>·</span>
-                <span>{r.difficulty}</span>
-              </div>
-            </div>
+            {rowBody(r, saved)}
           </Link>
         );
 
-        if (!isOwn || saved) return <div key={r.id}>{row}</div>;
+        // Long press only in your own cookbook; also stops iOS's link
+        // preview and Android's context menu from claiming the hold.
+        const pressable = onReorder
+          ? {
+              onPointerDown: startPress,
+              onPointerMove: movePress,
+              onPointerUp: clearPress,
+              onPointerCancel: clearPress,
+              onPointerLeave: clearPress,
+              onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+              className: 'select-none [-webkit-touch-callout:none]',
+            }
+          : {};
+
+        if (!isOwn || saved) {
+          return (
+            <div key={r.id} {...pressable}>
+              {row}
+            </div>
+          );
+        }
 
         return (
-          <SwipeableRow
-            key={r.id}
-            open={openId === r.id}
-            onOpen={() => setOpenId(r.id)}
-            onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
-            actions={[
-              {
-                label: 'Delete',
-                className: 'bg-accent',
-                onClick: () => setConfirmingId(r.id),
-              },
-            ]}
-          >
-            {row}
-          </SwipeableRow>
+          <div key={r.id} {...pressable}>
+            <SwipeableRow
+              open={openId === r.id}
+              onOpen={() => setOpenId(r.id)}
+              onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
+              actions={[
+                {
+                  label: 'Delete',
+                  className: 'bg-accent',
+                  onClick: () => setConfirmingId(r.id),
+                },
+              ]}
+            >
+              {row}
+            </SwipeableRow>
+          </div>
         );
       })}
 
