@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
+import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { CameraIcon, HeartIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
@@ -195,51 +196,51 @@ export function NotesScreen({ id }: { id: string }) {
               </button>
             </div>
           )}
-          {!replyTo && cookedMark && (
-            <div className="mb-2 flex items-center gap-2">
-              {photoUrl ? (
-                <div className="relative h-11 w-11 flex-shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setPhotoUrl('')}
-                    aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-ink bg-cream text-ink"
-                  >
-                    <XIcon size={8} />
-                  </button>
-                </div>
-              ) : (
+          {!replyTo && cookedMark && photoUrl && (
+            <div className="relative mb-2 h-16 w-16">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
+              <button
+                type="button"
+                onClick={() => setPhotoUrl('')}
+                aria-label="Remove photo"
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ink bg-cream text-ink"
+              >
+                <XIcon size={10} />
+              </button>
+            </div>
+          )}
+          <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
+            {/* Only people who've cooked it can attach a photo of theirs. */}
+            {!replyTo && cookedMark && (
+              <>
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoUploading}
-                  className="flex items-center gap-1.5 font-mono text-[12px] text-ink-mute disabled:opacity-60"
+                  aria-label="Add a photo of it"
+                  className="flex-shrink-0 pb-[7px] text-ink-mute disabled:opacity-60"
                 >
-                  <CameraIcon size={14} />
-                  {photoUploading ? 'Uploading…' : 'Add a photo of it'}
+                  <CameraIcon size={18} />
                 </button>
-              )}
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  void handlePhotoFile(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-            </div>
-          )}
-          <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
-            <textarea
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    void handlePhotoFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </>
+            )}
+            <AutoGrowTextarea
               value={draft}
               rows={1}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={replyTo ? 'Write a reply…' : 'Leave a note…'}
-              className="max-h-28 flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none"
+              placeholder={photoUploading ? 'Uploading photo…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
+              className="max-h-[40dvh] flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none"
             />
             <button
               type="button"

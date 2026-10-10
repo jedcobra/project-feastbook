@@ -1,3 +1,4 @@
+import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Label } from '@/components/label';
 
 interface FieldProps {
@@ -46,7 +47,7 @@ export function Field({
         <Label className="text-[11px]">{label}</Label>
       </div>
       {multiline ? (
-        <textarea
+        <AutoGrowTextarea
           rows={rows}
           value={value}
           placeholder={placeholder}

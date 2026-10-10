@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { PencilIcon } from '@/components/icons';
 import { Label } from '@/components/label';
@@ -28,15 +29,7 @@ export function CommentsBlock({
   const [draft, setDraft] = useState('');
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const total = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
-
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, [draft]);
 
   const handlePost = async () => {
     if (!draft.trim() || !profile || posting) return;
@@ -93,8 +86,7 @@ export function CommentsBlock({
       {profile ? (
         <div className="mt-3.5 flex items-end gap-2 rounded-button border border-dashed border-rule px-3 py-2.5">
           <PencilIcon size={15} className="mb-[4px] flex-shrink-0 text-ink-mute" />
-          <textarea
-            ref={textareaRef}
+          <AutoGrowTextarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -105,7 +97,7 @@ export function CommentsBlock({
             }}
             placeholder={total === 0 ? 'Leave the first note…' : 'Leave a note…'}
             rows={1}
-            className="max-h-32 flex-1 resize-none overflow-y-auto border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none placeholder:text-ink-mute"
+            className="flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none placeholder:text-ink-mute"
           />
           <button
             type="button"
