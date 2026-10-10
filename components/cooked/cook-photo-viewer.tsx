@@ -7,7 +7,6 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { ChefKissIcon, XIcon } from '@/components/icons';
-import { OutlineBox } from '@/components/outline-box';
 import {
   deleteCookPhoto,
   deleteCookPhotoComment,
@@ -154,20 +153,18 @@ export function CookPhotoViewer({
 
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
-              {/* The app's usual toggle button, like Cooked it: outlined, and
-                  inverted to cream-on-ink once you've kissed the photo. */}
-              <OutlineBox
-                compact
-                filled={photo.kissedByMe}
+              {/* Thin lines until you've kissed the photo, bolder once you have. */}
+              <button
+                type="button"
                 onClick={toggleKiss}
                 disabled={!profile}
                 aria-pressed={photo.kissedByMe}
                 aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
+                className="-m-1 p-1 text-ink"
               >
-                <ChefKissIcon size={13} weight={0.9} />
-                {photo.kissedByMe ? 'Kissed' : 'Kiss'}
-              </OutlineBox>
-              <span className="font-mono text-[12px] text-ink-mute">{kissLabel(photo.kisses)}</span>
+                <ChefKissIcon size={16} weight={photo.kissedByMe ? 1.6 : 0.8} />
+              </button>
+              <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
             </div>
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
               <HandleLink handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
