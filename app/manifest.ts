@@ -11,6 +11,9 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'A personal online recipe book — create, curate, and share what you cook.',
     start_url: '/feed',
     display: 'standalone',
+    // Portrait only. Android honours this for the installed app; iOS ignores
+    // it, so components/rotate-notice.tsx covers landscape phones instead.
+    orientation: 'portrait',
     background_color: '#F4EEDD',
     theme_color: '#F4EEDD',
     icons: [

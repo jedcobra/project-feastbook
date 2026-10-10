@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { DismissKeyboardOnScroll } from '@/components/dismiss-keyboard-on-scroll';
+import { RotateNotice } from '@/components/rotate-notice';
 import { ThemeSync } from '@/components/theme-sync';
 import { display, mono } from '@/lib/fonts';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
@@ -34,6 +35,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeSync />
+        <RotateNotice />
         <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
           <DismissKeyboardOnScroll />
           <AuthProvider>

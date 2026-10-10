@@ -143,6 +143,15 @@ export function ChefKissIcon({ filled = false, ...props }: StrokeIconProps & { f
   );
 }
 
+export function PhoneIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="7" y="3" width="10" height="18" rx="2" />
+      <path d="M11 18h2" />
+    </StrokeIcon>
+  );
+}
+
 export function PencilIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
