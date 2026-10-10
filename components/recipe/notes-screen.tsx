@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
-import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
-import { CameraIcon, HeartIcon, XIcon } from '@/components/icons';
+import { HeartIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
+import { NoteComposer } from '@/components/recipe/note-composer';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import { TopBar } from '@/components/top-bar';
 import {
@@ -17,7 +17,6 @@ import {
   toggleCommentLike,
   updateComment,
 } from '@/lib/supabase/queries';
-import { uploadPhoto } from '@/lib/supabase/storage';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
 
 type Filter = 'all' | 'cooked' | 'questions';
@@ -36,8 +35,6 @@ export function NotesScreen({ id }: { id: string }) {
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState('');
-  const [photoUploading, setPhotoUploading] = useState(false);
-  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchRecipeFull(id, profile?.id ?? null).then(setData);
@@ -73,7 +70,6 @@ export function NotesScreen({ id }: { id: string }) {
   }
 
   const { recipe } = data;
-  const canAttachPhoto = !!editing || !!replyTo || cookedMark;
   const total = recipe.comments.reduce((n, c) => n + 1 + c.replies.length, 0);
   const shown = recipe.comments.filter((c) =>
     filter === 'all' ? true : filter === 'cooked' ? c.cooked : c.isQuestion,
@@ -155,7 +151,7 @@ export function NotesScreen({ id }: { id: string }) {
         parentId: replyTo?.id,
         cooked: !replyTo && cookedMark,
         recipeAuthorId: data.author.id,
-        photoUrl: canAttachPhoto ? photoUrl || undefined : undefined,
+        photoUrl: photoUrl || undefined,
       });
     } catch (err) {
       console.error('handlePost', err);
@@ -173,18 +169,6 @@ export function NotesScreen({ id }: { id: string }) {
     }
   };
 
-  const handlePhotoFile = async (file: File | undefined) => {
-    if (!file || !profile) return;
-    setPostError(null);
-    setPhotoUploading(true);
-    const result = await uploadPhoto(profile.id, file, 'cooked');
-    setPhotoUploading(false);
-    if ('error' in result) {
-      setPostError(result.error);
-      return;
-    }
-    setPhotoUrl(result.url);
-  };
 
   return (
     <>
@@ -273,66 +257,19 @@ export function NotesScreen({ id }: { id: string }) {
               </button>
             </div>
           )}
-          {canAttachPhoto && photoUrl && (
-            <div className="relative mb-2 h-16 w-16">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl} alt="" className="h-full w-full rounded-button border border-ink object-cover" />
-              <button
-                type="button"
-                onClick={() => setPhotoUrl('')}
-                aria-label="Remove photo"
-                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ink bg-cream text-ink"
-              >
-                <XIcon size={10} />
-              </button>
-            </div>
-          )}
-          <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
-            {/* New top-level notes take a photo only alongside "I cooked
-                it"; replies always can, and any note of yours can gain (or
-                lose) one when you edit it. */}
-            {canAttachPhoto && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  disabled={photoUploading}
-                  aria-label="Add a photo of it"
-                  className="flex flex-shrink-0 pb-[5px] text-ink-mute disabled:opacity-60"
-                >
-                  <CameraIcon size={18} />
-                </button>
-                <input
-                  ref={photoInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    void handlePhotoFile(e.target.files?.[0]);
-                    e.target.value = '';
-                  }}
-                />
-              </>
-            )}
-            <AutoGrowTextarea
-              id={COMPOSER_ID}
-              value={draft}
-              rows={1}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={photoUploading ? 'Uploading photo…' : editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
-              className="max-h-[40dvh] flex-1 resize-none border-none bg-transparent py-1.5 font-mono text-[16px] leading-[1.4] text-ink outline-none"
-            />
-            <button
-              type="button"
-              onClick={handlePost}
-              disabled={!draft.trim() || posting}
-              className={`rounded-button border border-ink px-3 py-1.5 font-mono text-[13px] ${
-                draft.trim() ? 'bg-ink text-cream' : 'bg-transparent text-ink-mute opacity-50'
-              }`}
-            >
-              {editing ? 'Save' : 'Post'}
-            </button>
-          </div>
+          <NoteComposer
+            id={COMPOSER_ID}
+            profileId={profile.id}
+            value={draft}
+            onChange={setDraft}
+            placeholder={editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
+            photoUrl={photoUrl}
+            onPhotoUrlChange={setPhotoUrl}
+            onSubmit={handlePost}
+            submitLabel={editing ? 'Save' : 'Post'}
+            submitting={posting}
+            onError={setPostError}
+          />
         </div>
       )}
     </>

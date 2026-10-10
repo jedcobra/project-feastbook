@@ -3,18 +3,18 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { PencilIcon } from '@/components/icons';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import { Label } from '@/components/label';
+import { NoteComposer } from '@/components/recipe/note-composer';
 import { postComment } from '@/lib/supabase/queries';
 import type { RecipeComment } from '@/lib/types';
 
-// A two-note preview on the detail page itself, with a quick composer right
-// here so leaving a plain note never has to leave the recipe screen. Replies,
-// likes, the cooked-it/questions filters, and attaching a photo still live
-// at the full thread, /recipe/[id]/comments.
+// A two-note preview on the detail page itself, with the same note box as
+// the full thread (photo included) so leaving a note never has to leave the
+// recipe screen. Replies, likes and the cooked-it/questions filters live at
+// the full thread, /recipe/[id]/comments.
 export function CommentsBlock({
   recipeId,
   authorId,
@@ -28,6 +28,7 @@ export function CommentsBlock({
 }) {
   const { profile } = useAuth();
   const [draft, setDraft] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const total = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
@@ -36,11 +37,15 @@ export function CommentsBlock({
     if (!draft.trim() || !profile || posting) return;
     setPosting(true);
     setError(null);
-    const comment = await postComment(profile.id, recipeId, draft.trim(), { recipeAuthorId: authorId });
+    const comment = await postComment(profile.id, recipeId, draft.trim(), {
+      recipeAuthorId: authorId,
+      photoUrl: photoUrl || undefined,
+    });
     setPosting(false);
     if (comment) {
       onPosted(comment);
       setDraft('');
+      setPhotoUrl('');
     } else {
       setError("Couldn't post that — check your connection and try again.");
     }
@@ -85,29 +90,19 @@ export function CommentsBlock({
       ))}
 
       {profile ? (
-        <div className="mt-3.5 flex items-end gap-2 rounded-button border border-dashed border-rule px-3 py-2.5">
-          <PencilIcon size={15} className="mb-[4px] flex-shrink-0 text-ink-mute" />
-          <AutoGrowTextarea
+        <div className="mt-3.5">
+          <NoteComposer
+            profileId={profile.id}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handlePost();
-              }
-            }}
+            onChange={setDraft}
             placeholder={total === 0 ? 'Leave the first note…' : 'Leave a note…'}
-            rows={1}
-            className="flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none placeholder:text-ink-mute"
+            photoUrl={photoUrl}
+            onPhotoUrlChange={setPhotoUrl}
+            onSubmit={handlePost}
+            submitting={posting}
+            onError={setError}
+            maxHeightClassName=""
           />
-          <button
-            type="button"
-            onClick={handlePost}
-            disabled={!draft.trim() || posting}
-            className="flex-shrink-0 font-mono text-[14px] font-semibold text-ink disabled:text-ink-mute"
-          >
-            {posting ? '…' : 'Post'}
-          </button>
         </div>
       ) : (
         <Link
