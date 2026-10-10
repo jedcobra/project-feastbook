@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { InstallHint } from '@/components/auth/install-hint';
 
 // The title page of the book — no chrome, no back button, just the
 // wordmark and the two ways in.
@@ -14,6 +15,7 @@ export function LandingScreen() {
           Spoon
         </div>
       </div>
+      <InstallHint />
       <div className="flex flex-col gap-2.5 px-5 pb-[34px]">
         <Link
           href="/account/sign-up"

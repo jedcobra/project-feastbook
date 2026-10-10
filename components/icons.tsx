@@ -152,6 +152,16 @@ export function PhoneIcon(props: StrokeIconProps) {
   );
 }
 
+// The iPhone's own Share symbol (a box with an arrow out of the top), for
+// pointing people at Safari's Share button.
+export function IosShareIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M8 9H6.5A1.5 1.5 0 005 10.5v9A1.5 1.5 0 006.5 21h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0017.5 9H16M12 15V3M8.5 6.5L12 3l3.5 3.5" />
+    </StrokeIcon>
+  );
+}
+
 export function PencilIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
