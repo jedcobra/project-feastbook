@@ -153,7 +153,7 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
             aria-label={saved ? 'Manage shelves' : 'Save'}
             aria-pressed={saved}
             onClick={tapHeart}
-            className="text-ink"
+            className={saved ? 'text-accent' : 'text-ink'}
           >
             <HeartIcon size={22} filled={saved} />
           </button>
