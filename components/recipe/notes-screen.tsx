@@ -289,7 +289,7 @@ export function NotesScreen({ id }: { id: string }) {
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoUploading}
                   aria-label="Add a photo of it"
-                  className="flex-shrink-0 pb-[7px] text-ink-mute disabled:opacity-60"
+                  className="flex flex-shrink-0 pb-[5px] text-ink-mute disabled:opacity-60"
                 >
                   <CameraIcon size={18} />
                 </button>
@@ -311,7 +311,7 @@ export function NotesScreen({ id }: { id: string }) {
               rows={1}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={photoUploading ? 'Uploading photo…' : editing ? 'Edit your note…' : replyTo ? 'Write a reply…' : 'Leave a note…'}
-              className="max-h-[40dvh] flex-1 resize-none border-none bg-transparent font-mono text-[16px] leading-[1.4] text-ink outline-none"
+              className="max-h-[40dvh] flex-1 resize-none border-none bg-transparent py-1.5 font-mono text-[16px] leading-[1.4] text-ink outline-none"
             />
             <button
               type="button"
