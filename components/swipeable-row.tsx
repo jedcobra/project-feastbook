@@ -55,7 +55,7 @@ export function SwipeableRow({
   const translate = dragX !== null ? dragX : open ? -maxOffset : 0;
 
   return (
-    <div className="relative overflow-hidden">
+    <div data-own-swipe className="relative overflow-hidden">
       <div className="absolute inset-y-0 right-0 flex">
         {actions.map((a) => (
           <button

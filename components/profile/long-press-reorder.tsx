@@ -133,6 +133,7 @@ export function DragHandle({ label, onStart }: { label: string; onStart: () => v
     <button
       type="button"
       aria-label={label}
+      data-own-swipe
       onPointerDown={(e) => {
         e.preventDefault();
         // Keep a surrounding swipe-to-delete row from treating the drag as

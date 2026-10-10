@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
@@ -68,6 +68,50 @@ export function ProfileTabs({
     { id: 'cooked', label: 'Cooked' },
   ];
 
+  // Swipe left/right anywhere on the profile's scrolling area to move to the
+  // next/previous tab, so it works below a short tab's content too. Native
+  // listeners rather than React ones, so swipes inside a portalled popup
+  // (the cooked-photo viewer) never reach here; gestures that start on a row
+  // with its own swipe or drag (data-own-swipe) are left to it.
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = contentRef.current?.closest<HTMLElement>('.overflow-y-auto') ?? contentRef.current;
+    if (!el) return;
+    const order: TabId[] = ['recipes', 'shelves', 'cooked'];
+    let start: { x: number; y: number; t: number } | null = null;
+    const onStart = (e: TouchEvent) => {
+      const target = e.target as Element | null;
+      start =
+        e.touches.length === 1 && !target?.closest('[data-own-swipe]')
+          ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() }
+          : null;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!start) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      const quick = Date.now() - start.t < 700;
+      start = null;
+      if (!quick || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+      setTab((cur) => {
+        const i = order.indexOf(cur) + (dx < 0 ? 1 : -1);
+        return order[Math.max(0, Math.min(order.length - 1, i))];
+      });
+    };
+    const onCancel = () => {
+      start = null;
+    };
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchend', onEnd, { passive: true });
+    el.addEventListener('touchcancel', onCancel, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchend', onEnd);
+      el.removeEventListener('touchcancel', onCancel);
+    };
+  }, []);
+
   return (
     <div>
       <div className="mx-5 grid grid-cols-3 border-b border-dashed border-rule">
@@ -87,36 +131,38 @@ export function ProfileTabs({
         ))}
       </div>
 
-      {tab === 'recipes' && (
-        <RecipesTab
-          recipes={recipes}
-          savedRecipes={savedRecipes}
-          isOwn={isOwn}
-          recipeOrder={recipeOrder}
-          onReorder={isOwn ? onReorderRecipes : undefined}
-          onRecipeDeleted={onRecipeDeleted}
-        />
-      )}
-      {tab === 'shelves' && (
-        <ShelvesTab
-          shelves={shelves}
-          isOwn={isOwn}
-          archivedShelfCount={archivedShelfCount}
-          onReorder={isOwn ? onReorderShelves : undefined}
-          onShelfRemoved={onShelfRemoved}
-          onShelfArchived={onShelfArchived}
-        />
-      )}
-      {tab === 'cooked' && (
-        <CookedTab
-          photos={cookPhotos}
-          ownerHandle={ownerHandle}
-          isOwn={isOwn}
-          openPhotoId={openPhotoId}
-          onOpenPhotoId={setOpenPhotoId}
-          onPhotosChange={onCookPhotosChange}
-        />
-      )}
+      <div ref={contentRef}>
+        {tab === 'recipes' && (
+          <RecipesTab
+            recipes={recipes}
+            savedRecipes={savedRecipes}
+            isOwn={isOwn}
+            recipeOrder={recipeOrder}
+            onReorder={isOwn ? onReorderRecipes : undefined}
+            onRecipeDeleted={onRecipeDeleted}
+          />
+        )}
+        {tab === 'shelves' && (
+          <ShelvesTab
+            shelves={shelves}
+            isOwn={isOwn}
+            archivedShelfCount={archivedShelfCount}
+            onReorder={isOwn ? onReorderShelves : undefined}
+            onShelfRemoved={onShelfRemoved}
+            onShelfArchived={onShelfArchived}
+          />
+        )}
+        {tab === 'cooked' && (
+          <CookedTab
+            photos={cookPhotos}
+            ownerHandle={ownerHandle}
+            isOwn={isOwn}
+            openPhotoId={openPhotoId}
+            onOpenPhotoId={setOpenPhotoId}
+            onPhotosChange={onCookPhotosChange}
+          />
+        )}
+      </div>
     </div>
   );
 }
