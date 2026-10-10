@@ -160,7 +160,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
           shelves={data.shelves}
           recipes={data.recipes}
           cookPhotos={cookPhotos}
-        onCookPhotosChange={setCookPhotos}
+          onCookPhotosChange={setCookPhotos}
           ownerHandle={data.person.handle}
           isOwn={false}
           recipeOrder={recipeOrder}

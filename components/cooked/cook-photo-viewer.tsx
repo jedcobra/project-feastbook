@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { ChefKissIcon, XIcon } from '@/components/icons';
+import { OutlineBox } from '@/components/outline-box';
 import {
   deleteCookPhoto,
   deleteCookPhotoComment,
@@ -63,7 +64,10 @@ export function CookPhotoViewer({
     onChange(optimistic);
     const ok = await setCookPhotoKiss(photo, profile.id, next);
     setKissBusy(false);
-    if (!ok) onChange(photo);
+    if (!ok) {
+      onChange(photo);
+      setError(next ? "Couldn't send that kiss — try again." : "Couldn't take that kiss back — try again.");
+    }
   };
 
   const post = async () => {
@@ -150,19 +154,20 @@ export function CookPhotoViewer({
 
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              {/* The app's usual toggle button, like Cooked it: outlined, and
+                  inverted to cream-on-ink once you've kissed the photo. */}
+              <OutlineBox
+                compact
+                filled={photo.kissedByMe}
                 onClick={toggleKiss}
                 disabled={!profile}
                 aria-pressed={photo.kissedByMe}
                 aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border border-ink transition-colors ${
-                  photo.kissedByMe ? 'bg-ink text-cream' : 'bg-transparent text-ink'
-                }`}
               >
-                <ChefKissIcon size={14} weight={0.9} />
-              </button>
-              <span className="font-mono text-[14px] font-semibold text-ink">{kissLabel(photo.kisses)}</span>
+                <ChefKissIcon size={13} weight={0.9} />
+                {photo.kissedByMe ? 'Kissed' : 'Kiss'}
+              </OutlineBox>
+              <span className="font-mono text-[12px] text-ink-mute">{kissLabel(photo.kisses)}</span>
             </div>
             <div className="mt-1.5 font-mono text-[14px] leading-[1.45] text-ink">
               <HandleLink handle={photo.handle} onNavigate={onClose} className="font-semibold" />{' '}
