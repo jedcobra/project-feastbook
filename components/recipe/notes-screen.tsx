@@ -7,6 +7,7 @@ import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { CameraIcon, HeartIcon, XIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
+import { ZoomablePhoto } from '@/components/photo-viewer';
 import { TopBar } from '@/components/top-bar';
 import {
   deleteComment,
@@ -395,11 +396,10 @@ function NoteRow({
           </div>
           <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>
           {comment.photoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <ZoomablePhoto
               src={comment.photoUrl}
-              alt=""
-              className="mt-2 h-24 w-24 rounded-button border border-rule object-cover"
+              alt={`Photo from @${comment.handle}`}
+              className="h-24 w-24 rounded-button border border-rule object-cover"
             />
           )}
           <div className="mt-1.5 flex items-center gap-4">

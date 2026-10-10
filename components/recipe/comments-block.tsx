@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
 import { PencilIcon } from '@/components/icons';
+import { ZoomablePhoto } from '@/components/photo-viewer';
 import { Label } from '@/components/label';
 import { postComment } from '@/lib/supabase/queries';
 import type { RecipeComment } from '@/lib/types';
@@ -73,11 +74,10 @@ export function CommentsBlock({
             </div>
             <div className="mt-0.5 break-words font-mono text-[14px] leading-[1.45] text-ink">{comment.text}</div>
             {comment.photoUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <ZoomablePhoto
                 src={comment.photoUrl}
-                alt=""
-                className="mt-2 h-20 w-20 rounded-button border border-rule object-cover"
+                alt={`Photo from @${comment.handle}`}
+                className="h-20 w-20 rounded-button border border-rule object-cover"
               />
             )}
           </div>
