@@ -100,7 +100,7 @@ export function FeedPhotoPost({
           src={photo.photoUrl}
           alt={`@${photo.handle}’s ${photo.recipeTitle}`}
           loading="lazy"
-          className="aspect-square w-full object-cover"
+          className="aspect-[2/1] w-full object-cover"
         />
       </button>
 
