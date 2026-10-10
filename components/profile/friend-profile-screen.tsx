@@ -13,14 +13,14 @@ import { TopBar } from '@/components/top-bar';
 import {
   blockUser,
   fetchCookbookOrder,
-  fetchCookedRecipes,
+  fetchCookPhotos,
   fetchProfileByHandle,
   isBlockedByMe,
   isFollowing,
   setFollowing,
   unblockUser,
 } from '@/lib/supabase/queries';
-import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
+import type { CookPhoto, Person, Recipe, Shelf } from '@/lib/types';
 
 export function FriendProfileScreen({ handle }: { handle: string }) {
   const router = useRouter();
@@ -32,7 +32,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   const [blockedByMe, setBlockedByMe] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
+  const [cookPhotos, setCookPhotos] = useState<CookPhoto[]>([]);
   const [recipeOrder, setRecipeOrder] = useState<string[]>([]);
 
   // A link to your own @handle — from a comment, an activity row, search,
@@ -51,9 +51,9 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
 
   useEffect(() => {
     if (!data) return;
-    fetchCookedRecipes(data.person.id).then(setCookedRecipes);
+    fetchCookPhotos(data.person.id, profile?.id ?? null).then(setCookPhotos);
     fetchCookbookOrder(data.person.id).then(setRecipeOrder);
-  }, [data]);
+  }, [data, profile?.id]);
 
   useEffect(() => {
     if (profile && data) {
@@ -159,7 +159,8 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
         <ProfileTabs
           shelves={data.shelves}
           recipes={data.recipes}
-          cookedRecipes={cookedRecipes}
+          cookPhotos={cookPhotos}
+        onCookPhotosChange={setCookPhotos}
           ownerHandle={data.person.handle}
           isOwn={false}
           recipeOrder={recipeOrder}

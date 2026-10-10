@@ -98,6 +98,27 @@ export function ChefHatIcon(props: StrokeIconProps) {
   );
 }
 
+// Traced from the chef's-kiss hand drawing (512px artboard), scaled into
+// the 24px box with the stroke compensated so it matches the other icons.
+const CHEF_KISS_SCALE = 24 / 512;
+
+export function ChefKissIcon({ filled, ...props }: StrokeIconProps & { filled?: boolean }) {
+  return (
+    <StrokeIcon {...props}>
+      <g transform={`scale(${CHEF_KISS_SCALE})`} strokeWidth={((props.weight ?? 1.4) * (filled ? 1.35 : 1)) / CHEF_KISS_SCALE}>
+        <path d="M100 30L117 52M133 8L134 38M184 18L163 44" />
+        <path d="M108 82C95 74 70 82 62 100C45 130 30 190 28 255C26 300 50 330 90 375C115 405 130 440 145 458C220 470 300 478 378 492" />
+        <path d="M108 82C112 100 98 120 92 140C82 180 85 240 100 290C110 320 120 350 128 372" />
+        <path d="M66 118C78 116 92 110 98 96M112 112C125 110 138 104 142 92" />
+        <path d="M108 82C118 70 140 70 150 80C158 90 152 115 148 140C140 180 145 230 160 270C175 305 185 335 190 358" />
+        <path d="M150 80C165 72 180 80 188 92C205 120 215 160 240 200C270 235 330 260 380 290C400 302 410 315 415 320" />
+        <path d="M165 105C180 150 195 200 215 250C228 285 260 298 300 300C350 305 400 315 425 325C455 340 480 370 490 415" />
+        <path d="M245 245C255 238 265 236 272 236" />
+      </g>
+    </StrokeIcon>
+  );
+}
+
 export function PencilIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>

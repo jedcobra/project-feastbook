@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { CookedPhotoPrompt } from '@/components/cooked/cooked-photo-prompt';
 import { HeartIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { AddToShelfSheet } from '@/components/shelves/add-to-shelf-sheet';
@@ -24,6 +25,7 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
   const [cooked, setCookedState] = useState(false);
   const [cookedCount, setCookedCount] = useState(recipe.madeIt);
   const [cookBusy, setCookBusy] = useState(false);
+  const [photoPromptOpen, setPhotoPromptOpen] = useState(false);
 
   const [myRating, setMyRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -65,6 +67,8 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
     if (!ok) {
       setCookedState(!next);
       setCookedCount((c) => Math.max(0, c + (next ? -1 : 1)));
+    } else if (next) {
+      setPhotoPromptOpen(true);
     }
   };
 
@@ -160,6 +164,14 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
         )}
       </div>
 
+      {photoPromptOpen && (
+        <CookedPhotoPrompt
+          profileId={profile.id}
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          onClose={() => setPhotoPromptOpen(false)}
+        />
+      )}
       {shelfSheetOpen && (
         <AddToShelfSheet
           ownerId={profile.id}

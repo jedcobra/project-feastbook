@@ -5,7 +5,8 @@ import type { NotificationPrefs } from '@/lib/supabase/types';
 import type {
   AppNotification,
   ConversationSummary,
-  CookedRecipe,
+  CookPhoto,
+  CookPhotoComment,
   DirectMessage,
   FeedActivity,
   NotificationKind,
@@ -603,33 +604,156 @@ export async function saveShelfOrder(ownerId: string, shelfIds: string[]): Promi
   return true;
 }
 
-// Recipes a user has marked "I cooked it" on (see postComment's `cooked`
-// option) — the made_it table this reads has existed since the first
-// schema migration, but nothing read from it until now. Most recently
-// cooked first; a repeat cook doesn't duplicate since made_it is one row
-// per user+recipe, so created_at is always that cook's most recent one.
-export async function fetchCookedRecipes(userId: string): Promise<CookedRecipe[]> {
-  const { data: madeItRows, error } = await supabase
-    .from('made_it')
-    .select('recipe_id, created_at')
+// ─────────────────────────────────────────────────────────────
+// Cook photos — the profile's "Cooked" grid
+// ─────────────────────────────────────────────────────────────
+// RLS only returns photos whose recipe the viewer can see (0026), so a
+// photo of a private recipe never shows up for someone who can't open it.
+const COOK_PHOTO_SELECT = 'id, user_id, recipe_id, photo_url, created_at, recipe:recipes(title), owner:profiles!cook_photos_user_id_fkey(handle)';
+
+type CookPhotoRow = {
+  id: string;
+  user_id: string;
+  recipe_id: string;
+  photo_url: string;
+  created_at: string;
+  recipe: { title: string } | { title: string }[] | null;
+  owner: { handle: string } | { handle: string }[] | null;
+};
+
+async function mapCookPhotoRows(rows: CookPhotoRow[], viewerId: string | null): Promise<CookPhoto[]> {
+  if (rows.length === 0) return [];
+  const { data: kissRows } = await supabase
+    .from('cook_photo_kisses')
+    .select('photo_id, user_id')
+    .in('photo_id', rows.map((r) => r.id));
+  const counts = new Map<string, number>();
+  const mine = new Set<string>();
+  for (const k of (kissRows ?? []) as { photo_id: string; user_id: string }[]) {
+    counts.set(k.photo_id, (counts.get(k.photo_id) ?? 0) + 1);
+    if (viewerId && k.user_id === viewerId) mine.add(k.photo_id);
+  }
+  return rows.map((r) => ({
+    id: r.id,
+    userId: r.user_id,
+    handle: unwrapOne(r.owner)?.handle ?? '',
+    recipeId: r.recipe_id,
+    recipeTitle: unwrapOne(r.recipe)?.title ?? '',
+    photoUrl: r.photo_url,
+    at: formatRelativeTime(r.created_at),
+    kisses: counts.get(r.id) ?? 0,
+    kissedByMe: mine.has(r.id),
+  }));
+}
+
+// Newest first.
+export async function fetchCookPhotos(userId: string, viewerId: string | null): Promise<CookPhoto[]> {
+  const { data, error } = await supabase
+    .from('cook_photos')
+    .select(COOK_PHOTO_SELECT)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
-  if (error || !madeItRows) {
-    console.error('fetchCookedRecipes', error);
+  if (error || !data) {
+    console.error('fetchCookPhotos', error);
     return [];
   }
+  return mapCookPhotoRows(data as CookPhotoRow[], viewerId);
+}
 
-  const { data: recipeRows } = await supabase
-    .from('recipes')
-    .select('*')
-    .in('id', madeItRows.map((m) => m.recipe_id));
-  const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
-  return madeItRows
-    .map((m) => {
-      const recipe = recipeById.get(m.recipe_id);
-      return recipe ? { ...recipe, cookedAt: formatRelativeTime(m.created_at) } : undefined;
-    })
-    .filter((r): r is CookedRecipe => !!r);
+export async function fetchCookPhoto(photoId: string, viewerId: string | null): Promise<CookPhoto | null> {
+  const { data, error } = await supabase.from('cook_photos').select(COOK_PHOTO_SELECT).eq('id', photoId).maybeSingle();
+  if (error || !data) {
+    if (error) console.error('fetchCookPhoto', error);
+    return null;
+  }
+  return (await mapCookPhotoRows([data as CookPhotoRow], viewerId))[0] ?? null;
+}
+
+// The id is minted here and the insert isn't read back, so it never
+// depends on the recipe's SELECT policy (see notify()).
+export async function addCookPhoto(userId: string, recipeId: string, photoUrl: string): Promise<string | null> {
+  const id = crypto.randomUUID();
+  const { error } = await supabase
+    .from('cook_photos')
+    .insert({ id, user_id: userId, recipe_id: recipeId, photo_url: photoUrl });
+  if (error) {
+    console.error('addCookPhoto', error);
+    return null;
+  }
+  return id;
+}
+
+export async function deleteCookPhoto(photoId: string): Promise<boolean> {
+  const { error } = await supabase.from('cook_photos').delete().eq('id', photoId);
+  if (error) console.error('deleteCookPhoto', error);
+  return !error;
+}
+
+export async function setCookPhotoKiss(photo: CookPhoto, userId: string, kissed: boolean): Promise<boolean> {
+  if (kissed) {
+    const { error } = await supabase.from('cook_photo_kisses').insert({ photo_id: photo.id, user_id: userId });
+    if (error) {
+      console.error('setCookPhotoKiss insert', error);
+      return false;
+    }
+    await notify(photo.userId, userId, 'kiss', { recipeId: photo.recipeId, cookPhotoId: photo.id });
+    return true;
+  }
+  const { error } = await supabase.from('cook_photo_kisses').delete().eq('photo_id', photo.id).eq('user_id', userId);
+  if (error) console.error('setCookPhotoKiss delete', error);
+  return !error;
+}
+
+export async function fetchCookPhotoComments(photoId: string): Promise<CookPhotoComment[]> {
+  const { data, error } = await supabase
+    .from('cook_photo_comments')
+    .select('id, author_id, text, created_at, author:profiles!cook_photo_comments_author_id_fkey(handle)')
+    .eq('photo_id', photoId)
+    .order('created_at');
+  if (error || !data) {
+    console.error('fetchCookPhotoComments', error);
+    return [];
+  }
+  return (
+    data as {
+      id: string;
+      author_id: string;
+      text: string;
+      created_at: string;
+      author: { handle: string } | { handle: string }[] | null;
+    }[]
+  ).map((c) => ({
+    id: c.id,
+    authorId: c.author_id,
+    handle: unwrapOne(c.author)?.handle ?? '',
+    text: c.text,
+    at: formatRelativeTime(c.created_at),
+  }));
+}
+
+export async function postCookPhotoComment(
+  photo: CookPhoto,
+  author: { id: string; handle: string },
+  text: string,
+): Promise<CookPhotoComment | null> {
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from('cook_photo_comments').insert({ id, photo_id: photo.id, author_id: author.id, text });
+  if (error) {
+    console.error('postCookPhotoComment', error);
+    return null;
+  }
+  await notify(photo.userId, author.id, 'photo_comment', {
+    recipeId: photo.recipeId,
+    cookPhotoId: photo.id,
+    excerpt: text,
+  });
+  return { id, authorId: author.id, handle: author.handle, text, at: formatRelativeTime(new Date().toISOString()) };
+}
+
+export async function deleteCookPhotoComment(commentId: string): Promise<boolean> {
+  const { error } = await supabase.from('cook_photo_comments').delete().eq('id', commentId);
+  if (error) console.error('deleteCookPhotoComment', error);
+  return !error;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -787,6 +911,8 @@ const PREF_KEY: Record<NotificationKind, keyof NotificationPrefs> = {
   cooked: 'cooked',
   digest: 'digest',
   message: 'messages',
+  kiss: 'notes',
+  photo_comment: 'notes',
 };
 
 // Writes a notification for someone else's inbox. Never for your own —
@@ -796,7 +922,7 @@ async function notify(
   recipientId: string,
   actorId: string,
   kind: NotificationKind,
-  extra: { recipeId?: string; commentId?: string; conversationId?: string; excerpt?: string } = {},
+  extra: { recipeId?: string; commentId?: string; conversationId?: string; cookPhotoId?: string; excerpt?: string } = {},
 ) {
   if (recipientId === actorId) return;
   const { data: recipient } = await supabase
@@ -819,6 +945,7 @@ async function notify(
     recipe_id: extra.recipeId ?? null,
     comment_id: extra.commentId ?? null,
     conversation_id: extra.conversationId ?? null,
+    cook_photo_id: extra.cookPhotoId ?? null,
     excerpt: extra.excerpt ?? null,
   });
   if (error) {
@@ -1617,7 +1744,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
     // so the embed must name which column to join on — otherwise it's
     // ambiguous to PostgREST and silently resolves to nothing.
     .select(
-      'id, kind, excerpt, conversation_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)',
+      'id, kind, excerpt, conversation_id, cook_photo_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)',
     )
     .eq('recipient_id', recipientId)
     .neq('kind', 'message')
@@ -1633,6 +1760,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
       kind: AppNotification['kind'];
       excerpt: string | null;
       conversation_id: string | null;
+      cook_photo_id: string | null;
       created_at: string;
       read_at: string | null;
       actor: { name: string; handle: string } | { name: string; handle: string }[] | null;
@@ -1647,6 +1775,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
         recipeId: recipe?.id ?? null,
         recipeTitle: recipe?.title ?? null,
         conversationId: n.conversation_id,
+        cookPhotoId: n.cook_photo_id,
         excerpt: n.excerpt,
         createdAt: n.created_at,
         read: !!n.read_at,

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
@@ -10,7 +11,7 @@ import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
 import { formatCount } from '@/lib/format';
-import type { CookedRecipe, Recipe, Shelf } from '@/lib/types';
+import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
 
 type TabId = 'recipes' | 'shelves' | 'cooked';
 
@@ -18,7 +19,8 @@ export function ProfileTabs({
   shelves,
   recipes,
   savedRecipes = [],
-  cookedRecipes = [],
+  cookPhotos = [],
+  onCookPhotosChange,
   archivedShelfCount = 0,
   ownerHandle,
   isOwn,
@@ -32,7 +34,8 @@ export function ProfileTabs({
   shelves: Shelf[];
   recipes: Recipe[];
   savedRecipes?: Recipe[];
-  cookedRecipes?: CookedRecipe[];
+  cookPhotos?: CookPhoto[];
+  onCookPhotosChange?: (fn: (photos: CookPhoto[]) => CookPhoto[]) => void;
   archivedShelfCount?: number;
   ownerHandle: string;
   isOwn: boolean;
@@ -44,6 +47,20 @@ export function ProfileTabs({
   onShelfArchived?: (shelfId: string) => void;
 }) {
   const [tab, setTab] = useState<TabId>('recipes');
+  const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
+
+  // A notification about one of your photos links here as ?photo=<id>:
+  // open the Cooked tab on that photo, then drop the param so closing it
+  // and refreshing doesn't reopen it.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('photo');
+    if (!id) return;
+    setTab('cooked');
+    setOpenPhotoId(id);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('photo');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, []);
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'recipes', label: 'Recipes' },
@@ -90,7 +107,16 @@ export function ProfileTabs({
           onShelfArchived={onShelfArchived}
         />
       )}
-      {tab === 'cooked' && <CookedTab recipes={cookedRecipes} ownerHandle={ownerHandle} />}
+      {tab === 'cooked' && (
+        <CookedTab
+          photos={cookPhotos}
+          ownerHandle={ownerHandle}
+          isOwn={isOwn}
+          openPhotoId={openPhotoId}
+          onOpenPhotoId={setOpenPhotoId}
+          onPhotosChange={onCookPhotosChange}
+        />
+      )}
     </div>
   );
 }
@@ -517,42 +543,71 @@ function DeleteRecipeConfirm({
   );
 }
 
-function CookedTab({ recipes, ownerHandle }: { recipes: CookedRecipe[]; ownerHandle: string }) {
-  if (recipes.length === 0) {
-    return (
-      <div className="mx-5 pb-8 pt-6">
-        <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
-          Recipes @{ownerHandle} has cooked
-          <br />
-          will appear here.
-        </div>
-      </div>
-    );
-  }
+// An Instagram-style grid of the owner's own versions of dishes, newest
+// first. Tapping one opens it large, with chef's kisses and comments.
+function CookedTab({
+  photos,
+  ownerHandle,
+  isOwn,
+  openPhotoId,
+  onOpenPhotoId,
+  onPhotosChange,
+}: {
+  photos: CookPhoto[];
+  ownerHandle: string;
+  isOwn: boolean;
+  openPhotoId: string | null;
+  onOpenPhotoId: (id: string | null) => void;
+  onPhotosChange?: (fn: (photos: CookPhoto[]) => CookPhoto[]) => void;
+}) {
+  const open = photos.find((p) => p.id === openPhotoId);
   return (
-    <div className="mx-5 pb-8">
-      {recipes.map((r) => (
-        <Link
-          key={r.id}
-          href={`/recipe/${r.id}`}
-          className="flex items-center gap-2.5 border-b border-dashed border-rule py-3.5"
-        >
-          {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2.5">
-              <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-              <span className="flex-shrink-0 font-mono text-meta text-ink-mute">@{r.author}</span>
-            </div>
-            <div className="mt-1 flex gap-2.5 font-mono text-meta text-ink-mute">
-              <span>{r.time}</span>
-              <span>·</span>
-              <span>Last cooked {r.cookedAt}</span>
-              <span>·</span>
-              <span>{r.difficulty}</span>
-            </div>
+    <div className="pb-8">
+      {photos.length === 0 ? (
+        <div className="mx-5 pt-6">
+          <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
+            {isOwn ? (
+              <>
+                Tap Cooked it on a recipe, or finish cooking mode,
+                <br />
+                and add a photo of your version.
+              </>
+            ) : (
+              <>
+                Photos of what @{ownerHandle} has cooked
+                <br />
+                will appear here.
+              </>
+            )}
           </div>
-        </Link>
-      ))}
+        </div>
+      ) : (
+        <div className="mt-0.5 grid grid-cols-3 gap-0.5">
+          {photos.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onOpenPhotoId(p.id)}
+              aria-label={`@${p.handle}’s ${p.recipeTitle}`}
+              className="relative aspect-square overflow-hidden bg-cream-deep"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.photoUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+      {open && (
+        <CookPhotoViewer
+          photo={open}
+          onClose={() => onOpenPhotoId(null)}
+          onChange={(next) => onPhotosChange?.((ps) => ps.map((p) => (p.id === next.id ? next : p)))}
+          onDeleted={(id) => {
+            onOpenPhotoId(null);
+            onPhotosChange?.((ps) => ps.filter((p) => p.id !== id));
+          }}
+        />
+      )}
     </div>
   );
 }

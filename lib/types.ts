@@ -50,7 +50,7 @@ export interface RecipeComment {
   replies: RecipeComment[];
 }
 
-export type NotificationKind = 'note' | 'reply' | 'follow' | 'cooked' | 'digest' | 'message';
+export type NotificationKind = 'note' | 'reply' | 'follow' | 'cooked' | 'digest' | 'message' | 'kiss' | 'photo_comment';
 
 export interface AppNotification {
   id: string;
@@ -59,6 +59,7 @@ export interface AppNotification {
   recipeId: string | null;
   recipeTitle: string | null;
   conversationId: string | null;
+  cookPhotoId: string | null;
   excerpt: string | null;
   createdAt: string;
   read: boolean;
@@ -94,8 +95,25 @@ export interface Recipe {
 // A recipe in the profile's "Cooked" tab — same shape as Recipe, plus when
 // *this* viewer last marked it cooked (made_it is one row per user+recipe,
 // so this is always the most recent cook, not just the first).
-export interface CookedRecipe extends Recipe {
-  cookedAt: string;
+// A photo of someone's own version of a dish — the profile's "Cooked" grid.
+export interface CookPhoto {
+  id: string;
+  userId: string;
+  handle: string;
+  recipeId: string;
+  recipeTitle: string;
+  photoUrl: string;
+  at: string;
+  kisses: number;
+  kissedByMe: boolean;
+}
+
+export interface CookPhotoComment {
+  id: string;
+  authorId: string;
+  handle: string;
+  text: string;
+  at: string;
 }
 
 export type ActivityKind = 'new' | 'madeit' | 'saved';

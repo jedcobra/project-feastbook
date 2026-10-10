@@ -9,20 +9,20 @@ import { ProfileTabs } from '@/components/profile/profile-tabs';
 import {
   fetchArchivedShelves,
   fetchCookbookOrder,
-  fetchCookedRecipes,
+  fetchCookPhotos,
   fetchProfileByHandle,
   fetchSavedRecipes,
   saveCookbookOrder,
   saveShelfOrder,
 } from '@/lib/supabase/queries';
-import type { CookedRecipe, Person, Recipe, Shelf } from '@/lib/types';
+import type { CookPhoto, Person, Recipe, Shelf } from '@/lib/types';
 
 // The real, auth-backed Cookbook screen.
 export function OwnCookbook() {
   const { loading, user, profile } = useAuth();
   const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
-  const [cookedRecipes, setCookedRecipes] = useState<CookedRecipe[]>([]);
+  const [cookPhotos, setCookPhotos] = useState<CookPhoto[]>([]);
   const [archivedShelfCount, setArchivedShelfCount] = useState(0);
   const [recipeOrder, setRecipeOrder] = useState<string[]>([]);
 
@@ -30,14 +30,14 @@ export function OwnCookbook() {
     if (!profile) {
       setData(null);
       setSavedRecipes([]);
-      setCookedRecipes([]);
+      setCookPhotos([]);
       setArchivedShelfCount(0);
       setRecipeOrder([]);
       return;
     }
     fetchProfileByHandle(profile.handle).then(setData);
     fetchSavedRecipes(profile.id).then(setSavedRecipes);
-    fetchCookedRecipes(profile.id).then(setCookedRecipes);
+    fetchCookPhotos(profile.id, profile.id).then(setCookPhotos);
     fetchArchivedShelves(profile.id).then((rows) => setArchivedShelfCount(rows.length));
     fetchCookbookOrder(profile.id).then(setRecipeOrder);
   }, [profile]);
@@ -74,7 +74,7 @@ export function OwnCookbook() {
     );
   }
 
-  if (data.recipes.length === 0 && savedRecipes.length === 0 && cookedRecipes.length === 0) {
+  if (data.recipes.length === 0 && savedRecipes.length === 0 && cookPhotos.length === 0) {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto">
         <EmptyCookbook name={`@${data.person.handle}`} />
@@ -89,7 +89,8 @@ export function OwnCookbook() {
         shelves={data.shelves}
         recipes={data.recipes}
         savedRecipes={savedRecipes}
-        cookedRecipes={cookedRecipes}
+        cookPhotos={cookPhotos}
+        onCookPhotosChange={setCookPhotos}
         archivedShelfCount={archivedShelfCount}
         ownerHandle={data.person.handle}
         isOwn

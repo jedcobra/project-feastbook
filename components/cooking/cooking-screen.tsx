@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { CookedPhotoPrompt } from '@/components/cooked/cooked-photo-prompt';
 import { BackIcon, ChevronIcon, XIcon } from '@/components/icons';
 import { useBackNav } from '@/lib/back-nav';
 import { getKeepAwake } from '@/lib/keep-awake';
@@ -21,6 +22,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
   const [timerActive, setTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [photoPromptOpen, setPhotoPromptOpen] = useState(false);
 
   const current = recipe.steps[step];
   const total = recipe.steps.length;
@@ -77,7 +79,8 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
 
   // Reaching "Done" on the last step is what actually counts as having
   // cooked it — backing out early via the close button doesn't. Same
-  // made_it row the one-tap button and a cooked note write to.
+  // made_it row the one-tap button and a cooked note write to. Then the
+  // photo prompt; closing it (with or without a photo) leaves cooking mode.
   const finish = async () => {
     if (finishing) return;
     if (!profile) {
@@ -86,7 +89,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
     }
     setFinishing(true);
     await setCooked(profile.id, recipe.id, true, authorId);
-    exit();
+    setPhotoPromptOpen(true);
   };
 
   const goNext = () => {
@@ -224,6 +227,9 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
           <ChevronIcon size={16} weight={2} />
         </button>
       </div>
+      {photoPromptOpen && profile && (
+        <CookedPhotoPrompt profileId={profile.id} recipeId={recipe.id} recipeTitle={recipe.title} onClose={exit} />
+      )}
     </div>
   );
 }

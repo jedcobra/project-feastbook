@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
-import { BookIcon, CookIcon, HeartIcon, MessageIcon, UserIcon } from '@/components/icons';
+import { BookIcon, ChefKissIcon, CookIcon, HeartIcon, MessageIcon, UserIcon } from '@/components/icons';
 import { Avatar } from '@/components/avatar';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
@@ -46,6 +46,10 @@ function describe(n: AppNotification): string {
       return 'started following you';
     case 'message':
       return 'sent you a message';
+    case 'kiss':
+      return "sent a chef's kiss to your photo of";
+    case 'photo_comment':
+      return 'commented on your photo of';
     case 'digest':
       return n.excerpt ?? 'Weekly digest';
     default:
@@ -60,6 +64,8 @@ const KIND_ICON: Record<NotificationKind, typeof HeartIcon> = {
   cooked: CookIcon,
   digest: BookIcon,
   message: MessageIcon,
+  kiss: ChefKissIcon,
+  photo_comment: MessageIcon,
 };
 
 export function NotificationsScreen() {
@@ -127,7 +133,8 @@ export function NotificationsScreen() {
   const handleOpen = async (n: AppNotification) => {
     setItems((is) => is?.map((x) => (x.id === n.id ? { ...x, read: true } : x)) ?? is);
     if (!n.read) await markNotificationRead(n.id);
-    if (n.conversationId) router.push(`/messages/${n.conversationId}`);
+    if (n.cookPhotoId) router.push(`/me?photo=${n.cookPhotoId}`);
+    else if (n.conversationId) router.push(`/messages/${n.conversationId}`);
     else if (n.recipeId) router.push(`/recipe/${n.recipeId}`);
     else if (n.actorHandle) router.push(`/${n.actorHandle}`);
   };
