@@ -6,7 +6,8 @@ import { ChefKissIcon } from '@/components/icons';
 import { setCookPhotoKiss } from '@/lib/supabase/queries';
 import type { CookPhoto } from '@/lib/types';
 
-export const kissLabel = (n: number) => `${n} kiss${n === 1 ? '' : 'es'}`;
+// Always "chef’s kiss", never pluralised: "1 chef’s kiss", "5 chef’s kiss".
+export const kissLabel = (n: number) => `${n} chef’s kiss`;
 
 // The kiss toggle on a cooked photo, shared by the feed and the photo popup.
 // Thin lines until you've kissed the photo, then the filled hand. Updates
@@ -33,7 +34,7 @@ export function KissButton({
     setBusy(false);
     if (!ok) {
       onChange(photo);
-      onError?.(next ? "Couldn't send that kiss — try again." : "Couldn't take that kiss back — try again.");
+      onError?.(next ? 'Couldn’t send that chef’s kiss — try again.' : 'Couldn’t take that chef’s kiss back — try again.');
     }
   };
 
@@ -43,7 +44,7 @@ export function KissButton({
       onClick={toggle}
       disabled={!profile}
       aria-pressed={photo.kissedByMe}
-      aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
+      aria-label={photo.kissedByMe ? 'Take back chef’s kiss' : 'Send a chef’s kiss'}
       className="-m-1 p-1 text-ink"
     >
       <ChefKissIcon size={16} weight={photo.kissedByMe ? 1 : 0.8} filled={photo.kissedByMe} />
