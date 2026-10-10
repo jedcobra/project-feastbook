@@ -18,11 +18,12 @@ const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => Reac
   saved: HeartIcon,
 };
 
-// Every feed post is a horizontal entry, like a page in a recipe book: the
+// Recipe posts are horizontal entries, like a page in a recipe book: the
 // picture bleeds to the left edge and to the entry's top and bottom across
 // the first quarter, and the details fill the other three. The image is at
 // least square and grows with the entry if the text runs taller. Entries
-// without a picture are just the text.
+// without a picture are just the text. (Cooked photos get their own
+// full-width post — see FeedPhotoPost.)
 export function FeedEntry({ image, children }: { image?: React.ReactNode; children: React.ReactNode }) {
   return (
     <article className="flex border-b border-dashed border-rule">
