@@ -12,7 +12,7 @@ const KIND_VERB: Record<string, string> = {
   follow: 'started following you',
   digest: 'sent you a weekly digest',
   message: 'sent you a message',
-  kiss: "sent a chef's kiss to your photo of",
+  kiss: 'sent a kiss to your photo of',
   photo_comment: 'commented on your photo of',
 };
 

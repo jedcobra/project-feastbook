@@ -86,7 +86,7 @@ export function CookedPhotoPrompt({
           </div>
         </div>
         <p className="mb-4 text-[14px] leading-[1.5] text-ink-mute">
-          Snap your version of the dish and it&rsquo;ll go on the Cooked grid on your profile.
+          Snap your version of the dish and it&rsquo;ll go on your Cooked grid.
         </p>
 
         {preview && (

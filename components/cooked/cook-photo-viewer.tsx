@@ -16,7 +16,7 @@ import {
 } from '@/lib/supabase/queries';
 import type { CookPhoto, CookPhotoComment } from '@/lib/types';
 
-const kissLabel = (n: number) => `${n} chef’s kiss${n === 1 ? '' : 'es'}`;
+const kissLabel = (n: number) => `${n} kiss${n === 1 ? '' : 'es'}`;
 
 // The enlarged view of one photo from a Cooked grid: the photo, a chef's
 // kiss (like) with its count, which recipe it was, and comments with a box
@@ -154,7 +154,7 @@ export function CookPhotoViewer({
                 onClick={toggleKiss}
                 disabled={!profile}
                 aria-pressed={photo.kissedByMe}
-                aria-label={photo.kissedByMe ? 'Take back chef’s kiss' : 'Send a chef’s kiss'}
+                aria-label={photo.kissedByMe ? 'Take back kiss' : 'Send a kiss'}
                 className={photo.kissedByMe ? 'text-accent' : 'text-ink'}
               >
                 <ChefKissIcon size={22} filled={photo.kissedByMe} />

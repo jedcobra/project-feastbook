@@ -47,7 +47,7 @@ function describe(n: AppNotification): string {
     case 'message':
       return 'sent you a message';
     case 'kiss':
-      return "sent a chef's kiss to your photo of";
+      return 'sent a kiss to your photo of';
     case 'photo_comment':
       return 'commented on your photo of';
     case 'digest':
