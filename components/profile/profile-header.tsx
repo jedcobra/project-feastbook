@@ -7,14 +7,17 @@ import { XIcon } from '@/components/icons';
 import { formatCount } from '@/lib/format';
 import type { Person } from '@/lib/types';
 
-// Instagram's profile button: equal width, ~32px tall, soft fill, no border.
-const PROFILE_BUTTON_BASE = 'flex h-8 flex-1 items-center justify-center rounded-lg font-mono text-[14px] font-semibold';
-export const PROFILE_BUTTON = `${PROFILE_BUTTON_BASE} bg-cream-deep text-ink`;
+// Instagram's equal-width ~32px profile buttons, drawn in this app's own
+// button shape — thin ink outline, square-ish corners — with the primary
+// action filled.
+const PROFILE_BUTTON_BASE =
+  'flex h-8 flex-1 items-center justify-center rounded-button border border-ink font-mono text-[14px] font-semibold';
+export const PROFILE_BUTTON = `${PROFILE_BUTTON_BASE} bg-transparent text-ink`;
 export const PROFILE_BUTTON_PRIMARY = `${PROFILE_BUTTON_BASE} bg-ink text-cream`;
 
 // Instagram's profile header proportions: an 86px avatar beside three
-// evenly spaced stats, then name, handle and bio, then equal-width soft
-// buttons. Followers and Following open the actual list; Recipes has no
+// evenly spaced stats, then name, handle and bio, then equal-width
+// buttons — dressed in this app's dashed rules and small caps. Followers and Following open the actual list; Recipes has no
 // list of its own (that's the Recipes tab below). Only your own header
 // gets Edit/Share here — someone else's gets Follow/Message from
 // FollowActions, styled to match.
@@ -43,12 +46,18 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     }
   };
 
-  const avatar = <Avatar name={person.name} src={person.avatarUrl} size={86} />;
+  // 86px overall like Instagram's, as an 78px avatar inside a dashed ring —
+  // the same dashed rule the rest of the app draws its dividers with.
+  const avatar = (
+    <span className="flex rounded-full border border-dashed border-ink p-[3px]">
+      <Avatar name={person.name} src={person.avatarUrl} size={78} className="border border-ink bg-highlight" />
+    </span>
+  );
 
   return (
     <>
       <div className={`px-5 pt-1 ${isOwn ? 'pb-4' : 'pb-3'}`}>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 max-[374px]:gap-2">
           {person.avatarUrl ? (
             <button type="button" onClick={() => setPhotoOpen(true)} aria-label="View photo" className="flex-shrink-0">
               {avatar}
@@ -57,19 +66,22 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
             avatar
           )}
           <div className="grid min-w-0 flex-1 grid-cols-3">
-            {stats.map(([label, value, href]) => {
+            {stats.map(([label, value, href], i) => {
+              const cell = `py-1 text-center ${i < stats.length - 1 ? 'border-r border-dashed border-rule' : ''}`;
               const body = (
                 <>
                   <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>
-                  <div className="font-mono text-[12px] text-ink">{label}</div>
+                  <div className="mt-0.5 font-display text-[11px] font-bold uppercase tracking-tight text-ink max-[374px]:text-[10px]">
+                    {label}
+                  </div>
                 </>
               );
               return href ? (
-                <Link key={label} href={href} className="text-center">
+                <Link key={label} href={href} className={cell}>
                   {body}
                 </Link>
               ) : (
-                <div key={label} className="text-center">
+                <div key={label} className={cell}>
                   {body}
                 </div>
               );
