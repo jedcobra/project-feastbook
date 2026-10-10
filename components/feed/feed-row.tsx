@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
-import { CookIcon, HeartIcon, PlusIcon } from '@/components/icons';
+import { ChefHatIcon, HeartIcon, PlusIcon } from '@/components/icons';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import type { FeedActivity, Person, Recipe } from '@/lib/types';
@@ -11,11 +11,11 @@ const VERB: Record<FeedActivity['kind'], string> = {
   saved: 'saved',
 };
 
-// Same glyphs those actions use elsewhere (New tab, Start cooking, Save) —
-// a quick visual tell for which kind of activity this is, at a glance.
+// A quick visual tell for which kind of activity this is, at a glance —
+// the New tab's plus, a chef hat for a cook, the save heart.
 const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => React.ReactElement> = {
   new: PlusIcon,
-  madeit: CookIcon,
+  madeit: ChefHatIcon,
   saved: HeartIcon,
 };
 

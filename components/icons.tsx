@@ -79,6 +79,16 @@ export function CookIcon(props: StrokeIconProps) {
   );
 }
 
+export function ChefHatIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6.2 16.5A5.5 5.5 0 1 1 5.25 5.53A7.4 7.4 0 0 1 18.75 5.53A5.5 5.5 0 1 1 17.8 16.5" />
+      <path d="M5.25 5.53L5.6 6.7M18.75 5.53L18.4 6.7M5.6 13Q5.9 15.4 7.5 16.4M18.4 13Q18.1 15.4 16.5 16.4M12 13.6V16.4" />
+      <rect x="5.5" y="16.5" width="13" height="5.5" rx="1" />
+    </StrokeIcon>
+  );
+}
+
 export function PencilIcon(props: StrokeIconProps) {
   return (
     <StrokeIcon {...props}>
