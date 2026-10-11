@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Field } from '@/components/create/field';
 import { Label } from '@/components/label';
 import { useAuth } from '@/components/auth/auth-provider';
-import { ShelfEmojiField } from '@/components/shelves/shelf-emoji-field';
+import { ShelfCoverField, type ShelfRecipePhoto } from '@/components/shelves/shelf-cover-field';
 import { createShelf } from '@/lib/supabase/queries';
 import type { ShelfVisibility } from '@/lib/types';
 import { SHELF_VISIBILITY_OPTIONS } from '@/lib/visibility';
@@ -14,11 +14,12 @@ export interface ShelfFormValues {
   subtitle: string;
   visibility: ShelfVisibility;
   emoji: string | null;
+  coverUrl: string | null;
 }
 
-const EMPTY: ShelfFormValues = { title: '', subtitle: '', visibility: 'private', emoji: null };
+const EMPTY: ShelfFormValues = { title: '', subtitle: '', visibility: 'private', emoji: null, coverUrl: null };
 
-// Name, icon, one-line description, and privacy — used to create a shelf (the
+// Name, cover, one-line description, and privacy — used to create a shelf (the
 // "New shelf" screen and the add-to-shelf sheet) and to edit one later.
 // With `initial` it's an edit form: Save only lights up once something
 // actually changed.
@@ -27,18 +28,24 @@ export function ShelfForm({
   submitLabel,
   submittingLabel,
   titleLocked,
+  recipePhotos,
   onSubmit,
 }: {
   initial?: ShelfFormValues;
   submitLabel: string;
   submittingLabel: string;
   titleLocked?: string;
+  // The shelf's recipes' photos, offered as covers when editing a shelf.
+  recipePhotos?: ShelfRecipePhoto[];
   onSubmit: (values: ShelfFormValues) => Promise<boolean>;
 }) {
   const [title, setTitle] = useState(initial?.title ?? EMPTY.title);
   const [subtitle, setSubtitle] = useState(initial?.subtitle ?? EMPTY.subtitle);
   const [visibility, setVisibility] = useState<ShelfVisibility>(initial?.visibility ?? EMPTY.visibility);
-  const [emoji, setEmoji] = useState<string | null>(initial?.emoji ?? EMPTY.emoji);
+  const [cover, setCover] = useState({
+    emoji: initial?.emoji ?? EMPTY.emoji,
+    coverUrl: initial?.coverUrl ?? EMPTY.coverUrl,
+  });
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -47,13 +54,14 @@ export function ShelfForm({
     title.trim() !== initial.title ||
     subtitle.trim() !== initial.subtitle ||
     visibility !== initial.visibility ||
-    emoji !== initial.emoji;
+    cover.emoji !== initial.emoji ||
+    cover.coverUrl !== initial.coverUrl;
   const ready = title.trim().length > 0 && dirty;
 
   const handleSubmit = async () => {
     if (!ready || submitting) return;
     setSubmitting(true);
-    const ok = await onSubmit({ title: title.trim(), subtitle: subtitle.trim(), visibility, emoji });
+    const ok = await onSubmit({ title: title.trim(), subtitle: subtitle.trim(), visibility, ...cover });
     setSubmitting(false);
     setSaved(ok);
   };
@@ -74,7 +82,7 @@ export function ShelfForm({
       ) : (
         <Field label="Name" value={title} onChange={edit(setTitle)} placeholder="Sunday Projects" mono={false} size={22} />
       )}
-      <ShelfEmojiField value={emoji} onChange={edit(setEmoji)} />
+      <ShelfCoverField value={cover} onChange={edit(setCover)} recipePhotos={recipePhotos} />
       <Field
         label="One line about it"
         value={subtitle}
@@ -118,9 +126,9 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
     <ShelfForm
       submitLabel="Create shelf"
       submittingLabel="Creating…"
-      onSubmit={async ({ title, subtitle, visibility, emoji }) => {
+      onSubmit={async ({ title, subtitle, visibility, emoji, coverUrl }) => {
         if (!profile) return false;
-        const created = await createShelf(profile.id, title, subtitle, visibility, emoji);
+        const created = await createShelf(profile.id, title, subtitle, visibility, emoji, coverUrl);
         if (created) onCreated(created);
         return !!created;
       }}

@@ -574,7 +574,7 @@ export async function fetchProfileByHandle(handle: string) {
     supabase.from('recipes').select('*').eq('author_id', profileRow.id).order('created_at', { ascending: false }),
     supabase
       .from('shelves')
-      .select('id, title, subtitle, visibility, emoji, shelf_recipes(recipe_id, position, recipes(title))')
+      .select('id, title, subtitle, visibility, emoji, cover_url, shelf_recipes(recipe_id, position, recipes(title))')
       .eq('owner_id', profileRow.id)
       .is('archived_at', null)
       .order('position', { ascending: true, nullsFirst: true })
@@ -607,6 +607,7 @@ interface ShelfRow {
   subtitle: string;
   visibility: ShelfVisibility;
   emoji: string | null;
+  cover_url: string | null;
   shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
 }
 
@@ -619,6 +620,7 @@ function mapShelfRows(rows: ShelfRow[]): Shelf[] {
       subtitle: s.subtitle,
       visibility: s.visibility,
       emoji: s.emoji,
+      coverUrl: s.cover_url,
       count: sorted.length,
       recipes: sorted.map((sr) => ({
         id: sr.recipe_id,
@@ -1306,10 +1308,11 @@ export async function createShelf(
   subtitle = '',
   visibility: ShelfVisibility = 'private',
   emoji: string | null = null,
+  coverUrl: string | null = null,
 ) {
   const { data, error } = await supabase
     .from('shelves')
-    .insert({ owner_id: ownerId, title, subtitle, visibility, emoji })
+    .insert({ owner_id: ownerId, title, subtitle, visibility, emoji, cover_url: coverUrl })
     .select('id, title')
     .single();
   if (error || !data) {
@@ -1325,7 +1328,7 @@ export async function createShelf(
 export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, shelf_recipes(recipe_id)')
+    .select('id, title, subtitle, visibility, emoji, cover_url, shelf_recipes(recipe_id)')
     .eq('owner_id', ownerId)
     .is('archived_at', null)
     .order('created_at', { ascending: true });
@@ -1340,6 +1343,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
       subtitle: string;
       visibility: ShelfVisibility;
       emoji: string | null;
+      cover_url: string | null;
       shelf_recipes: unknown[];
     }) => ({
       id: s.id,
@@ -1347,6 +1351,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
       subtitle: s.subtitle,
       visibility: s.visibility,
       emoji: s.emoji,
+      coverUrl: s.cover_url,
       count: s.shelf_recipes.length,
       recipes: [],
     }),
@@ -1358,7 +1363,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
 export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, shelf_recipes(recipe_id, position, recipes(title))')
+    .select('id, title, subtitle, visibility, emoji, cover_url, shelf_recipes(recipe_id, position, recipes(title))')
     .eq('owner_id', ownerId)
     .not('archived_at', 'is', null);
   if (error || !data) {
@@ -1370,9 +1375,13 @@ export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
 
 export async function updateShelf(
   shelfId: string,
-  values: { title: string; subtitle: string; visibility: ShelfVisibility; emoji: string | null },
+  values: { title: string; subtitle: string; visibility: ShelfVisibility; emoji: string | null; coverUrl: string | null },
 ): Promise<boolean> {
-  const { error } = await supabase.from('shelves').update(values).eq('id', shelfId);
+  const { coverUrl, ...rest } = values;
+  const { error } = await supabase
+    .from('shelves')
+    .update({ ...rest, cover_url: coverUrl })
+    .eq('id', shelfId);
   if (error) {
     console.error('updateShelf', error);
     return false;
@@ -1481,6 +1490,7 @@ export interface ShelfDetail {
   subtitle: string;
   visibility: ShelfVisibility;
   emoji: string | null;
+  coverUrl: string | null;
   ownerId: string;
   recipes: Recipe[];
 }
@@ -1488,7 +1498,7 @@ export interface ShelfDetail {
 export async function fetchShelfDetail(shelfId: string): Promise<ShelfDetail | null> {
   const { data: shelfRow, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, owner_id')
+    .select('id, title, subtitle, visibility, emoji, cover_url, owner_id')
     .eq('id', shelfId)
     .maybeSingle();
   if (error || !shelfRow) {
@@ -1517,6 +1527,7 @@ export async function fetchShelfDetail(shelfId: string): Promise<ShelfDetail | n
     subtitle: shelfRow.subtitle,
     visibility: shelfRow.visibility,
     emoji: shelfRow.emoji,
+    coverUrl: shelfRow.cover_url,
     ownerId: shelfRow.owner_id,
     recipes,
   };

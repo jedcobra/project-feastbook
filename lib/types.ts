@@ -146,8 +146,10 @@ export interface Shelf {
   title: string;
   subtitle: string;
   visibility: ShelfVisibility;
-  // A food emoji shown as the shelf's icon; without one it shows its count.
+  // The shelf's icon: a cover photo, or else an emoji (food or flag);
+  // with neither it shows its count. Only one of the two is ever set.
   emoji?: string | null;
+  coverUrl?: string | null;
   count: number;
   recipes: ShelfRecipeRef[];
 }

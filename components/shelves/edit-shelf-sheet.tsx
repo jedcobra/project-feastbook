@@ -99,7 +99,11 @@ export function EditShelfSheet({
               subtitle: shelf.subtitle,
               visibility: shelf.visibility,
               emoji: shelf.emoji ?? null,
+              coverUrl: shelf.coverUrl ?? null,
             }}
+            recipePhotos={recipes.flatMap((r) =>
+              r.coverPhotoUrl ? [{ id: r.id, title: r.title, url: r.coverPhotoUrl }] : [],
+            )}
             submitLabel="Save changes"
             submittingLabel="Saving…"
             // The heart button finds its default shelf by this exact name.

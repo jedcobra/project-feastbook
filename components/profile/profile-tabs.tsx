@@ -348,7 +348,7 @@ function RecipesTab({
 
   const shelfBody = (shelf: Shelf) => (
     <>
-      <ShelfIcon emoji={shelf.emoji} count={shelfRows(shelf).length} />
+      <ShelfIcon emoji={shelf.emoji} coverUrl={shelf.coverUrl} count={shelfRows(shelf).length} />
       <div className="min-w-0 flex-1">
         <h3 className="font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
         {shelf.subtitle && <div className="mt-0.5 truncate font-mono text-meta text-ink-mute">{shelf.subtitle}</div>}

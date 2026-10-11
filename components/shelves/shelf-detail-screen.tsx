@@ -114,7 +114,16 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         {editing && isOwner ? (
           <div className="mb-5 border-b border-dashed border-rule pb-5">
             <ShelfForm
-              initial={{ title: shelf.title, subtitle: shelf.subtitle, visibility: shelf.visibility, emoji: shelf.emoji }}
+              initial={{
+                title: shelf.title,
+                subtitle: shelf.subtitle,
+                visibility: shelf.visibility,
+                emoji: shelf.emoji,
+                coverUrl: shelf.coverUrl,
+              }}
+              recipePhotos={shelf.recipes.flatMap((r) =>
+                r.coverPhotoUrl ? [{ id: r.id, title: r.title, url: r.coverPhotoUrl }] : [],
+              )}
               submitLabel="Save changes"
               submittingLabel="Saving…"
               // The heart button finds its default shelf by this exact name.
