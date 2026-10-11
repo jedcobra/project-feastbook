@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { FEED_IMAGE_FILL, FeedEntry, FeedEntryByline } from '@/components/feed/feed-row';
-import { BookIcon, ChevronIcon } from '@/components/icons';
+import { ChevronIcon, OpenBookIcon } from '@/components/icons';
 import { ShelfIcon } from '@/components/shelves/shelf-icon';
 import { Tag } from '@/components/tag';
 import type { FeedShelf } from '@/lib/types';
@@ -44,7 +44,7 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
               when={shelf.when}
               verb={
                 <>
-                  <BookIcon size={14} />
+                  <OpenBookIcon size={14} />
                   made a cookbook
                 </>
               }
