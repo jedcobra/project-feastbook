@@ -359,11 +359,23 @@ export function BookIcon(props: StrokeIconProps) {
   );
 }
 
+// Traced from the open-book drawing (512px artboard): two pages curving
+// up from the spine, the cover showing behind each, and the bottoms
+// sweeping down to meet at the spine. Scaled into the 24px box with the
+// stroke compensated so it matches the other icons.
+const OPEN_BOOK_SCALE = 24 / 512;
+
 export function OpenBookIcon(props: StrokeIconProps) {
+  const strokeWidth = (props.weight ?? 1.4) / OPEN_BOOK_SCALE;
   return (
     <StrokeIcon {...props}>
-      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2V3z" />
-      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7V3z" />
+      <g transform={`scale(${OPEN_BOOK_SCALE})`} strokeWidth={strokeWidth}>
+        <path d="M256 128C222 96 172 80 120 80C96 80 72 84 52 90V370C72 364 96 361 120 361C178 361 226 378 256 408" />
+        <path d="M256 128C290 96 340 80 392 80C416 80 440 84 460 90V370C440 364 416 361 392 361C334 361 286 378 256 408" />
+        <path d="M256 128V408" />
+        <path d="M52 112H14V426C78 400 180 394 256 408" />
+        <path d="M460 112H498V426C434 400 332 394 256 408" />
+      </g>
     </StrokeIcon>
   );
 }
