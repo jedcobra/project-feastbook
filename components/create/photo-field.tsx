@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { CameraIcon, XIcon } from '@/components/icons';
+import { useImageCrop } from '@/components/image-cropper';
 import { Label } from '@/components/label';
 import { uploadPhoto, type PhotoKind } from '@/lib/supabase/storage';
 
@@ -22,10 +23,13 @@ export function PhotoField({ label, photoUrl, onChange, profileId, kind, size = 
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { cropImage, cropper } = useImageCrop();
 
   const pick = () => inputRef.current?.click();
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFile = async (picked: File | undefined) => {
+    if (!picked) return;
+    const file = await cropImage(picked, 'free');
     if (!file) return;
     setError(null);
     setUploading(true);
@@ -78,6 +82,7 @@ export function PhotoField({ label, photoUrl, onChange, profileId, kind, size = 
         )}
       </div>
       {error && <div className="mt-1 font-mono text-[11px] text-accent">{error}</div>}
+      {cropper}
       <input
         ref={inputRef}
         type="file"

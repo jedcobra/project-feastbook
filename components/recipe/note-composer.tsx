@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { CameraIcon, XIcon } from '@/components/icons';
+import { useImageCrop } from '@/components/image-cropper';
 import { uploadPhoto } from '@/lib/supabase/storage';
 
 // The note box shared by the recipe page and the full Notes screen: a
@@ -38,8 +39,11 @@ export function NoteComposer({
 }) {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { cropImage, cropper } = useImageCrop();
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFile = async (picked: File | undefined) => {
+    if (!picked) return;
+    const file = await cropImage(picked, 'free');
     if (!file) return;
     onError(null);
     setUploading(true);
@@ -109,6 +113,7 @@ export function NoteComposer({
           {submitLabel}
         </button>
       </div>
+      {cropper}
     </div>
   );
 }

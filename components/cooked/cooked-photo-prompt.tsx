@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { CameraIcon, ChefHatIcon } from '@/components/icons';
+import { useImageCrop } from '@/components/image-cropper';
 import { addCookPhoto } from '@/lib/supabase/queries';
 import { uploadPhoto } from '@/lib/supabase/storage';
 
@@ -25,9 +26,12 @@ export function CookedPhotoPrompt({
   const [preview, setPreview] = useState<string | null>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const libraryRef = useRef<HTMLInputElement>(null);
+  const { cropImage, cropper } = useImageCrop();
 
-  const handleFile = async (file: File | undefined) => {
-    if (!file || busy) return;
+  const handleFile = async (picked: File | undefined) => {
+    if (!picked || busy) return;
+    const file = await cropImage(picked, 'free');
+    if (!file) return;
     setError(null);
     setBusy(true);
     setPreview(URL.createObjectURL(file));
@@ -123,6 +127,7 @@ export function CookedPhotoPrompt({
         {fileInput(cameraRef, true)}
         {fileInput(libraryRef, false)}
       </div>
+      {cropper}
     </div>
   );
 }

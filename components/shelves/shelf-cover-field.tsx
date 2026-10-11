@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { CameraIcon } from '@/components/icons';
+import { useImageCrop } from '@/components/image-cropper';
 import { Label } from '@/components/label';
 import { STICKER_CLASS } from '@/components/shelves/shelf-icon';
 import { EMOJI_FONT_CLASS, FLAG_EMOJI, FOOD_EMOJI } from '@/lib/shelf-emoji';
@@ -46,6 +47,7 @@ export function ShelfCoverField({
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { cropImage, cropper } = useImageCrop();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -61,8 +63,11 @@ export function ShelfCoverField({
     setNote(null);
   };
 
-  const handleFile = async (file: File | undefined) => {
-    if (!file || !profile || uploading) return;
+  const handleFile = async (picked: File | undefined) => {
+    if (!picked || !profile || uploading) return;
+    // Shelf covers show square, so they're cropped square.
+    const file = await cropImage(picked, 'square');
+    if (!file) return;
     setError(null);
     setPanel(null);
     setNote(null);
@@ -296,6 +301,7 @@ export function ShelfCoverField({
       )}
       {error && <div className="mt-2 font-mono text-[12px] text-accent">{error}</div>}
       {note && <div className="mt-2 font-mono text-[12px] leading-[1.5] text-ink-mute">{note}</div>}
+      {cropper}
     </div>
   );
 }

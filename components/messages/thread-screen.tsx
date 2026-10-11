@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { BookIcon, CameraIcon, MoreIcon, XIcon } from '@/components/icons';
+import { useImageCrop } from '@/components/image-cropper';
 import { OutlineBox } from '@/components/outline-box';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import { TopBar } from '@/components/top-bar';
@@ -34,6 +35,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const [photoUploading, setPhotoUploading] = useState(false);
+  const { cropImage, cropper } = useImageCrop();
   const scrollRef = useRef<HTMLDivElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,8 +95,10 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
     }
   };
 
-  const handlePhotoFile = async (file: File | undefined) => {
-    if (!file || !profile) return;
+  const handlePhotoFile = async (picked: File | undefined) => {
+    if (!picked || !profile) return;
+    const file = await cropImage(picked, 'free');
+    if (!file) return;
     setSendError(null);
     setPhotoUploading(true);
     const result = await uploadPhoto(profile.id, file, 'message');
@@ -352,6 +356,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
           </div>
         </div>
       )}
+      {cropper}
     </>
   );
 }

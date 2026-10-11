@@ -5,7 +5,7 @@ import { Avatar } from '@/components/avatar';
 import { Field } from '@/components/create/field';
 import { CameraIcon } from '@/components/icons';
 import { OnboardStep } from '@/components/onboarding/onboard-step';
-import { AvatarCropper } from '@/components/settings/avatar-cropper';
+import { useImageCrop } from '@/components/image-cropper';
 import { uploadPhoto } from '@/lib/supabase/storage';
 
 // Step 1 of 5 — a face and a line of bio before anything else, so a brand
@@ -32,11 +32,13 @@ export function PhotoBioStep({
   onSkip: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const { cropImage, cropper } = useImageCrop();
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFile = async (picked: File | undefined) => {
+    if (!picked) return;
+    const file = await cropImage(picked, 'avatar');
     if (!file) return;
     setError(null);
     setUploading(true);
@@ -47,11 +49,6 @@ export function PhotoBioStep({
       return;
     }
     onAvatarChange(result.url);
-  };
-
-  const handleCropped = (blob: Blob) => {
-    setPendingFile(null);
-    void handleFile(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
   };
 
   return (
@@ -89,7 +86,7 @@ export function PhotoBioStep({
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-                setPendingFile(e.target.files?.[0] ?? null);
+                void handleFile(e.target.files?.[0]);
                 e.target.value = '';
               }}
             />
@@ -105,9 +102,7 @@ export function PhotoBioStep({
           />
         </div>
       </OnboardStep>
-      {pendingFile && (
-        <AvatarCropper file={pendingFile} onCancel={() => setPendingFile(null)} onCropped={handleCropped} />
-      )}
+      {cropper}
     </>
   );
 }
