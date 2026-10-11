@@ -120,6 +120,9 @@ export function OwnCookbook() {
           setData((cur) => (cur ? { ...cur, shelves: cur.shelves.filter((s) => s.id !== shelfId) } : cur))
         }
         onShelfArchived={() => setArchivedShelfCount((n) => n + 1)}
+        onShelfChange={(shelf) =>
+          setData((cur) => (cur ? { ...cur, shelves: cur.shelves.map((s) => (s.id === shelf.id ? shelf : s)) } : cur))
+        }
       />
     </div>
   );

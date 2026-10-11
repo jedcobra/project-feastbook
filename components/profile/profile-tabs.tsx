@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
-import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { ChevronIcon, HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
+import { EditShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { ShelfIcon } from '@/components/shelves/shelf-icon';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
@@ -33,6 +34,7 @@ export function ProfileTabs({
   onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
+  onShelfChange,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
@@ -49,6 +51,7 @@ export function ProfileTabs({
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
+  onShelfChange?: (shelf: Shelf) => void;
 }) {
   const [tab, setTab] = useState<TabId>('recipes');
   const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
@@ -148,6 +151,7 @@ export function ProfileTabs({
             onRecipeDeleted={onRecipeDeleted}
             onShelfRemoved={onShelfRemoved}
             onShelfArchived={onShelfArchived}
+            onShelfChange={onShelfChange}
           />
         )}
         {tab === 'cooked' && (
@@ -193,6 +197,7 @@ function RecipesTab({
   onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
+  onShelfChange,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
@@ -206,12 +211,14 @@ function RecipesTab({
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
+  onShelfChange?: (shelf: Shelf) => void;
 }) {
   // Which row is swiped open — a shelf's id or a recipe's, never both.
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [editingShelfId, setEditingShelfId] = useState<string | null>(null);
 
   const ownIds = new Set(recipes.map((r) => r.id));
   const recipeById = new Map([...shelfRecipes, ...savedRecipes, ...recipes].map((r) => [r.id, r]));
@@ -275,8 +282,21 @@ function RecipesTab({
 
   const confirmingRecipe = confirmingRecipeId ? recipes.find((r) => r.id === confirmingRecipeId) : undefined;
   const confirmingShelf = confirmingShelfId ? groups.find((s) => s.id === confirmingShelfId) : undefined;
+  const editingShelf = editingShelfId ? groups.find((s) => s.id === editingShelfId) : undefined;
   const confirmSheets = (
     <>
+      {editingShelf && (
+        <EditShelfSheet
+          shelf={editingShelf}
+          recipes={shelfRows(editingShelf).map((row) => row.recipe)}
+          onChange={(next) => onShelfChange?.(next)}
+          onDeleted={() => {
+            setEditingShelfId(null);
+            onShelfRemoved?.(editingShelf.id);
+          }}
+          onClose={() => setEditingShelfId(null)}
+        />
+      )}
       {confirmingRecipe && (
         <DeleteRecipeConfirm
           recipe={confirmingRecipe}
@@ -475,13 +495,16 @@ function RecipesTab({
                     </div>
                   ))
                 )}
-                <Link
-                  href={`/shelf/${shelf.id}`}
-                  className="flex items-center gap-1 pt-2.5 font-mono text-[12px] text-ink-mute"
-                >
-                  Open shelf
-                  <ChevronIcon size={11} />
-                </Link>
+                {isOwn && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingShelfId(shelf.id)}
+                    className="flex items-center gap-1 pt-2.5 font-mono text-[12px] text-ink-mute"
+                  >
+                    <PencilIcon size={11} />
+                    Edit shelf
+                  </button>
+                )}
               </div>
             )}
           </div>
