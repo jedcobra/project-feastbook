@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { CameraIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { STICKER_CLASS } from '@/components/shelves/shelf-icon';
 import { EMOJI_FONT_CLASS, FLAG_EMOJI, FOOD_EMOJI } from '@/lib/shelf-emoji';
@@ -28,11 +29,10 @@ type Panel = 'emoji' | 'photo' | 'sticker';
 // photo of the owner's own, or a sticker — a cut-out with a see-through
 // background, shown loose like an emoji. Picking one replaces whichever
 // was there. Tapping the cover opens a menu of the three kinds; choosing
-// one opens its picker below.
-// With none the shelf shows its recipe count, so the empty preview shows
-// "#" in a rounded square as a hint of that. Recipe photos are only on
-// offer once the shelf has recipes with photos; until then, Photo goes
-// straight to uploading one.
+// one opens its picker below. With none chosen the preview is a rounded
+// square with a camera, inviting a tap (on the shelf itself it shows the
+// recipe count). Recipe photos are only on offer once the shelf has
+// recipes with photos; until then, Photo goes straight to uploading one.
 export function ShelfCoverField({
   value,
   onChange,
@@ -185,8 +185,8 @@ export function ShelfCoverField({
             ) : value.emoji ? (
               <span className={`text-[34px] ${EMOJI_FONT_CLASS}`}>{value.emoji}</span>
             ) : (
-              <div className="flex h-full w-full items-center justify-center rounded-button border border-ink font-mono text-[14px] font-semibold text-ink-mute">
-                #
+              <div className="flex h-full w-full items-center justify-center rounded-button border border-ink text-ink-mute">
+                <CameraIcon size={18} />
               </div>
             )}
           </button>
