@@ -1,4 +1,4 @@
-import { JetBrains_Mono } from 'next/font/google';
+import { DM_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
 
 // Display: Maragsâ Display by John David Maza (free), for headlines. It
@@ -13,10 +13,13 @@ export const display = localFont({
   adjustFontFallback: 'Times New Roman',
 });
 
-// Body: monospace for all body text + meta.
-export const mono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+// Body: monospace for all body text + meta. DM Mono comes in 400 and 500
+// only; semibold and bold text uses the 500 (globals.css turns off the
+// browser's fake bold). Its zeros are slashed, so a plain zero is swapped
+// in from public/fonts (see globals.css).
+export const mono = DM_Mono({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '500'],
   variable: '--font-mono',
   display: 'swap',
 });

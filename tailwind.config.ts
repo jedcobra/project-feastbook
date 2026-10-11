@@ -50,7 +50,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ['var(--font-display)', 'Georgia', 'serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        mono: ['"DM Mono Plain Zero"', 'var(--font-mono)', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         // Type scale from README

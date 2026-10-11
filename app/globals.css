@@ -45,6 +45,34 @@
   body {
     @apply bg-cream text-ink font-mono text-body antialiased;
   }
+
+  /* Each font is used only in the weights it has: Maragsâ is declared for
+     400–700, and DM Mono's 500 serves semibold and bold. Without this the
+     browser smears a fake bold onto DM Mono. */
+  html {
+    font-synthesis: style;
+  }
+
+  /* DM Mono's zero has a slash through it, which reads as "Ø" in "0 cooked".
+     These hold only a plain zero (DM Mono's O, narrowed to the zero's
+     width) and sit ahead of DM Mono in font-mono, so every other character
+     still comes from DM Mono. OFL licence: public/fonts/DM-Mono-OFL.txt. */
+  @font-face {
+    font-family: 'DM Mono Plain Zero';
+    src: url('/fonts/dm-mono-plain-zero-400.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0030;
+  }
+  @font-face {
+    font-family: 'DM Mono Plain Zero';
+    src: url('/fonts/dm-mono-plain-zero-500.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0030;
+  }
 }
 
 @layer components {

@@ -283,7 +283,7 @@ Alternate palettes (Ivory, Graph) exist in `prototype/theme.jsx` if the user wan
 ```
 --display:  "Maragsâ Display", Georgia, serif   /* headlines */
             700 weight, letter-spacing -0.005em
---body:     "JetBrains Mono", ui-monospace, monospace   /* all body text + meta */
+--body:     "DM Mono", ui-monospace, monospace   /* all body text + meta */
             13px / 1.55 default
 --mono:     same as body (the body IS mono)
 ```
@@ -356,7 +356,7 @@ Almost none. The design avoids depth/elevation. Only the device bezel itself has
 **Next.js 14+ (App Router) + Tailwind CSS**, web-first.
 
 - **Styling:** Tailwind with the design tokens below wired into `tailwind.config.ts` as custom theme values — not arbitrary values scattered through JSX. Add `colors.ink`, `colors.cream`, `fontFamily.display`, `fontFamily.mono`, and a `borderColor.rule` entry.
-- **Fonts:** Maragsâ Display (one weight, self-hosted from `app/fonts/` via `next/font/local`) for headlines; JetBrains Mono (400, 500, 600) from `next/font/google` for body.
+- **Fonts:** Maragsâ Display (one weight, self-hosted from `app/fonts/` via `next/font/local`) for headlines; DM Mono (400, 500) from `next/font/google` for body, with a plain zero swapped in from `public/fonts/` (its own zero is slashed).
 - **Dashed rules:** Tailwind's `border-dashed` + the `rule` color. This is the signature divider — define a `.rule-y` utility or a small `<Rule />` component rather than repeating classes.
 - **Data layer:** Start with the mock data in `prototype/ss-data.jsx` as typed TS fixtures in `lib/fixtures.ts`. Swap to **Supabase** (Postgres + auth + storage) when moving past static screens.
 - **Auth:** NextAuth with Google + Apple providers, or Supabase Auth if using Supabase.
