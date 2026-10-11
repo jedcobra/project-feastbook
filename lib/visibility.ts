@@ -11,9 +11,10 @@ export function visibilityLabel(v: Visibility): string {
 }
 
 export const SHELF_VISIBILITY_OPTIONS: { id: ShelfVisibility; title: string }[] = [
-  { id: 'private', title: 'Only me' },
-  { id: 'followers', title: 'People I follow back' },
-  { id: 'link', title: 'Anyone with the link' },
+  { id: 'private', title: 'Just me' },
+  // Only people the owner follows (see 0030_shelf_audience.sql).
+  { id: 'followers', title: 'People I follow' },
+  { id: 'link', title: 'Everyone' },
 ];
 
 export function shelfVisibilityLabel(v: ShelfVisibility): string {

@@ -1400,12 +1400,12 @@ export async function updateShelf(
   return true;
 }
 
-// Tells the owner's followers about a shelf the first time it's visible to
-// them — on creation, or when it's later changed from "only me". Both
-// visible settings ("people I follow back" and "anyone with the link") let
-// every follower see it. Claiming announced_at first, in one conditional
-// update, means a shelf is only ever announced once, however many times
-// its visibility is switched back and forth.
+// Tells the owner's followers about a shelf the first time they can see it
+// — on creation, or when it's later changed from "Just me". "Everyone"
+// tells all of them; "People I follow" only the followers the owner follows
+// back, since nobody else can open it. Claiming announced_at first, in one
+// conditional update, means a shelf is only ever announced once, however
+// many times its visibility is switched back and forth.
 async function announceShelf(shelfId: string) {
   const { data: claimed, error } = await supabase
     .from('shelves')
@@ -1413,7 +1413,7 @@ async function announceShelf(shelfId: string) {
     .eq('id', shelfId)
     .is('announced_at', null)
     .neq('visibility', 'private')
-    .select('owner_id, title');
+    .select('owner_id, title, visibility');
   const shelf = claimed?.[0];
   if (error || !shelf) {
     if (error) console.error('announceShelf: claim', error);
@@ -1429,9 +1429,20 @@ async function announceShelf(shelfId: string) {
     console.error('announceShelf: followers', followersError);
     return;
   }
-  await Promise.all(
-    (followers ?? []).map((f: { follower_id: string }) => notify(f.follower_id, shelf.owner_id, 'shelf', { shelfId })),
-  );
+  let recipientIds = (followers ?? []).map((f: { follower_id: string }) => f.follower_id);
+  if (shelf.visibility === 'followers') {
+    const { data: followed, error: followedError } = await supabase
+      .from('follows')
+      .select('followee_id')
+      .eq('follower_id', shelf.owner_id);
+    if (followedError) {
+      console.error('announceShelf: following', followedError);
+      return;
+    }
+    const followedIds = new Set((followed ?? []).map((f: { followee_id: string }) => f.followee_id));
+    recipientIds = recipientIds.filter((id) => followedIds.has(id));
+  }
+  await Promise.all(recipientIds.map((id) => notify(id, shelf.owner_id, 'shelf', { shelfId })));
 }
 
 export async function setShelfArchived(shelfId: string, archived: boolean): Promise<boolean> {
