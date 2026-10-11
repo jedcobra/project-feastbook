@@ -9,7 +9,7 @@ export function LandingScreen() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-1 items-center justify-center p-5">
-        <div className="text-center font-display text-[44px] font-bold leading-[1.05] text-ink">
+        <div className="text-center font-display text-[60px] font-bold leading-[0.9] text-ink">
           Special
           <br />
           Spoon
