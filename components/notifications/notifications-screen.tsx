@@ -52,7 +52,7 @@ function describe(n: AppNotification): string {
     case 'photo_comment':
       return 'commented on your photo';
     case 'shelf':
-      return 'made a new shelf:';
+      return 'made a new cookbook:';
     case 'digest':
       return n.excerpt ?? 'Weekly digest';
     default:

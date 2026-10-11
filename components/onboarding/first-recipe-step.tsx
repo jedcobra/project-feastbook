@@ -24,7 +24,7 @@ export function FirstRecipeStep({
       step={3}
       total={5}
       title="Put one recipe in"
-      blurb="A cookbook with nothing in it is just a feed. Start with the thing you cooked last week."
+      blurb="A profile with no recipes is just a feed. Start with the thing you cooked last week."
       cta="Add it now"
       onNext={() => onImport('manual')}
       onSkip={onSkip}

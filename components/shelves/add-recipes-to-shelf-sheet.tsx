@@ -71,7 +71,7 @@ export function AddRecipesToShelfSheet({
             <div className="py-4 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
           ) : recipes.length === 0 ? (
             <div className="py-4 text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
-              Nothing left to add — every recipe in your cookbook is already here.
+              Nothing left to add — every one of your recipes is already here.
             </div>
           ) : (
             recipes.map((r, i) => (

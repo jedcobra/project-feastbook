@@ -50,7 +50,7 @@ export function EditShelfSheet({
     const ok = await deleteShelf(shelf.id);
     setDeleting(false);
     if (ok) onDeleted();
-    else setError("Couldn't delete the shelf — try again.");
+    else setError("Couldn't delete the cookbook — try again.");
   };
 
   if (adding && profile) {
@@ -72,7 +72,7 @@ export function EditShelfSheet({
   }
 
   return (
-    <ShelfSheet title="Edit shelf" label={`Edit ${shelf.title}`} onClose={onClose}>
+    <ShelfSheet title="Edit cookbook" label={`Edit ${shelf.title}`} onClose={onClose}>
       <ShelfForm
         initial={{
           title: shelf.title,
@@ -98,10 +98,10 @@ export function EditShelfSheet({
       />
 
       <div className="mt-6">
-        <Label className="mb-2 text-[11px]">On this shelf</Label>
+        <Label className="mb-2 text-[11px]">In this cookbook</Label>
         {recipes.length === 0 ? (
           <div className="border-t border-dashed border-rule py-2.5 font-mono text-[12px] text-ink-mute">
-            Nothing on this shelf yet.
+            Nothing in this cookbook yet.
           </div>
         ) : (
           recipes.map((r) => (
@@ -137,14 +137,14 @@ export function EditShelfSheet({
             className="flex items-center gap-2.5 font-mono text-[14px] text-accent"
           >
             <TrashIcon size={16} />
-            Delete shelf
+            Delete cookbook
           </button>
         ) : (
           <div className="border border-accent p-3">
             <div className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink">
               Delete &ldquo;{shelf.title}&rdquo;?{' '}
               {recipes.length > 0
-                ? `The ${recipes.length} recipe${recipes.length === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
+                ? `The ${recipes.length} recipe${recipes.length === 1 ? '' : 's'} in it stay in your recipes — this just removes the cookbook.`
                 : 'This can’t be undone.'}
             </div>
             <div className="flex gap-2">
@@ -216,9 +216,9 @@ export function ShelfSheet({
 export function NewShelfSheet({ onCreated, onClose }: { onCreated: (shelf: Shelf) => void; onClose: () => void }) {
   const { profile } = useAuth();
   return (
-    <ShelfSheet title="New shelf" label="New shelf" onClose={onClose}>
+    <ShelfSheet title="New cookbook" label="New cookbook" onClose={onClose}>
       <ShelfForm
-        submitLabel="Create shelf"
+        submitLabel="Create cookbook"
         submittingLabel="Creating…"
         onSubmit={async ({ title, tellFollowers, ...values }) => {
           if (!profile) return false;

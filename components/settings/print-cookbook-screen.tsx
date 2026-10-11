@@ -31,7 +31,7 @@ export function PrintCookbookScreen() {
 
   return (
     <>
-      <TopBar title="Print your cookbook" backHref="/settings/account" />
+      <TopBar title="Print your recipes" backHref="/settings/account" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {recipes === null ? (
           <div className="py-8 text-center font-mono text-[12px] text-ink-mute">Gathering your recipes…</div>

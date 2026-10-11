@@ -20,7 +20,7 @@ const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'follows', label: 'Someone follows you', sub: '' },
   { key: 'messages', label: 'Someone sends you a message', sub: 'Push only — unread messages show on the Messages tab' },
   { key: 'cooked', label: 'Someone cooks your recipe', sub: 'Can get busy if a recipe takes off' },
-  { key: 'shelves', label: 'Someone you follow makes a new shelf', sub: 'Only shelves they’ve shared with you' },
+  { key: 'shelves', label: 'Someone you follow makes a new cookbook', sub: 'Only cookbooks they’ve shared with you' },
   { key: 'digest', label: 'Weekly: what your people cooked', sub: 'Not sent yet — saved for when it is' },
 ];
 

@@ -67,7 +67,7 @@ export function AccountScreen() {
     setExporting(true);
     const recipes = await fetchMyRecipesFull(profile.id);
     const text = formatCookbookExport(profile.name, recipes);
-    downloadTextFile(`${profile.handle}-cookbook.txt`, text);
+    downloadTextFile(`${profile.handle}-recipes.txt`, text);
     setExporting(false);
   };
 
@@ -148,7 +148,7 @@ export function AccountScreen() {
         <div className="mb-[22px]">
           <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Your writing</Label>
           <SettingRow label="Export everything" value={exporting ? 'Exporting…' : '.txt'} onClick={handleExport} first />
-          <SettingRow label="Print your cookbook" value="Print" onClick={() => router.push('/settings/print')} />
+          <SettingRow label="Print your recipes" value="Print" onClick={() => router.push('/settings/print')} />
           <div className="mt-2 font-mono text-[12px] leading-[1.55] text-ink-mute">
             Your recipes are yours. Export is plain text — no photos to include, and no account needed to read
             it.
@@ -159,8 +159,8 @@ export function AccountScreen() {
           <div className="mb-1.5 font-display text-[16px] font-bold text-accent">Delete your account</div>
           <div className="mb-3 font-mono text-[12px] leading-[1.55] text-ink">
             {impact
-              ? `Deletes ${impact.recipes} recipe${impact.recipes === 1 ? '' : 's'}, ${impact.shelves} shelf${impact.shelves === 1 ? '' : 'es'}, and ${impact.comments} note${impact.comments === 1 ? '' : 's'} you’ve written. ${impact.saves} ${impact.saves === 1 ? 'person who' : 'people who'} saved your recipes will lose them. This can’t be undone — export first if you want a copy.`
-              : 'Deletes your recipes, shelves, and everything you’ve written. This can’t be undone — export first if you want a copy.'}
+              ? `Deletes ${impact.recipes} recipe${impact.recipes === 1 ? '' : 's'}, ${impact.shelves} cookbook${impact.shelves === 1 ? '' : 's'}, and ${impact.comments} note${impact.comments === 1 ? '' : 's'} you’ve written. ${impact.saves} ${impact.saves === 1 ? 'person who' : 'people who'} saved your recipes will lose them. This can’t be undone — export first if you want a copy.`
+              : 'Deletes your recipes, cookbooks, and everything you’ve written. This can’t be undone — export first if you want a copy.'}
           </div>
           {!confirmingDelete ? (
             <button

@@ -41,7 +41,7 @@ function formatRecipe(recipe: Recipe): string {
 }
 
 export function formatCookbookExport(name: string, recipes: Recipe[]): string {
-  const header = [`${name}'s cookbook`, `Exported from Special Spoon · ${recipes.length} recipes`, ''].join('\n');
+  const header = [`${name}'s recipes`, `Exported from Special Spoon · ${recipes.length} recipes`, ''].join('\n');
   const body = recipes.map(formatRecipe).join('\n\n\n');
   return `${header}\n${body}\n`;
 }

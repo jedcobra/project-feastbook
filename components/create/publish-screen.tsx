@@ -161,7 +161,7 @@ export function PublishScreen() {
 
         <div className="mb-6">
           <div className="mb-2.5 border-b border-dashed border-rule pb-1.5">
-            <Label>Add to shelves</Label>
+            <Label>Add to cookbooks</Label>
           </div>
           {shelves.map((shelf, i) => (
             <button
@@ -182,7 +182,7 @@ export function PublishScreen() {
             onClick={() => setNewShelfOpen(true)}
             className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
           >
-            + new shelf
+            + new cookbook
           </button>
           {newShelfOpen && <NewShelfSheet onClose={() => setNewShelfOpen(false)} onCreated={handleShelfCreated} />}
         </div>
@@ -213,7 +213,7 @@ export function PublishScreen() {
             : visibility
               ? isEdit
                 ? 'Save changes'
-                : 'Publish to my cookbook'
+                : 'Publish to my profile'
               : 'Choose who can see it'}
         </button>
       </div>

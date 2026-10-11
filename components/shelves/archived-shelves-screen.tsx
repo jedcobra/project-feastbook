@@ -34,7 +34,7 @@ export function ArchivedShelvesScreen() {
 
   return (
     <>
-      <TopBar title="Archived shelves" backHref="/me" />
+      <TopBar title="Archived cookbooks" backHref="/me" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         {shelves === null ? (
           <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>

@@ -100,7 +100,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
               ['all', `All ${total}`],
               ['recipes', `Recipes ${recipes.length}`],
               ['people', `Cooks ${results.people.length}`],
-              ['shelves', `Shelves ${results.shelves.length}`],
+              ['shelves', `Cookbooks ${results.shelves.length}`],
             ] as [Scope, string][]
           ).map(([key, label]) => (
             <button
@@ -232,7 +232,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
 
             {showShelves && results.shelves.length > 0 && (
               <div>
-                <Label className="mb-1.5">Shelves</Label>
+                <Label className="mb-1.5">Cookbooks</Label>
                 {results.shelves.map((sh) => (
                   <Link
                     key={sh.id}

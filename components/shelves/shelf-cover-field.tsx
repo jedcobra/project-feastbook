@@ -162,7 +162,7 @@ export function ShelfCoverField({
           {uploading
             ? 'Uploading your photo…'
             : chosen
-              ? 'Shows beside the shelf’s name. Tap it to change.'
+              ? 'Shows beside the cookbook’s name. Tap it to change.'
               : 'Optional. Tap to add an emoji or photo.'}
         </div>
         <input
@@ -182,7 +182,7 @@ export function ShelfCoverField({
         {panel === 'photo' && (
           <div className="mt-2.5 border border-dashed border-rule p-1.5">
             <div className="px-0.5 pb-1.5 pt-0.5 font-mono text-[11px] text-ink-mute">
-              From this shelf&rsquo;s recipes
+              From this cookbook&rsquo;s recipes
             </div>
             <div className="grid max-h-[196px] grid-cols-4 gap-1.5 overflow-y-auto">
               {recipePhotos.map((r) => (

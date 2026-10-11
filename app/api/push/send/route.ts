@@ -14,7 +14,7 @@ const KIND_VERB: Record<string, string> = {
   message: 'sent you a message',
   kiss: 'added a chef’s kiss to your photo',
   photo_comment: 'commented on your photo',
-  shelf: 'made a new shelf:',
+  shelf: 'made a new cookbook:',
 };
 
 function unwrapOne<T>(value: T | T[] | null | undefined): T | undefined {

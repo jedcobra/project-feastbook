@@ -413,7 +413,7 @@ function RecipesTab({
             recipeReorder.stop();
           }}
         />
-        {groups.length > 0 && <SectionHeading>Shelves</SectionHeading>}
+        {groups.length > 0 && <SectionHeading>Cookbooks</SectionHeading>}
         {(shelfReorder.reorderIds ?? [])
           .map((id) => shelfById.get(id))
           .filter((s): s is Shelf => !!s)
@@ -491,7 +491,7 @@ function RecipesTab({
   const newShelfButton = (
     <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
       <PlusIcon size={11} />
-      New shelf
+      New cookbook
     </button>
   );
 
@@ -511,7 +511,7 @@ function RecipesTab({
             )
           }
         >
-          Shelves
+          Cookbooks
         </SectionHeading>
       ) : (
         isOwn && (
@@ -557,7 +557,7 @@ function RecipesTab({
             {open && (
               <div className="mb-3.5 border-l-2 border-ink pl-3.5">
                 {rows.length === 0 ? (
-                  <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing on this shelf yet.</div>
+                  <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing in this cookbook yet.</div>
                 ) : (
                   rows.map(({ recipe: r, saved }) => (
                     <div key={r.id} {...recipeReorder.pressProps}>
@@ -577,7 +577,7 @@ function RecipesTab({
                     className="flex items-center gap-1 pt-2.5 font-mono text-[12px] text-ink-mute"
                   >
                     <PencilIcon size={11} />
-                    Edit shelf
+                    Edit cookbook
                   </button>
                 )}
               </div>
@@ -648,7 +648,7 @@ function DeleteShelfConfirm({
         </h3>
         <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
           {shelf.count > 0
-            ? `The ${shelf.count} recipe${shelf.count === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
+            ? `The ${shelf.count} recipe${shelf.count === 1 ? '' : 's'} in it stay in your recipes — this just removes the cookbook.`
             : 'This can’t be undone.'}
         </div>
         <div className="flex gap-2">

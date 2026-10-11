@@ -51,7 +51,7 @@ export function ImportFailScreen() {
     {
       icon: LinkIcon,
       label: 'Just save the link',
-      sub: 'Sits in your cookbook as a bookmark until you have time.',
+      sub: 'Sits in your recipes as a bookmark until you have time.',
       onClick: () => router.push('/new/drafts'),
     },
   ];

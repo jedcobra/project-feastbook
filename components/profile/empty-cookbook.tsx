@@ -14,10 +14,10 @@ export function EmptyCookbook({ name }: { name: string }) {
     <div className="px-5 pb-8">
       <div className="mb-5 border border-ink px-[22px] pb-7 pt-[22px] text-center">
         <div className="mb-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-mute">
-          The cookbook of
+          Recipes by
         </div>
         <h1 className="mb-1.5 font-display text-[26px] font-bold text-ink">{name}</h1>
-        <div className="mb-5 font-mono text-[14px] leading-relaxed text-ink-mute">Nothing in it yet.</div>
+        <div className="mb-5 font-mono text-[14px] leading-relaxed text-ink-mute">Nothing here yet.</div>
         <div className="mb-[22px]">
           {[0, 1, 2, 3].map((i) => (
             <div

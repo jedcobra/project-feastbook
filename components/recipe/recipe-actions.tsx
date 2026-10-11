@@ -154,7 +154,7 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
         ) : (
           <button
             type="button"
-            aria-label={saved ? 'Manage shelves' : 'Save'}
+            aria-label={saved ? 'Manage cookbooks' : 'Save'}
             aria-pressed={saved}
             onClick={tapHeart}
             className={saved ? 'text-accent' : 'text-ink'}

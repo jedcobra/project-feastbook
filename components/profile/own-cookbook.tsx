@@ -59,7 +59,7 @@ export function OwnCookbook() {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
         <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
-          Sign in to see your own cookbook — your recipes, shelves, and what you&rsquo;ve made.
+          Sign in to see your profile — your recipes, cookbooks, and what you&rsquo;ve made.
         </p>
         <Link
           href="/account"

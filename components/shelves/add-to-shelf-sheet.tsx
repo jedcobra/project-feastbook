@@ -50,7 +50,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
     onClose();
   };
 
-  // New shelf… opens the same New shelf popup as everywhere else; once it's
+  // New cookbook… opens the same New shelf popup as everywhere else; once it's
   // made it's ticked here, ready to save the recipe onto.
   if (view === 'newShelf') {
     return (
@@ -66,7 +66,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
   }
 
   return (
-    <ShelfSheet title="Manage shelves" label={`Manage shelves for ${recipeTitle}`} onClose={onClose}>
+    <ShelfSheet title="Manage cookbooks" label={`Manage cookbooks for ${recipeTitle}`} onClose={onClose}>
       <div className="mb-3 truncate font-mono text-[12px] text-ink-mute">{recipeTitle}</div>
 
       {shelves === null ? (
@@ -115,7 +115,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
         className="mb-3.5 flex w-full items-center gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
       >
         <PlusIcon size={15} className="text-ink" />
-        <span className="font-mono text-[14px] text-ink">New shelf…</span>
+        <span className="font-mono text-[14px] text-ink">New cookbook…</span>
       </button>
 
       <button
@@ -124,7 +124,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
         disabled={saving || shelves === null}
         className="w-full rounded-button border border-ink bg-ink py-3 font-mono text-[14px] font-semibold text-cream disabled:opacity-60"
       >
-        {saving ? 'Saving…' : `Save to ${selected.size} ${selected.size === 1 ? 'shelf' : 'shelves'}`}
+        {saving ? 'Saving…' : `Save to ${selected.size} ${selected.size === 1 ? 'cookbook' : 'cookbooks'}`}
       </button>
     </ShelfSheet>
   );

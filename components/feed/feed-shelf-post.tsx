@@ -45,7 +45,7 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
               verb={
                 <>
                   <BookIcon size={14} />
-                  made a shelf
+                  made a cookbook
                 </>
               }
             />

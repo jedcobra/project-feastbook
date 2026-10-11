@@ -28,7 +28,7 @@ function summarizePrefs(prefs: NotificationPrefs): string {
     ['follows', 'Follows'],
     ['messages', 'Messages'],
     ['cooked', 'Cooked'],
-    ['shelves', 'Shelves'],
+    ['shelves', 'Cookbooks'],
     ['digest', 'Digest'],
   ];
   const on = labels.filter(([k]) => prefs[k]).map(([, l]) => l);

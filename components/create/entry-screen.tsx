@@ -112,7 +112,7 @@ export function EntryScreen() {
         <TopBar title="New recipe" />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
           <p className="font-mono text-[14px] leading-relaxed text-ink-mute">
-            Sign in to add a recipe to your cookbook.
+            Sign in to add a recipe to your profile.
           </p>
           <Link
             href="/account"
