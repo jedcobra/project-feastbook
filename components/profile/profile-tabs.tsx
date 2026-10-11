@@ -445,12 +445,12 @@ function RecipesTab({
   return (
     <div className="mx-5 pb-8">
       {isOwn && (
-        <div className="flex items-center justify-end gap-4 py-2 font-mono text-[12px] text-ink-mute">
-          {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived shelves ({archivedShelfCount})</Link>}
+        <div className="flex items-center justify-between gap-4 py-2 font-mono text-[12px] text-ink-mute">
           <Link href="/new-shelf" className="flex items-center gap-1">
             <PlusIcon size={11} />
             New shelf
           </Link>
+          {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived shelves ({archivedShelfCount})</Link>}
         </div>
       )}
 
