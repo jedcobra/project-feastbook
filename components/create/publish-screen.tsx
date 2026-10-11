@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
+import { NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { TopBar } from '@/components/top-bar';
 import { deleteDraft, draftCounts, loadDraft, type RecipeDraft } from '@/lib/recipe-draft';
 import {
-  createShelf,
   fetchProfileByHandle,
   fetchShelfIdsForRecipe,
   publishRecipe,
@@ -24,7 +24,6 @@ export function PublishScreen() {
   const [shelves, setShelves] = useState<Shelf[]>([]);
   const [selectedShelves, setSelectedShelves] = useState<Set<string>>(new Set());
   const [newShelfOpen, setNewShelfOpen] = useState(false);
-  const [newShelfName, setNewShelfName] = useState('');
   const [visibility, setVisibility] = useState<Visibility | null>(null);
   const [notify, setNotify] = useState(true);
   const [publishing, setPublishing] = useState(false);
@@ -63,18 +62,11 @@ export function PublishScreen() {
       return next;
     });
 
-  const handleAddShelf = async () => {
-    const name = newShelfName.trim();
-    if (!name || !profile) return;
-    const created = await createShelf(profile.id, name);
-    if (created) {
-      setShelves((s) => [
-        ...s,
-        { id: created.id, title: created.title, subtitle: '', visibility: 'private', count: 0, recipes: [] },
-      ]);
-      setSelectedShelves((s) => new Set(s).add(created.id));
-    }
-    setNewShelfName('');
+  // A shelf made from here (the same New shelf popup as everywhere else)
+  // is ticked straight away, so this recipe goes onto it.
+  const handleShelfCreated = (shelf: Shelf) => {
+    setShelves((s) => [...s, shelf]);
+    setSelectedShelves((s) => new Set(s).add(shelf.id));
     setNewShelfOpen(false);
   };
 
@@ -185,29 +177,14 @@ export function PublishScreen() {
               <span className="font-mono text-meta text-ink-mute">{shelf.count}</span>
             </button>
           ))}
-          {newShelfOpen ? (
-            <div className="flex items-center gap-2 border-t border-dotted border-rule pt-2.5">
-              <input
-                autoFocus
-                value={newShelfName}
-                onChange={(e) => setNewShelfName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddShelf()}
-                placeholder="Shelf name"
-                className="min-w-0 flex-1 border-b border-dashed border-rule bg-transparent font-mono text-[14px] text-ink outline-none"
-              />
-              <button type="button" onClick={handleAddShelf} className="font-mono text-[12px] text-ink">
-                Add
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setNewShelfOpen(true)}
-              className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
-            >
-              + new shelf
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setNewShelfOpen(true)}
+            className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
+          >
+            + new shelf
+          </button>
+          {newShelfOpen && <NewShelfSheet onClose={() => setNewShelfOpen(false)} onCreated={handleShelfCreated} />}
         </div>
 
         <button

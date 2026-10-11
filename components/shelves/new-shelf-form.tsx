@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { Checkbox } from '@/components/checkbox';
 import { Field } from '@/components/create/field';
 import { Label } from '@/components/label';
-import { useAuth } from '@/components/auth/auth-provider';
 import { ShelfCoverField, type ShelfRecipePhoto } from '@/components/shelves/shelf-cover-field';
-import { createShelf } from '@/lib/supabase/queries';
 import type { ShelfVisibility } from '@/lib/types';
 import { SHELF_VISIBILITY_OPTIONS } from '@/lib/visibility';
 
@@ -164,21 +162,5 @@ export function ShelfForm({
         {submitting ? submittingLabel : saved && !dirty ? 'Saved' : submitLabel}
       </button>
     </div>
-  );
-}
-
-export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; title: string }) => void }) {
-  const { profile } = useAuth();
-  return (
-    <ShelfForm
-      submitLabel="Create shelf"
-      submittingLabel="Creating…"
-      onSubmit={async ({ title, ...rest }) => {
-        if (!profile) return false;
-        const created = await createShelf(profile.id, title, rest);
-        if (created) onCreated(created);
-        return !!created;
-      }}
-    />
   );
 }

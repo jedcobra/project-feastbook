@@ -171,9 +171,9 @@ export function EditShelfSheet({
   );
 }
 
-// The bottom sheet both shelf sheets share: a title, a close button, and a
-// scrolling body.
-function ShelfSheet({
+// The bottom sheet every shelf popup shares (new, edit, and the recipe's
+// "Manage shelves"): a title, a close button, and a scrolling body.
+export function ShelfSheet({
   title,
   label,
   onClose,

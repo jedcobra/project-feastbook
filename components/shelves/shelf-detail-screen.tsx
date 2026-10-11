@@ -4,21 +4,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { ChevronIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { ChevronIcon, PlusIcon } from '@/components/icons';
 import { OutlineBox } from '@/components/outline-box';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { AddRecipesToShelfSheet } from '@/components/shelves/add-recipes-to-shelf-sheet';
-import { ShelfForm } from '@/components/shelves/new-shelf-form';
+import { EditShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { TopBar } from '@/components/top-bar';
 import { parseDurationMinutes } from '@/lib/format';
-import {
-  deleteShelf,
-  fetchShelfDetail,
-  removeRecipeFromShelf,
-  updateShelf,
-  type ShelfDetail,
-} from '@/lib/supabase/queries';
-import type { Recipe } from '@/lib/types';
+import { fetchShelfDetail, type ShelfDetail } from '@/lib/supabase/queries';
+import type { Recipe, Shelf } from '@/lib/types';
 import { shelfVisibilityLabel } from '@/lib/visibility';
 import { HandleLink } from '@/components/handle-link';
 
@@ -29,14 +23,14 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: 'time', label: 'Quickest' },
 ];
 
+// One shelf on its own page — where search results and shared links land.
+// The owner's Edit opens the same Edit shelf popup as the cookbook does.
 export function ShelfDetailScreen({ id }: { id: string }) {
   const router = useRouter();
   const { profile } = useAuth();
   const [shelf, setShelf] = useState<ShelfDetail | null | undefined>(undefined);
   const [sort, setSort] = useState<SortKey>('added');
   const [editing, setEditing] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -55,22 +49,30 @@ export function ShelfDetailScreen({ id }: { id: string }) {
     return shelf.recipes;
   }, [shelf, sort]);
 
-  const handleRemove = async (recipeId: string) => {
-    setShelf((s) => (s ? { ...s, recipes: s.recipes.filter((r) => r.id !== recipeId) } : s));
-    await removeRecipeFromShelf(id, recipeId);
-  };
-
   const handleRecipesAdded = (added: Recipe[]) => {
     setShelf((s) => (s ? { ...s, recipes: [...added, ...s.recipes] } : s));
   };
 
-  const handleDeleteShelf = async () => {
-    setDeleting(true);
-    const ok = await deleteShelf(id);
-    if (ok) {
-      router.push('/me');
-    } else {
-      setDeleting(false);
+  // The Edit popup reports changes as a Shelf, whose recipes are just ids:
+  // keep the full recipes still on it, and reload if it gained any.
+  const handleShelfChange = (next: Shelf) => {
+    setShelf((s) => {
+      if (!s) return s;
+      const ids = new Set(next.recipes.map((r) => r.id));
+      return {
+        ...s,
+        title: next.title,
+        subtitle: next.subtitle,
+        visibility: next.visibility,
+        emoji: next.emoji ?? null,
+        coverUrl: next.coverUrl ?? null,
+        stickerUrl: next.stickerUrl ?? null,
+        postedAt: next.postedAt ?? null,
+        recipes: s.recipes.filter((r) => ids.has(r.id)),
+      };
+    });
+    if (shelf && next.recipes.some((r) => !shelf.recipes.some((x) => x.id === r.id))) {
+      fetchShelfDetail(id).then(setShelf);
     }
   };
 
@@ -96,6 +98,19 @@ export function ShelfDetailScreen({ id }: { id: string }) {
     );
   }
 
+  const asShelf: Shelf = {
+    id: shelf.id,
+    title: shelf.title,
+    subtitle: shelf.subtitle,
+    visibility: shelf.visibility,
+    emoji: shelf.emoji,
+    coverUrl: shelf.coverUrl,
+    stickerUrl: shelf.stickerUrl,
+    postedAt: shelf.postedAt,
+    count: shelf.recipes.length,
+    recipes: shelf.recipes.map((r) => ({ id: r.id, title: r.title })),
+  };
+
   return (
     <>
       <TopBar
@@ -104,47 +119,15 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         subtitle={`${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} · ${shelfVisibilityLabel(shelf.visibility)}`}
         trailing={
           isOwner && (
-            <OutlineBox compact onClick={() => setEditing((e) => !e)}>
-              {editing ? 'Done' : 'Edit'}
+            <OutlineBox compact onClick={() => setEditing(true)}>
+              Edit
             </OutlineBox>
           )
         }
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        {editing && isOwner ? (
-          <div className="mb-5 border-b border-dashed border-rule pb-5">
-            <ShelfForm
-              initial={{
-                title: shelf.title,
-                subtitle: shelf.subtitle,
-                visibility: shelf.visibility,
-                emoji: shelf.emoji,
-                coverUrl: shelf.coverUrl,
-                stickerUrl: shelf.stickerUrl,
-              }}
-              recipePhotos={shelf.recipes.flatMap((r) =>
-                r.coverPhotoUrl ? [{ id: r.id, title: r.title, url: r.coverPhotoUrl }] : [],
-              )}
-              submitLabel="Save changes"
-              submittingLabel="Saving…"
-              // The heart button finds its default shelf by this exact name.
-              titleLocked={shelf.title === 'Saved' ? 'Your heart button saves here, so this name stays.' : undefined}
-              posted={!!shelf.postedAt}
-              onSubmit={async ({ tellFollowers, ...values }) => {
-                const ok = await updateShelf(id, { ...values, tellFollowers });
-                if (ok) {
-                  setShelf((s) =>
-                    s ? { ...s, ...values, postedAt: tellFollowers ? new Date().toISOString() : s.postedAt } : s,
-                  );
-                }
-                return ok;
-              }}
-            />
-          </div>
-        ) : (
-          shelf.subtitle && (
-            <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>
-          )
+        {shelf.subtitle && (
+          <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">{shelf.subtitle}</div>
         )}
 
         <div className="mb-1.5 flex gap-1.5">
@@ -165,33 +148,15 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         {sorted.map((r) => (
           <div key={r.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-3">
             {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
-            {editing ? (
-              <>
-                <div className="min-w-0 flex-1">
-                  <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
-                  <div className="font-mono text-[12px] text-ink-mute">
-                    <HandleLink nested handle={r.author} /> · {r.time} · {r.difficulty}
-                  </div>
+            <Link href={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="min-w-0 flex-1">
+                <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
+                <div className="font-mono text-[12px] text-ink-mute">
+                  <HandleLink nested handle={r.author} /> · {r.time} · {r.difficulty}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemove(r.id)}
-                  className="flex-shrink-0 font-mono text-[12px] text-accent"
-                >
-                  Remove
-                </button>
-              </>
-            ) : (
-              <Link href={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
-                <div className="min-w-0 flex-1">
-                  <h3 className="mb-0.5 font-display text-[16px] font-bold text-ink">{r.title}</h3>
-                  <div className="font-mono text-[12px] text-ink-mute">
-                    <HandleLink nested handle={r.author} /> · {r.time} · {r.difficulty}
-                  </div>
-                </div>
-                <ChevronIcon size={13} className="flex-shrink-0 text-rule" />
-              </Link>
-            )}
+              </div>
+              <ChevronIcon size={13} className="flex-shrink-0 text-rule" />
+            </Link>
           </div>
         ))}
 
@@ -209,47 +174,6 @@ export function ShelfDetailScreen({ id }: { id: string }) {
             )}
           </div>
         )}
-
-        {editing && isOwner && (
-          <div className="mt-5 border-t border-dashed border-rule pt-4">
-            {!confirmingDelete ? (
-              <button
-                type="button"
-                onClick={() => setConfirmingDelete(true)}
-                className="flex items-center gap-2.5 font-mono text-[14px] text-accent"
-              >
-                <TrashIcon size={16} />
-                Delete shelf
-              </button>
-            ) : (
-              <div className="border border-accent p-3">
-                <div className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink">
-                  Delete &ldquo;{shelf.title}&rdquo;?{' '}
-                  {shelf.recipes.length > 0
-                    ? `The ${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} on it stay in your cookbook — this just removes the shelf.`
-                    : 'This can’t be undone.'}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setConfirmingDelete(false)}
-                    className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
-                  >
-                    Keep it
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteShelf}
-                    disabled={deleting}
-                    className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
-                  >
-                    {deleting ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
       {addSheetOpen && (
         <AddRecipesToShelfSheet
@@ -258,6 +182,15 @@ export function ShelfDetailScreen({ id }: { id: string }) {
           existingRecipeIds={new Set(shelf.recipes.map((r) => r.id))}
           onAdded={handleRecipesAdded}
           onClose={() => setAddSheetOpen(false)}
+        />
+      )}
+      {editing && isOwner && (
+        <EditShelfSheet
+          shelf={asShelf}
+          recipes={shelf.recipes}
+          onChange={handleShelfChange}
+          onDeleted={() => router.push('/me')}
+          onClose={() => setEditing(false)}
         />
       )}
     </>
