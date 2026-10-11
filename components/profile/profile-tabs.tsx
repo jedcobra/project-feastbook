@@ -8,7 +8,6 @@ import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profil
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { ShelfIcon } from '@/components/shelves/shelf-icon';
-import { Label } from '@/components/label';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
@@ -583,9 +582,12 @@ function RecipesTab({
 }
 
 // The small heading over each part of the Recipes tab: the shelves, then
-// the recipes that aren't on one.
+// the recipes that aren't on one. Set in the body font, like the
+// "Ingredients" subhead on an expanded feed post.
 function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <Label className="mt-5 text-[11px] first:mt-2">{children}</Label>;
+  return (
+    <div className="mt-5 font-mono text-[12px] uppercase tracking-[0.08em] text-ink-mute first:mt-2">{children}</div>
+  );
 }
 
 // Deleting a shelf just un-groups its recipes — they stay in the
