@@ -110,7 +110,11 @@ export function ShelfForm({
       <Field
         label="One line about it"
         value={subtitle}
-        onChange={edit(setSubtitle)}
+        // Grows as you type, like the other text boxes, but stays one line
+        // of text: it shows as a single line under the shelf's name.
+        multiline
+        rows={1}
+        onChange={(v) => edit(setSubtitle)(v.replace(/\s*\n+\s*/g, ' '))}
         placeholder="When I have time and nothing else to do"
         hint="Optional. Shows under the name."
       />
