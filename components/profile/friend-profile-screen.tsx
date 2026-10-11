@@ -26,7 +26,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   const router = useRouter();
   const { profile } = useAuth();
   const [data, setData] = useState<
-    { person: Person; recipes: Recipe[]; shelves: Shelf[] } | null | undefined
+    { person: Person; recipes: Recipe[]; shelves: Shelf[]; shelfRecipes: Recipe[] } | null | undefined
   >(undefined);
   const [following, setFollowingState] = useState(false);
   const [blockedByMe, setBlockedByMe] = useState(false);
@@ -159,6 +159,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
         <ProfileTabs
           shelves={data.shelves}
           recipes={data.recipes}
+          shelfRecipes={data.shelfRecipes}
           cookPhotos={cookPhotos}
           onCookPhotosChange={setCookPhotos}
           ownerHandle={data.person.handle}

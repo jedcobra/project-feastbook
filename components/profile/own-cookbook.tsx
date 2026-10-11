@@ -20,7 +20,12 @@ import type { CookPhoto, Person, Recipe, Shelf } from '@/lib/types';
 // The real, auth-backed Cookbook screen.
 export function OwnCookbook() {
   const { loading, user, profile } = useAuth();
-  const [data, setData] = useState<{ person: Person; recipes: Recipe[]; shelves: Shelf[] } | null>(null);
+  const [data, setData] = useState<{
+    person: Person;
+    recipes: Recipe[];
+    shelves: Shelf[];
+    shelfRecipes: Recipe[];
+  } | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [cookPhotos, setCookPhotos] = useState<CookPhoto[]>([]);
   const [archivedShelfCount, setArchivedShelfCount] = useState(0);
@@ -88,6 +93,7 @@ export function OwnCookbook() {
       <ProfileTabs
         shelves={data.shelves}
         recipes={data.recipes}
+        shelfRecipes={data.shelfRecipes}
         savedRecipes={savedRecipes}
         cookPhotos={cookPhotos}
         onCookPhotosChange={setCookPhotos}

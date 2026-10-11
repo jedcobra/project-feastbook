@@ -104,6 +104,11 @@ export function useLongPressReorder({
   return {
     reorderIds,
     draggingId,
+    // Enter reorder mode without a press — for a second list on the same
+    // screen that should switch over together with the one pressed.
+    start: () => {
+      if (onReorder) setReorderIds(idsRef.current);
+    },
     stop: () => setReorderIds(null),
     pressProps,
     rowRef: (id: string) => (el: HTMLElement | null) => {

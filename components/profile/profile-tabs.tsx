@@ -7,19 +7,20 @@ import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons'
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { SwipeableRow } from '@/components/swipeable-row';
-import { Tag } from '@/components/tag';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
 
-type TabId = 'recipes' | 'shelves' | 'cooked';
+type TabId = 'recipes' | 'cooked';
+const TAB_ORDER: TabId[] = ['recipes', 'cooked'];
 
 export function ProfileTabs({
   shelves,
   recipes,
   savedRecipes = [],
+  shelfRecipes = [],
   cookPhotos = [],
   onCookPhotosChange,
   archivedShelfCount = 0,
@@ -35,6 +36,7 @@ export function ProfileTabs({
   shelves: Shelf[];
   recipes: Recipe[];
   savedRecipes?: Recipe[];
+  shelfRecipes?: Recipe[];
   cookPhotos?: CookPhoto[];
   onCookPhotosChange?: (fn: (photos: CookPhoto[]) => CookPhoto[]) => void;
   archivedShelfCount?: number;
@@ -66,7 +68,6 @@ export function ProfileTabs({
   const tabs: { id: TabId; label: string }[] = [
     { id: 'recipes', label: 'Recipes' },
     { id: 'cooked', label: 'Cooked' },
-    { id: 'shelves', label: 'Shelves' },
   ];
 
   // Swipe left/right anywhere on the profile's scrolling area to move to the
@@ -78,7 +79,6 @@ export function ProfileTabs({
   useEffect(() => {
     const el = contentRef.current?.closest<HTMLElement>('.overflow-y-auto') ?? contentRef.current;
     if (!el) return;
-    const order: TabId[] = ['recipes', 'cooked', 'shelves'];
     let start: { x: number; y: number; t: number } | null = null;
     const onStart = (e: TouchEvent) => {
       const target = e.target as Element | null;
@@ -96,8 +96,8 @@ export function ProfileTabs({
       start = null;
       if (!quick || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
       setTab((cur) => {
-        const i = order.indexOf(cur) + (dx < 0 ? 1 : -1);
-        return order[Math.max(0, Math.min(order.length - 1, i))];
+        const i = TAB_ORDER.indexOf(cur) + (dx < 0 ? 1 : -1);
+        return TAB_ORDER[Math.max(0, Math.min(TAB_ORDER.length - 1, i))];
       });
     };
     const onCancel = () => {
@@ -115,7 +115,7 @@ export function ProfileTabs({
 
   return (
     <div>
-      <div className="mx-5 grid grid-cols-3 border-b border-dashed border-rule">
+      <div className="mx-5 grid grid-cols-2 border-b border-dashed border-rule">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -135,20 +135,16 @@ export function ProfileTabs({
       <div ref={contentRef}>
         {tab === 'recipes' && (
           <RecipesTab
+            shelves={shelves}
             recipes={recipes}
             savedRecipes={savedRecipes}
-            isOwn={isOwn}
-            recipeOrder={recipeOrder}
-            onReorder={isOwn ? onReorderRecipes : undefined}
-            onRecipeDeleted={onRecipeDeleted}
-          />
-        )}
-        {tab === 'shelves' && (
-          <ShelvesTab
-            shelves={shelves}
+            shelfRecipes={shelfRecipes}
             isOwn={isOwn}
             archivedShelfCount={archivedShelfCount}
-            onReorder={isOwn ? onReorderShelves : undefined}
+            recipeOrder={recipeOrder}
+            onReorderRecipes={isOwn ? onReorderRecipes : undefined}
+            onReorderShelves={isOwn ? onReorderShelves : undefined}
+            onRecipeDeleted={onRecipeDeleted}
             onShelfRemoved={onShelfRemoved}
             onShelfArchived={onShelfArchived}
           />
@@ -168,164 +164,342 @@ export function ProfileTabs({
   );
 }
 
+// Where the heart button files recipes. It isn't shown as a shelf of its
+// own: its recipes sit among the loose ones, marked with a heart.
 const SAVED_SHELF_TITLE = 'Saved';
 
-// Like Recipes, a long press on your own shelves switches to edit mode:
-// drag a shelf by its handle to reorder, or swipe it left to archive
-// (instant, reversible from the Archived list) or delete (a shelf's recipes
-// aren't going anywhere, so one confirm tap is enough — no async impact
-// check needed, unlike a recipe). Outside edit mode shelves are plain links.
-// Someone else's shelves aren't yours to touch here.
-function ShelvesTab({
+type RecipeListRow = { recipe: Recipe; saved: boolean };
+
+// The whole cookbook in one list. Shelves come first, each a closed group
+// that opens in place to show its recipes; every recipe not on a shelf
+// follows, one row each. Recipes saved from other cooks carry a heart and
+// that cook's handle instead of living in a tab of their own. In your own
+// cookbook a long press switches to edit mode: drag shelves and loose
+// recipes by their handles to reorder (every drop is saved), swipe a shelf
+// left to archive (instant, reversible from Archived shelves) or delete it,
+// or one of your own recipes left to delete it. Outside edit mode rows are
+// plain links and toggles, so a stray swipe can't delete anything.
+function RecipesTab({
   shelves,
+  recipes,
+  savedRecipes,
+  shelfRecipes,
   isOwn,
   archivedShelfCount,
-  onReorder,
+  recipeOrder,
+  onReorderRecipes,
+  onReorderShelves,
+  onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
 }: {
   shelves: Shelf[];
+  recipes: Recipe[];
+  savedRecipes: Recipe[];
+  shelfRecipes: Recipe[];
   isOwn: boolean;
   archivedShelfCount: number;
-  onReorder?: (shelfIds: string[]) => void;
+  recipeOrder: string[];
+  onReorderRecipes?: (recipeIds: string[]) => void;
+  onReorderShelves?: (shelfIds: string[]) => void;
+  onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
 }) {
+  // Which row is swiped open — a shelf's id or a recipe's, never both.
   const [openId, setOpenId] = useState<string | null>(null);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  // The "Saved" shelf (where the heart button files recipes) is pinned
-  // first: it can't be dragged, archived or deleted, and the rest reorder
-  // beneath it.
-  const pinned = shelves.find((s) => s.title === SAVED_SHELF_TITLE);
-  const movable = shelves.filter((s) => s !== pinned);
-  const reorder = useLongPressReorder({
-    ids: movable.map((s) => s.id),
-    onReorder: onReorder && ((ids) => onReorder(pinned ? [pinned.id, ...ids] : ids)),
-    onStart: () => setOpenId(null),
-  });
+  const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
+  const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
-  const handleArchive = async (shelfId: string) => {
+  const ownIds = new Set(recipes.map((r) => r.id));
+  const recipeById = new Map([...shelfRecipes, ...savedRecipes, ...recipes].map((r) => [r.id, r]));
+  const rowsFor = (ids: string[]) =>
+    ids.flatMap((id): RecipeListRow[] => {
+      const recipe = recipeById.get(id);
+      return recipe ? [{ recipe, saved: !ownIds.has(id) }] : [];
+    });
+
+  const savedShelf = shelves.find((s) => s.title === SAVED_SHELF_TITLE);
+  const groups = shelves.filter((s) => s !== savedShelf);
+  const shelvedIds = new Set(groups.flatMap((s) => s.recipes.map((r) => r.id)));
+  const shelfRows = (shelf: Shelf) => rowsFor(shelf.recipes.map((r) => r.id));
+
+  // Saved recipes come from your own saves, or on someone else's profile
+  // from their Saved shelf where you're allowed to see it. Saving your own
+  // recipe doesn't un-author it, hence the de-duplication.
+  const looseIds = [
+    ...new Set([
+      ...recipes.map((r) => r.id),
+      ...savedRecipes.map((r) => r.id),
+      ...(savedShelf?.recipes.map((r) => r.id) ?? []),
+    ]),
+  ].filter((id) => !shelvedIds.has(id));
+  const looseRows = sortByCookbookOrder(rowsFor(looseIds), (row) => row.recipe.id, recipeOrder);
+
+  // A long press on either list puts both into edit mode together.
+  const startEditing = () => {
+    setOpenId(null);
+    shelfReorder.start();
+    recipeReorder.start();
+  };
+  const shelfReorder = useLongPressReorder({
+    ids: groups.map((s) => s.id),
+    onReorder: onReorderShelves && ((ids) => onReorderShelves(savedShelf ? [savedShelf.id, ...ids] : ids)),
+    onStart: startEditing,
+  });
+  const recipeReorder = useLongPressReorder({
+    ids: looseRows.map((row) => row.recipe.id),
+    // Only loose recipes can be dragged here. Shelved ones keep their old
+    // places in the saved order, after these, for if they come off a shelf.
+    onReorder:
+      onReorderRecipes &&
+      ((ids) => onReorderRecipes([...ids, ...recipeOrder.filter((id) => !ids.includes(id))])),
+    onStart: startEditing,
+  });
+  const editing = shelfReorder.reorderIds !== null || recipeReorder.reorderIds !== null;
+
+  const toggleShelf = (shelfId: string) =>
+    setExpanded((cur) => {
+      const next = new Set(cur);
+      if (!next.delete(shelfId)) next.add(shelfId);
+      return next;
+    });
+
+  const archiveShelf = async (shelfId: string) => {
     onShelfRemoved?.(shelfId);
     onShelfArchived?.(shelfId);
     await setShelfArchived(shelfId, true);
   };
 
-  const confirmingShelf = confirmingId ? shelves.find((s) => s.id === confirmingId) : undefined;
-
-  const shelfBody = (shelf: Shelf) => (
+  const confirmingRecipe = confirmingRecipeId ? recipes.find((r) => r.id === confirmingRecipeId) : undefined;
+  const confirmingShelf = confirmingShelfId ? groups.find((s) => s.id === confirmingShelfId) : undefined;
+  const confirmSheets = (
     <>
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
-        <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
-      </div>
+      {confirmingRecipe && (
+        <DeleteRecipeConfirm
+          recipe={confirmingRecipe}
+          onCancel={() => setConfirmingRecipeId(null)}
+          onDeleted={() => {
+            setConfirmingRecipeId(null);
+            onRecipeDeleted?.(confirmingRecipe.id);
+          }}
+        />
+      )}
+      {confirmingShelf && (
+        <DeleteShelfConfirm
+          shelf={confirmingShelf}
+          onCancel={() => setConfirmingShelfId(null)}
+          onDeleted={() => {
+            setConfirmingShelfId(null);
+            onShelfRemoved?.(confirmingShelf.id);
+          }}
+        />
+      )}
+    </>
+  );
+
+  const recipeBody = (r: Recipe, saved: boolean) => (
+    <>
+      {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
       <div className="min-w-0 flex-1">
-        <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
-        <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>
-        <div className="flex flex-wrap gap-1.5">
-          {shelf.recipes.slice(0, 3).map((r) => (
-            <Tag key={r.id}>{r.title}</Tag>
-          ))}
-          {shelf.count > 3 && <Tag>+{shelf.count - 3} more</Tag>}
+        <div className="flex items-baseline gap-2.5">
+          <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
+          {saved && (
+            <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
+              <HeartIcon size={10} />
+              <HandleLink nested handle={r.author} />
+            </span>
+          )}
+        </div>
+        {/* One line; only the time truncates if a row still can't fit. Saves and
+            ratings live on the recipe itself, not in this list. */}
+        <div className="mt-1 flex items-center gap-x-2 overflow-hidden whitespace-nowrap font-mono text-meta text-ink-mute">
+          <span className="min-w-0 truncate">{r.time}</span>
+          <span className="flex-shrink-0">·</span>
+          <span className="flex-shrink-0">{r.difficulty}</span>
+          <span className="flex-shrink-0">·</span>
+          <span className="flex-shrink-0">{formatCount(r.madeIt)} cooked</span>
         </div>
       </div>
     </>
   );
 
-  const confirmSheet = confirmingShelf && (
-    <DeleteShelfConfirm
-      shelf={confirmingShelf}
-      onCancel={() => setConfirmingId(null)}
-      onDeleted={() => {
-        setConfirmingId(null);
-        onShelfRemoved?.(confirmingShelf.id);
-      }}
-    />
+  const shelfBody = (shelf: Shelf) => (
+    <>
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
+        <span className="font-mono text-[14px] font-semibold text-ink">{shelfRows(shelf).length}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
+        {shelf.subtitle && <div className="mt-0.5 truncate font-mono text-meta text-ink-mute">{shelf.subtitle}</div>}
+      </div>
+    </>
   );
 
-  if (reorder.reorderIds) {
-    const shelfById = new Map(shelves.map((s) => [s.id, s]));
+  if (editing) {
+    const shelfById = new Map(groups.map((s) => [s.id, s]));
+    const rowById = new Map(looseRows.map((row) => [row.recipe.id, row]));
     return (
       <div className="mx-5 select-none pb-8">
         <ReorderBar
           label="Drag to reorder · swipe left for more"
           onDone={() => {
             setOpenId(null);
-            reorder.stop();
+            shelfReorder.stop();
+            recipeReorder.stop();
           }}
         />
-        {pinned && (
-          <div className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5">
-            {shelfBody(pinned)}
-            <span className="self-center font-mono text-meta text-ink-mute">Pinned</span>
-          </div>
-        )}
-        {reorder.reorderIds
+        {(shelfReorder.reorderIds ?? [])
           .map((id) => shelfById.get(id))
           .filter((s): s is Shelf => !!s)
           .map((shelf) => (
-            <div key={shelf.id} ref={reorder.rowRef(shelf.id)}>
+            <div key={shelf.id} ref={shelfReorder.rowRef(shelf.id)}>
               <SwipeableRow
                 open={openId === shelf.id}
                 onOpen={() => setOpenId(shelf.id)}
                 onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
                 actions={[
-                  { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(shelf.id) },
-                  { label: 'Archive', className: 'bg-ink', onClick: () => handleArchive(shelf.id) },
+                  { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingShelfId(shelf.id) },
+                  { label: 'Archive', className: 'bg-ink', onClick: () => archiveShelf(shelf.id) },
                 ]}
               >
                 <div
-                  className={`flex items-start gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
-                    reorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
+                  className={`flex items-center gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                    shelfReorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
                   }`}
                 >
                   {shelfBody(shelf)}
-                  <div className="self-center">
-                    <DragHandle
-                      label={`Move ${shelf.title}`}
-                      onStart={() => {
-                        setOpenId(null);
-                        reorder.startDrag(shelf.id);
-                      }}
-                    />
-                  </div>
+                  <DragHandle
+                    label={`Move ${shelf.title}`}
+                    onStart={() => {
+                      setOpenId(null);
+                      shelfReorder.startDrag(shelf.id);
+                    }}
+                  />
                 </div>
               </SwipeableRow>
             </div>
           ))}
-        {confirmSheet}
+        {(recipeReorder.reorderIds ?? [])
+          .map((id) => rowById.get(id))
+          .filter((row): row is RecipeListRow => !!row)
+          .map(({ recipe: r, saved }) => {
+            const row = (
+              <div
+                className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                  recipeReorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
+                }`}
+              >
+                {recipeBody(r, saved)}
+                <DragHandle
+                  label={`Move ${r.title}`}
+                  onStart={() => {
+                    setOpenId(null);
+                    recipeReorder.startDrag(r.id);
+                  }}
+                />
+              </div>
+            );
+            return (
+              <div key={r.id} ref={recipeReorder.rowRef(r.id)}>
+                {isOwn && !saved ? (
+                  <SwipeableRow
+                    open={openId === r.id}
+                    onOpen={() => setOpenId(r.id)}
+                    onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
+                    actions={[{ label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingRecipeId(r.id) }]}
+                  >
+                    {row}
+                  </SwipeableRow>
+                ) : (
+                  row
+                )}
+              </div>
+            );
+          })}
+        {confirmSheets}
       </div>
     );
   }
 
   return (
     <div className="mx-5 pb-8">
-      {isOwn && archivedShelfCount > 0 && (
-        <div className="flex justify-end py-2">
-          <Link href="/archived-shelves" className="font-mono text-[12px] text-ink-mute">
-            Archived ({archivedShelfCount})
+      {isOwn && (
+        <div className="flex items-center justify-end gap-4 py-2 font-mono text-[12px] text-ink-mute">
+          {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived shelves ({archivedShelfCount})</Link>}
+          <Link href="/new-shelf" className="flex items-center gap-1">
+            <PlusIcon size={11} />
+            New shelf
           </Link>
         </div>
       )}
-      {[...(pinned ? [pinned] : []), ...movable].map((shelf) => (
-        <div key={shelf.id} {...reorder.pressProps}>
+
+      {groups.length === 0 && looseRows.length === 0 && (
+        <div className={`border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? '' : 'mt-6'}`}>
+          Recipes written or saved here will show up here.
+        </div>
+      )}
+
+      {groups.map((shelf) => {
+        const rows = shelfRows(shelf);
+        const open = expanded.has(shelf.id);
+        return (
+          <div key={shelf.id} className="border-b border-dashed border-rule">
+            <div {...shelfReorder.pressProps}>
+              <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => toggleShelf(shelf.id)}
+                className="flex w-full items-center gap-3.5 bg-cream py-3.5 text-left"
+              >
+                {shelfBody(shelf)}
+                <ChevronIcon
+                  size={16}
+                  className={`flex-shrink-0 text-ink-mute transition-transform ${open ? 'rotate-90' : ''}`}
+                />
+              </button>
+            </div>
+            {open && (
+              <div className="mb-3.5 border-l-2 border-ink pl-3.5">
+                {rows.length === 0 ? (
+                  <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing on this shelf yet.</div>
+                ) : (
+                  rows.map(({ recipe: r, saved }) => (
+                    <div key={r.id} {...recipeReorder.pressProps}>
+                      <Link
+                        href={`/recipe/${r.id}`}
+                        className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3"
+                      >
+                        {recipeBody(r, saved)}
+                      </Link>
+                    </div>
+                  ))
+                )}
+                <Link
+                  href={`/shelf/${shelf.id}`}
+                  className="flex items-center gap-1 pt-2.5 font-mono text-[12px] text-ink-mute"
+                >
+                  Open shelf
+                  <ChevronIcon size={11} />
+                </Link>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {looseRows.map(({ recipe: r, saved }) => (
+        <div key={r.id} {...recipeReorder.pressProps}>
           <Link
-            href={`/shelf/${shelf.id}`}
-            className="flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5"
+            href={`/recipe/${r.id}`}
+            className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
           >
-            {shelfBody(shelf)}
-            <ChevronIcon size={16} className="mt-2.5 flex-shrink-0 text-ink-mute" />
+            {recipeBody(r, saved)}
           </Link>
         </div>
       ))}
-      {isOwn && (
-        <Link
-          href="/new-shelf"
-          className="mt-3.5 flex w-full items-center justify-center gap-1.5 border border-dashed border-rule py-3 font-mono text-[14px] text-ink-mute"
-        >
-          <PlusIcon size={13} />
-          New shelf
-        </Link>
-      )}
-      {confirmSheet}
+      {confirmSheets}
     </div>
   );
 }
@@ -384,171 +558,6 @@ function DeleteShelfConfirm({
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// Authored recipes and recipes saved from other cooks, in one list — a
-// saved-from-someone-else row carries a heart badge with their handle
-// instead of a saves count, rather than living in a separate tab. In your
-// own cookbook a long press switches the list into edit mode: rows stop
-// being links, each gets a drag handle (every drop is saved as the
-// cookbook's order), and your own recipes can be swiped left to delete.
-// Saved rows and anyone else's cookbook aren't yours to delete from here.
-function RecipesTab({
-  recipes,
-  savedRecipes,
-  isOwn,
-  recipeOrder,
-  onReorder,
-  onRecipeDeleted,
-}: {
-  recipes: Recipe[];
-  savedRecipes: Recipe[];
-  isOwn: boolean;
-  recipeOrder: string[];
-  onReorder?: (recipeIds: string[]) => void;
-  onRecipeDeleted?: (recipeId: string) => void;
-}) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
-
-  // Saving your own recipe to one of your own shelves (the shelf "Add
-  // recipes" picker allows this) marks it saved without un-authoring it —
-  // without this filter it'd show up twice, once from each list.
-  const ownIds = new Set(recipes.map((r) => r.id));
-  const sortedRows = sortByCookbookOrder(
-    [
-      ...recipes.map((r) => ({ recipe: r, saved: false })),
-      ...savedRecipes.filter((r) => !ownIds.has(r.id)).map((r) => ({ recipe: r, saved: true })),
-    ],
-    (row) => row.recipe.id,
-    recipeOrder,
-  );
-  const reorder = useLongPressReorder({
-    ids: sortedRows.map((row) => row.recipe.id),
-    onReorder,
-    onStart: () => setOpenId(null),
-  });
-  const rowById = new Map(sortedRows.map((row) => [row.recipe.id, row]));
-  const rows = reorder.reorderIds
-    ? reorder.reorderIds.map((id) => rowById.get(id)).filter((row): row is (typeof sortedRows)[number] => !!row)
-    : sortedRows;
-
-  if (rows.length === 0) {
-    return (
-      <div className="mx-5 pb-8 pt-6">
-        <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
-          Recipes written or saved here will show up here.
-        </div>
-      </div>
-    );
-  }
-
-  const confirmingRecipe = confirmingId ? recipes.find((r) => r.id === confirmingId) : undefined;
-
-  const rowBody = (r: Recipe, saved: boolean) => (
-    <>
-      {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2.5">
-          <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold text-ink">{r.title}</h3>
-          {saved && (
-            <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
-              <HeartIcon size={10} />
-              <HandleLink nested handle={r.author} />
-            </span>
-          )}
-        </div>
-        {/* One line; only the time truncates if a row still can't fit. Saves and
-            ratings live on the recipe itself, not in this list. */}
-        <div className="mt-1 flex items-center gap-x-2 overflow-hidden whitespace-nowrap font-mono text-meta text-ink-mute">
-          <span className="min-w-0 truncate">{r.time}</span>
-          <span className="flex-shrink-0">·</span>
-          <span className="flex-shrink-0">{r.difficulty}</span>
-          <span className="flex-shrink-0">·</span>
-          <span className="flex-shrink-0">{formatCount(r.madeIt)} cooked</span>
-        </div>
-      </div>
-    </>
-  );
-
-  const confirmSheet = confirmingRecipe && (
-    <DeleteRecipeConfirm
-      recipe={confirmingRecipe}
-      onCancel={() => setConfirmingId(null)}
-      onDeleted={() => {
-        setConfirmingId(null);
-        onRecipeDeleted?.(confirmingRecipe.id);
-      }}
-    />
-  );
-
-  // Long press puts the list into edit mode: drag a row by its handle to
-  // reorder it, or swipe one of your own recipes left to delete it. Outside
-  // edit mode rows are plain links, so a stray swipe can't delete anything.
-  if (reorder.reorderIds) {
-    return (
-      <div className="mx-5 select-none pb-8">
-        <ReorderBar
-          label={isOwn ? 'Drag to reorder · swipe left to delete' : 'Drag a recipe up or down'}
-          onDone={() => {
-            setOpenId(null);
-            reorder.stop();
-          }}
-        />
-        {rows.map(({ recipe: r, saved }) => {
-          const row = (
-            <div
-              className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
-                reorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
-              }`}
-            >
-              {rowBody(r, saved)}
-              <DragHandle
-                label={`Move ${r.title}`}
-                onStart={() => {
-                  setOpenId(null);
-                  reorder.startDrag(r.id);
-                }}
-              />
-            </div>
-          );
-          return (
-            <div key={r.id} ref={reorder.rowRef(r.id)}>
-              {isOwn && !saved ? (
-                <SwipeableRow
-                  open={openId === r.id}
-                  onOpen={() => setOpenId(r.id)}
-                  onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
-                  actions={[{ label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingId(r.id) }]}
-                >
-                  {row}
-                </SwipeableRow>
-              ) : (
-                row
-              )}
-            </div>
-          );
-        })}
-        {confirmSheet}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-5 pb-8">
-      {rows.map(({ recipe: r, saved }) => (
-        <div key={r.id} {...reorder.pressProps}>
-          <Link
-            href={`/recipe/${r.id}`}
-            className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
-          >
-            {rowBody(r, saved)}
-          </Link>
-        </div>
-      ))}
-      {confirmSheet}
     </div>
   );
 }

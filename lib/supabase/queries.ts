@@ -585,7 +585,20 @@ export async function fetchProfileByHandle(handle: string) {
   const recipes = await mapRecipeRows((recipeRows ?? []) as RecipeRow[]);
   const shelves = mapShelfRows(shelfRows ?? []);
 
-  return { person, recipes, shelves };
+  // Shelves also hold recipes saved from other cooks; the Recipes tab
+  // lists each shelf's contents in full, so fetch those too.
+  const authoredIds = new Set(recipes.map((r) => r.id));
+  const otherIds = [...new Set(shelves.flatMap((s) => s.recipes.map((r) => r.id)))].filter(
+    (id) => !authoredIds.has(id),
+  );
+  let shelfRecipes: Recipe[] = [];
+  if (otherIds.length > 0) {
+    const { data: otherRows, error: otherError } = await supabase.from('recipes').select('*').in('id', otherIds);
+    if (otherError) console.error('fetchProfileByHandle: shelf recipes', otherError);
+    shelfRecipes = await mapRecipeRows((otherRows ?? []) as RecipeRow[]);
+  }
+
+  return { person, recipes, shelves, shelfRecipes };
 }
 
 interface ShelfRow {
@@ -1303,8 +1316,8 @@ export async function createShelf(
   return { id: data.id as string, title: data.title as string };
 }
 
-// Just the current user's own shelves — the add-to-shelf sheet's list and
-// the Cookbook's Shelves tab both need this without the rest of the
+// Just the current user's own shelves — the add-to-shelf sheet's list
+// needs this without the rest of the
 // profile bundle fetchProfileByHandle pulls in.
 export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
@@ -1329,7 +1342,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
   );
 }
 
-// Archived shelves — hidden from the Cookbook's Shelves tab and the
+// Archived shelves — hidden from the Cookbook's Recipes tab and the
 // add-to-shelf picker, visible only here, restorable from here.
 export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
