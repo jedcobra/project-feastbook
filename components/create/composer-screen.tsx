@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
+import { AutoGrowLine, AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
 import { PhotoField } from '@/components/create/photo-field';
 import { TimeField } from '@/components/create/time-field';
@@ -277,11 +277,11 @@ export function ComposerScreen() {
           </div>
           {draft.sections.map((section, si) => (
             <div key={si} className="mb-3.5">
-              <input
+              <AutoGrowLine
                 value={section.section}
-                onChange={(e) => setSectionName(si, e.target.value)}
+                onChange={(v) => setSectionName(si, v)}
                 placeholder={si === 0 ? 'Section name (optional)' : 'Section name'}
-                className="mb-1.5 w-full border-none bg-transparent p-0 font-mono text-[11px] uppercase tracking-wide text-ink-mute outline-none"
+                className="mb-1.5 block w-full resize-none border-none bg-transparent p-0 font-mono text-[11px] uppercase tracking-wide text-ink-mute outline-none"
               />
               {section.items.map((item, ii) => (
                 <div
@@ -290,7 +290,7 @@ export function ComposerScreen() {
                     if (el) ingredientRows.current.set(`${si}:${ii}`, el);
                     else ingredientRows.current.delete(`${si}:${ii}`);
                   }}
-                  className={`flex items-center gap-2 border-t border-dotted border-rule py-1.5 ${
+                  className={`flex items-start gap-2 border-t border-dotted border-rule py-1.5 ${
                     dragging?.si === si && dragging.ii === ii ? 'bg-cream-deep' : ''
                   }`}
                 >
@@ -308,17 +308,17 @@ export function ComposerScreen() {
                   >
                     <DragIcon size={14} />
                   </button>
-                  <input
+                  <AutoGrowLine
                     value={item.q}
-                    onChange={(e) => setItem(si, ii, 'q', e.target.value)}
+                    onChange={(v) => setItem(si, ii, 'q', v)}
                     placeholder="200g"
-                    className="w-[62px] flex-shrink-0 border-none bg-transparent p-0 font-mono text-[12px] text-ink-mute outline-none"
+                    className="block w-[112px] flex-shrink-0 resize-none border-none bg-transparent p-0 pt-px font-mono text-[12px] leading-[1.5] text-ink-mute outline-none"
                   />
-                  <input
+                  <AutoGrowLine
                     value={item.i}
-                    onChange={(e) => setItem(si, ii, 'i', e.target.value)}
+                    onChange={(v) => setItem(si, ii, 'i', v)}
                     placeholder="bucatini"
-                    className="min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-[14px] text-ink outline-none"
+                    className="block min-w-0 flex-1 resize-none border-none bg-transparent p-0 font-mono text-[14px] leading-[1.4] text-ink outline-none"
                   />
                 </div>
               ))}
@@ -344,11 +344,11 @@ export function ComposerScreen() {
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <input
+                  <AutoGrowLine
                     value={step.t}
-                    onChange={(e) => setStep(i, 't', e.target.value)}
+                    onChange={(v) => setStep(i, 't', v)}
                     placeholder="Brown the butter"
-                    className="mb-1 w-full border-none bg-transparent p-0 font-display text-[16px] font-bold text-ink outline-none"
+                    className="mb-1 block w-full resize-none border-none bg-transparent p-0 font-display text-[16px] font-bold leading-[1.3] text-ink outline-none"
                   />
                   <AutoGrowTextarea
                     value={step.d}
@@ -369,7 +369,7 @@ export function ComposerScreen() {
                       value={step.timer}
                       onChange={(e) => setStep(i, 'timer', e.target.value)}
                       placeholder="timer (min)"
-                      className="w-[90px] border-none bg-transparent p-0 font-mono text-[11px] text-ink-mute outline-none"
+                      className="w-[110px] border-none bg-transparent p-0 font-mono text-[11px] text-ink-mute outline-none"
                     />
                   </div>
                   <div className="mt-1.5">

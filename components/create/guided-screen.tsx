@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
-import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
+import { AutoGrowLine, AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
 import { TimeField } from '@/components/create/time-field';
 import { ChevronIcon } from '@/components/icons';
@@ -292,12 +292,14 @@ export function GuidedScreen() {
             className="block w-full resize-none rounded-button border border-ink bg-cream-surface p-3 font-mono text-[14px] leading-[1.7] text-ink outline-none"
           />
         ) : (
-          <input
+          <AutoGrowLine
+            key={cur.key}
             value={values[cur.field as TextField]}
             placeholder={cur.placeholder}
-            onChange={(e) => set(cur.field as TextField, e.target.value)}
-            className={`w-full border-none border-b border-ink bg-transparent py-2 text-ink outline-none ${
-              cur.display ? 'font-display text-[26px] font-bold' : 'font-mono text-[14px]'
+            onChange={(v) => set(cur.field as TextField, v)}
+            onEnter={advance}
+            className={`block w-full resize-none border-none border-b border-ink bg-transparent py-2 text-ink outline-none ${
+              cur.display ? 'font-display text-[26px] font-bold leading-[1.2]' : 'font-mono text-[14px] leading-[1.5]'
             }`}
           />
         )}

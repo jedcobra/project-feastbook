@@ -1,4 +1,4 @@
-import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
+import { AutoGrowLine, AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Label } from '@/components/label';
 
 interface FieldProps {
@@ -19,7 +19,10 @@ interface FieldProps {
 }
 
 // Underline field — real input, no border box. The composer's signature
-// look: a label, the value, and a dashed rule underneath.
+// look: a label, the value, and a dashed rule underneath. Plain one-line
+// text wraps and grows as it's typed (AutoGrowLine) so it's always all in
+// view; emails, passwords, numbers and anything the browser autofills
+// stay ordinary inputs.
 export function Field({
   label,
   value,
@@ -52,6 +55,15 @@ export function Field({
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
+          className={inputClassName}
+          style={style}
+        />
+      ) : type === 'text' && !autoComplete ? (
+        <AutoGrowLine
+          maxLength={maxLength}
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
           className={inputClassName}
           style={style}
         />

@@ -28,3 +28,35 @@ export function AutoGrowTextarea({ className = '', ...props }: TextareaHTMLAttri
 
   return <textarea ref={ref} {...props} className={`overflow-hidden ${className}`} />;
 }
+
+// A one-line answer (a title, a name, a one-line description, a link)
+// that wraps onto more lines as it grows rather than scrolling sideways
+// and hiding its beginning. It's still one line of text: Enter doesn't
+// add a line break (it calls onEnter if given), and line breaks pasted
+// in become spaces.
+export function AutoGrowLine({
+  onChange,
+  onEnter,
+  onKeyDown,
+  ...props
+}: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'rows'> & {
+  onChange: (value: string) => void;
+  onEnter?: () => void;
+}) {
+  return (
+    <AutoGrowTextarea
+      rows={1}
+      enterKeyHint={onEnter ? 'go' : 'done'}
+      {...props}
+      onChange={(e) => onChange(e.target.value.replace(/[ \t]*[\r\n]+[ \t]*/g, ' '))}
+      onKeyDown={(e) => {
+        onKeyDown?.(e);
+        if (e.key === 'Enter' && !e.defaultPrevented) {
+          e.preventDefault();
+          if (onEnter) onEnter();
+          else e.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}

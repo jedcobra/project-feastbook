@@ -191,7 +191,7 @@ function RecipeOverview({ recipe, overview }: { recipe: Recipe; overview: Overvi
 
   return (
     <div className="border-t border-dashed border-rule bg-cream-surface px-5 pb-4 pt-3.5">
-      {recipe.subtitle && <p className="font-mono text-[14px] leading-[1.5] text-ink">{recipe.subtitle}</p>}
+      {recipe.subtitle && <p className="font-mono text-[14px] font-semibold leading-[1.5] text-ink">{recipe.subtitle}</p>}
       {recipe.intro && (
         <p className="mt-1.5 line-clamp-4 font-mono text-[14px] leading-[1.55] text-ink-mute">{recipe.intro}</p>
       )}

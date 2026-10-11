@@ -9,6 +9,7 @@ import { outlineBoxClasses } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
 import { draftFromImport, listUnstartedDrafts, saveDraft } from '@/lib/recipe-draft';
 import { importRecipeFromUrl } from '@/lib/recipe-import';
+import { AutoGrowLine } from '@/components/auto-grow-textarea';
 
 const SECONDARY_ROWS = [
   {
@@ -144,14 +145,16 @@ export function EntryScreen() {
             >
               Import from a link
             </button>
-            <div className="mb-3 flex items-center gap-2 border-b border-dashed border-rule pb-2">
-              <LinkIcon size={14} className="flex-shrink-0 text-ink-mute" />
-              <input
+            <div className="mb-3 flex items-start gap-2 border-b border-dashed border-rule pb-2">
+              <LinkIcon size={14} className="mt-[3px] flex-shrink-0 text-ink-mute" />
+              <AutoGrowLine
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={setUrl}
+                onEnter={() => void fetchRecipe()}
                 placeholder="Paste a recipe URL…"
                 autoFocus
-                className="min-w-0 flex-1 border-none bg-transparent font-mono text-[14px] text-ink placeholder:text-ink-mute focus:outline-none"
+                inputMode="url"
+                className="block min-w-0 flex-1 resize-none break-all border-none bg-transparent font-mono text-[14px] leading-[1.5] text-ink placeholder:text-ink-mute focus:outline-none"
               />
             </div>
             <button
