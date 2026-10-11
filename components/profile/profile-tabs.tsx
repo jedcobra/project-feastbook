@@ -444,6 +444,7 @@ function RecipesTab({
               </SwipeableRow>
             </div>
           ))}
+        {groups.length > 0 && looseRows.length > 0 && <SectionDivider />}
         {(recipeReorder.reorderIds ?? [])
           .map((id) => rowById.get(id))
           .filter((row): row is RecipeListRow => !!row)
@@ -562,6 +563,7 @@ function RecipesTab({
         );
       })}
 
+      {groups.length > 0 && looseRows.length > 0 && <SectionDivider />}
       {looseRows.map(({ recipe: r, saved }) => (
         <div key={r.id} {...recipeReorder.pressProps}>
           <Link
@@ -575,6 +577,13 @@ function RecipesTab({
       {confirmSheets}
     </div>
   );
+}
+
+// A quiet break between the shelves and the recipes that aren't on one: a
+// little space and a solid hairline, set apart from the dashed rules
+// between rows.
+function SectionDivider() {
+  return <div aria-hidden className="mt-4 border-t border-ink/20" />;
 }
 
 // Deleting a shelf just un-groups its recipes — they stay in the
