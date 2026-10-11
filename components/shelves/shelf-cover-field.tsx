@@ -22,15 +22,17 @@ export interface ShelfRecipePhoto {
   url: string;
 }
 
-type Panel = 'emoji' | 'recipe' | 'sticker';
+type Panel = 'emoji' | 'photo' | 'sticker';
 
 // A shelf's cover: an emoji (food or flag), one of its recipes' photos, a
 // photo of the owner's own, or a sticker — a cut-out with a see-through
 // background, shown loose like an emoji. Picking one replaces whichever
-// was there.
+// was there. Tapping the cover opens a menu of the three kinds; choosing
+// one opens its picker below.
 // With none the shelf shows its recipe count, so the empty preview shows
 // "#" in a rounded square as a hint of that. Recipe photos are only on
-// offer once the shelf has recipes with photos.
+// offer once the shelf has recipes with photos; until then, Photo goes
+// straight to uploading one.
 export function ShelfCoverField({
   value,
   onChange,
@@ -41,7 +43,9 @@ export function ShelfCoverField({
   recipePhotos?: ShelfRecipePhoto[];
 }) {
   const { profile } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -124,14 +128,32 @@ export function ShelfCoverField({
     return () => window.removeEventListener('paste', onPaste);
   });
 
-  const chip = (label: string, active: boolean, onClick: () => void) => (
+  // The menu closes on any tap outside it.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
+
+  const choose = (next: Panel | 'remove') => {
+    setMenuOpen(false);
+    setError(null);
+    setNote(null);
+    if (next === 'remove') pick(NONE);
+    // With no recipe photos to offer, Photo goes straight to the camera roll.
+    else if (next === 'photo' && recipePhotos.length === 0) fileRef.current?.click();
+    else setPanel(next);
+  };
+
+  const menuItem = (label: string, onClick: () => void, className = 'text-ink') => (
     <button
       type="button"
+      role="menuitem"
       onClick={onClick}
-      aria-pressed={active}
-      className={`rounded border border-ink px-2 py-[3px] font-mono text-[12px] ${
-        active ? 'bg-ink text-cream' : 'bg-transparent text-ink'
-      }`}
+      className={`block w-full border-t border-dashed border-rule px-3 py-2.5 text-left font-mono text-[14px] first:border-t-0 ${className}`}
     >
       {label}
     </button>
@@ -141,22 +163,42 @@ export function ShelfCoverField({
     <div className="mb-[18px]">
       <Label className="mb-2 text-[11px]">Cover</Label>
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center">
-          {uploading ? (
-            <div className="flex h-full w-full items-center justify-center rounded-button border border-dashed border-ink font-mono text-[12px] text-ink-mute">
-              …
-            </div>
-          ) : value.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value.coverUrl} alt="" className="h-full w-full rounded-button object-cover" />
-          ) : value.stickerUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value.stickerUrl} alt="" className={`h-full w-full p-px ${STICKER_CLASS}`} />
-          ) : value.emoji ? (
-            <span className={`text-[34px] ${EMOJI_FONT_CLASS}`}>{value.emoji}</span>
-          ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-button border border-ink font-mono text-[14px] font-semibold text-ink-mute">
-              #
+        <div ref={menuRef} className="relative flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => !uploading && setMenuOpen((o) => !o)}
+            aria-label={chosen ? 'Change the cover' : 'Choose a cover'}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="flex h-11 w-11 items-center justify-center"
+          >
+            {uploading ? (
+              <div className="flex h-full w-full items-center justify-center rounded-button border border-dashed border-ink font-mono text-[12px] text-ink-mute">
+                …
+              </div>
+            ) : value.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={value.coverUrl} alt="" className="h-full w-full rounded-button object-cover" />
+            ) : value.stickerUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={value.stickerUrl} alt="" className={`h-full w-full p-px ${STICKER_CLASS}`} />
+            ) : value.emoji ? (
+              <span className={`text-[34px] ${EMOJI_FONT_CLASS}`}>{value.emoji}</span>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center rounded-button border border-ink font-mono text-[14px] font-semibold text-ink-mute">
+                #
+              </div>
+            )}
+          </button>
+          {menuOpen && (
+            <div
+              role="menu"
+              className="absolute left-0 top-full z-10 mt-1.5 w-44 overflow-hidden rounded-button border border-ink bg-cream shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
+            >
+              {menuItem('Emoji', () => choose('emoji'))}
+              {menuItem('Photo', () => choose('photo'))}
+              {menuItem('Sticker', () => choose('sticker'))}
+              {chosen && menuItem('Remove', () => choose('remove'), 'text-accent')}
             </div>
           )}
         </div>
@@ -166,26 +208,9 @@ export function ShelfCoverField({
               ? 'Making your sticker…'
               : 'Uploading your photo…'
             : chosen
-              ? 'Shows beside the shelf’s name.'
-              : 'Optional. Without one, the shelf shows how many recipes are on it.'}
+              ? 'Shows beside the shelf’s name. Tap it to change.'
+              : 'Optional. Tap to add an emoji, photo or sticker — without one, the shelf shows how many recipes are on it.'}
         </div>
-        {chosen && !uploading && (
-          <button
-            type="button"
-            onClick={() => pick(NONE)}
-            className="flex-shrink-0 font-mono text-[12px] text-ink-mute underline underline-offset-2"
-          >
-            Remove
-          </button>
-        )}
-      </div>
-
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {chip('Emoji', panel === 'emoji', () => setPanel((p) => (p === 'emoji' ? null : 'emoji')))}
-        {recipePhotos.length > 0 &&
-          chip('Recipe photo', panel === 'recipe', () => setPanel((p) => (p === 'recipe' ? null : 'recipe')))}
-        {chip(uploading && panel !== 'sticker' ? 'Uploading…' : 'Upload photo', false, () => fileRef.current?.click())}
-        {chip('Sticker', panel === 'sticker', () => setPanel((p) => (p === 'sticker' ? null : 'sticker')))}
         <input
           ref={stickerFileRef}
           type="file"
@@ -211,23 +236,34 @@ export function ShelfCoverField({
       {panel === 'emoji' && (
         <EmojiGrid value={value.emoji} onPick={(emoji) => pick({ ...NONE, emoji })} />
       )}
-      {panel === 'recipe' && (
-        <div className="mt-2.5 grid max-h-[232px] grid-cols-4 gap-1.5 overflow-y-auto border border-dashed border-rule p-1.5">
-          {recipePhotos.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => pick({ ...NONE, coverUrl: r.url })}
-              aria-label={r.title}
-              aria-pressed={r.url === value.coverUrl}
-              className={`aspect-square overflow-hidden rounded-button bg-cream-deep ${
-                r.url === value.coverUrl ? 'ring-2 ring-ink ring-offset-1 ring-offset-cream' : ''
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={r.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </button>
-          ))}
+      {panel === 'photo' && (
+        <div className="mt-2.5 border border-dashed border-rule p-1.5">
+          <div className="px-0.5 pb-1.5 pt-0.5 font-mono text-[11px] text-ink-mute">From this shelf&rsquo;s recipes</div>
+          <div className="grid max-h-[196px] grid-cols-4 gap-1.5 overflow-y-auto">
+            {recipePhotos.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => pick({ ...NONE, coverUrl: r.url })}
+                aria-label={r.title}
+                aria-pressed={r.url === value.coverUrl}
+                className={`aspect-square overflow-hidden rounded-button bg-cream-deep ${
+                  r.url === value.coverUrl ? 'ring-2 ring-ink ring-offset-1 ring-offset-cream' : ''
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={r.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="mt-1.5 w-full rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
+          >
+            Upload a photo
+          </button>
         </div>
       )}
       {panel === 'sticker' && (
