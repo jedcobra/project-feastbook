@@ -488,25 +488,38 @@ function RecipesTab({
     );
   }
 
+  const newShelfButton = (
+    <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
+      <PlusIcon size={11} />
+      New shelf
+    </button>
+  );
+
   return (
     <div className="mx-5 pb-8">
-      {/* Your own Shelves heading always shows, so New shelf is always there. */}
-      {(groups.length > 0 || isOwn) && (
+      {/* With shelves, New shelf sits on the Shelves heading's right. With
+          none yet there's no heading, and on your own profile New shelf
+          takes its place on the left. */}
+      {groups.length > 0 ? (
         <SectionHeading
           action={
             isOwn && (
               <span className="flex items-center gap-4">
                 {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
-                <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
-                  <PlusIcon size={11} />
-                  New shelf
-                </button>
+                {newShelfButton}
               </span>
             )
           }
         >
           Shelves
         </SectionHeading>
+      ) : (
+        isOwn && (
+          <div className="mt-3 flex items-center justify-between gap-3 font-mono text-[12px] leading-none text-ink-mute">
+            {newShelfButton}
+            {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
+          </div>
+        )
       )}
 
       {groups.length === 0 && looseRows.length === 0 && (
