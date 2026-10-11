@@ -3,6 +3,7 @@ import { Label } from '@/components/label';
 import { Tag } from '@/components/tag';
 import type { Person, Recipe } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
+import { Subheading } from '@/components/subheading';
 
 // The whole recipe, readable by anyone with the link — no sign-in wall, no
 // interactivity (no checklists, no cook mode, no comments). Just what's on
@@ -58,7 +59,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
 
       {recipe.ingredients.length > 0 && (
         <div className="mb-5">
-          <Label className="mb-2">Ingredients</Label>
+          <Subheading className="mb-2">Ingredients</Subheading>
           {recipe.ingredients.map((section, si) => (
             <div key={si} className="mb-2.5">
               {section.section && (
@@ -79,7 +80,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
 
       {recipe.steps.length > 0 && (
         <div className="mb-5">
-          <Label className="mb-2">Method</Label>
+          <Subheading className="mb-2">Method</Subheading>
           {recipe.steps.map((step, i) => (
             <div key={i} className="flex gap-2.5 border-t border-rule-soft py-[11px]">
               <span className="w-5 flex-shrink-0 pt-px font-mono text-meta text-ink-mute">

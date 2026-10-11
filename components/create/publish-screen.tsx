@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Checkbox } from '@/components/checkbox';
-import { Label } from '@/components/label';
 import { NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { TopBar } from '@/components/top-bar';
 import { deleteDraft, draftCounts, loadDraft, type RecipeDraft } from '@/lib/recipe-draft';
@@ -16,6 +15,7 @@ import {
 } from '@/lib/supabase/queries';
 import type { Shelf, Visibility } from '@/lib/types';
 import { VISIBILITY_OPTIONS } from '@/lib/visibility';
+import { Subheading } from '@/components/subheading';
 
 export function PublishScreen() {
   const router = useRouter();
@@ -131,7 +131,7 @@ export function PublishScreen() {
 
         <div className="mb-6">
           <div className="mb-2.5 flex items-baseline justify-between border-b border-rule-soft pb-1.5">
-            <Label>Who can see it</Label>
+            <Subheading>Who can see it</Subheading>
             {!visibility && <span className="font-mono text-[11px] text-accent">required</span>}
           </div>
           {VISIBILITY_OPTIONS.map((o, i) => {
@@ -161,7 +161,7 @@ export function PublishScreen() {
 
         <div className="mb-6">
           <div className="mb-2.5 border-b border-rule-soft pb-1.5">
-            <Label>Add to cookbooks</Label>
+            <Subheading>Add to cookbooks</Subheading>
           </div>
           {shelves.map((shelf, i) => (
             <button

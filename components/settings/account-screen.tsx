@@ -3,12 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { Label } from '@/components/label';
 import { SettingRow } from '@/components/settings/setting-row';
 import { TopBar } from '@/components/top-bar';
 import { downloadTextFile, formatCookbookExport } from '@/lib/export';
 import { supabase } from '@/lib/supabase/client';
 import { deleteAccount, fetchAccountDeleteImpact, fetchMyRecipesFull } from '@/lib/supabase/queries';
+import { Subheading } from '@/components/subheading';
 
 // Account — email (read-only; changing it needs a reconfirmation flow this
 // app doesn't have), a real password change, real data export, and real
@@ -91,7 +91,7 @@ export function AccountScreen() {
       <TopBar title="Account and password" backHref="/settings" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-9">
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Sign in</Label>
+          <Subheading className="mb-1">Sign in</Subheading>
           <SettingRow label="Email" value={user.email ?? ''} first />
           {!changingPassword ? (
             <SettingRow label="Password" value="Change" onClick={() => setChangingPassword(true)} />
@@ -146,7 +146,7 @@ export function AccountScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Your writing</Label>
+          <Subheading className="mb-1">Your writing</Subheading>
           <SettingRow label="Export everything" value={exporting ? 'Exporting…' : '.txt'} onClick={handleExport} first />
           <SettingRow label="Print your recipes" value="Print" onClick={() => router.push('/settings/print')} />
           <div className="mt-2 font-mono text-[12px] leading-[1.55] text-ink-mute">

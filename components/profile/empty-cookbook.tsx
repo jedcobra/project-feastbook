@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Label } from '@/components/label';
+import { Subheading } from '@/components/subheading';
 
 const WAYS_TO_START = [
   { n: '01', t: 'Paste a link', s: 'From any recipe site. We pull the fields, you confirm them.' },
@@ -35,7 +35,7 @@ export function EmptyCookbook({ name }: { name: string }) {
         </Link>
       </div>
 
-      <Label className="mb-2.5">Three ways to start</Label>
+      <Subheading className="mb-2.5">Three ways to start</Subheading>
       {WAYS_TO_START.map((w, i) => (
         <Link
           key={w.n}

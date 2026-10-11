@@ -8,11 +8,12 @@ import { OutlineBox, outlineBoxClasses } from '@/components/outline-box';
 import { formatCount } from '@/lib/format';
 import { isFollowing, setFollowing } from '@/lib/supabase/queries';
 import type { Person } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 export function CooksToFollow({ people }: { people: Person[] }) {
   return (
     <div className="mb-6">
-      <h2 className="mb-2.5 font-display text-[16px] font-bold text-ink">Cooks to follow</h2>
+      <Subheading className="mb-2.5">Cooks to follow</Subheading>
       {people.map((person, i) => (
         <CookRow key={person.id} person={person} first={i === 0} />
       ))}

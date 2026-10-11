@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import type { Recipe } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 // Same row format as a recipe row on the profile page's Recipes tab — one
 // answer for what a recipe list item looks like, not a Discover-specific
@@ -8,7 +9,7 @@ import type { Recipe } from '@/lib/types';
 export function TrendingRecipes({ recipes }: { recipes: Recipe[] }) {
   return (
     <div className="mb-6">
-      <h2 className="mb-2.5 font-display text-[16px] font-bold text-ink">Trending recipes</h2>
+      <Subheading className="mb-2.5">Trending recipes</Subheading>
       {recipes.map((recipe) => (
         <Link
           key={recipe.id}

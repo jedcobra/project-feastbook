@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
-import { Label } from '@/components/label';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { TopBar } from '@/components/top-bar';
 import { fetchMyRecipesFull } from '@/lib/supabase/queries';
 import type { Recipe } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 // One long printable document: every recipe you've written, one per page.
 // No cooking-mode chrome, no comments, no bookmark buttons — just the
@@ -59,7 +59,7 @@ export function PrintCookbookScreen() {
               )}
               {recipe.steps.length > 0 && (
                 <div className="mb-5">
-                  <Label className="mb-2.5">Method</Label>
+                  <Subheading className="mb-2.5">Method</Subheading>
                   {recipe.steps.map((step, si) => (
                     <div key={si} className="border-t border-rule-soft py-3">
                       <div className="flex items-start gap-3">
@@ -86,7 +86,7 @@ export function PrintCookbookScreen() {
               )}
               {recipe.notes.length > 0 && (
                 <div className="mb-5 border border-rule bg-cream-deep p-3.5">
-                  <Label className="mb-2">Author’s notes</Label>
+                  <Subheading className="mb-2">Author’s notes</Subheading>
                   {recipe.notes.map((note, ni) => (
                     <div key={ni} className="mb-1 font-mono text-[12px] leading-relaxed text-ink-mute">
                       — {note.text}

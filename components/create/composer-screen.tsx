@@ -25,6 +25,7 @@ import {
   type RecipeDraft,
 } from '@/lib/recipe-draft';
 import { fetchRecipeFull } from '@/lib/supabase/queries';
+import { Subheading } from '@/components/subheading';
 
 const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
@@ -270,7 +271,7 @@ export function ComposerScreen() {
 
         <div className="mb-5 mt-[22px]">
           <div className="mb-2.5 flex items-baseline justify-between border-b border-rule-soft pb-1.5">
-            <Label>Ingredients</Label>
+            <Subheading>Ingredients</Subheading>
             <button type="button" onClick={addSection} className="font-mono text-[11px] text-ink-mute">
               + section
             </button>
@@ -335,7 +336,7 @@ export function ComposerScreen() {
 
         <div className="mb-5">
           <div className="mb-2.5 border-b border-rule-soft pb-1.5">
-            <Label>Method</Label>
+            <Subheading>Method</Subheading>
           </div>
           {draft.steps.map((step, i) => (
             <div key={i} className={`mb-3 ${i === 0 ? '' : 'border-t border-rule-soft pt-3'}`}>

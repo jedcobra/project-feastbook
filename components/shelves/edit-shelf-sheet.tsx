@@ -3,12 +3,12 @@
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PlusIcon, TrashIcon, XIcon } from '@/components/icons';
-import { Label } from '@/components/label';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { AddRecipesToShelfSheet } from '@/components/shelves/add-recipes-to-shelf-sheet';
 import { ShelfForm } from '@/components/shelves/new-shelf-form';
 import { createShelf, deleteShelf, removeRecipeFromShelf, updateShelf } from '@/lib/supabase/queries';
 import type { Recipe, Shelf } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 // Everything about one of your shelves, edited from the cookbook without
 // leaving it: name, icon, description and who can see it; taking recipes
@@ -98,7 +98,7 @@ export function EditShelfSheet({
       />
 
       <div className="mt-6">
-        <Label className="mb-2 text-[11px]">In this cookbook</Label>
+        <Subheading className="mb-2">In this cookbook</Subheading>
         {recipes.length === 0 ? (
           <div className="border-t border-rule-soft py-2.5 font-mono text-[12px] text-ink-mute">
             Nothing in this cookbook yet.

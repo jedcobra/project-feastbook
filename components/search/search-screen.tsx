@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { BackButton } from '@/components/back-button';
 import { CookRow } from '@/components/discover/cooks-to-follow';
 import { ChevronIcon, SearchIcon, XIcon } from '@/components/icons';
-import { Label } from '@/components/label';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { Tag } from '@/components/tag';
 import { parseDurationMinutes } from '@/lib/format';
 import { addRecentSearch, clearRecentSearches, listRecentSearches, removeRecentSearch } from '@/lib/search-history';
 import { fetchTrendingTags, searchAll, type SearchResults } from '@/lib/supabase/queries';
 import { HandleLink } from '@/components/handle-link';
+import { Subheading } from '@/components/subheading';
 
 type Scope = 'all' | 'recipes' | 'people' | 'shelves';
 type QuickFilter = 'under30' | 'easy';
@@ -141,7 +141,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
           <>
             {recent.length > 0 && (
               <div className="mb-1 flex items-baseline border-b border-rule-soft pb-1.5">
-                <Label className="flex-1">Recent</Label>
+                <Subheading className="flex-1">Recent</Subheading>
                 <button
                   type="button"
                   onClick={() => {
@@ -174,7 +174,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             ))}
             {trendingTags.length > 0 && (
               <div className="mt-6">
-                <Label className="mb-2.5">Trending tags</Label>
+                <Subheading className="mb-2.5">Trending tags</Subheading>
                 <div className="flex flex-wrap gap-1.5">
                   {trendingTags.map((t) => (
                     <button key={t} type="button" onClick={() => setQ(t)}>
@@ -201,7 +201,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
           <>
             {showRecipes && recipes.length > 0 && (
               <div className="mb-5">
-                <Label className="mb-1.5">Recipes</Label>
+                <Subheading className="mb-1.5">Recipes</Subheading>
                 {recipes.map((r, i) => (
                   <Link
                     key={r.id}
@@ -223,7 +223,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
 
             {showPeople && results.people.length > 0 && (
               <div className="mb-5">
-                <Label className="mb-1.5">Cooks</Label>
+                <Subheading className="mb-1.5">Cooks</Subheading>
                 {results.people.map((p, i) => (
                   <CookRow key={p.id} person={p} first={i === 0} />
                 ))}
@@ -232,7 +232,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
 
             {showShelves && results.shelves.length > 0 && (
               <div>
-                <Label className="mb-1.5">Cookbooks</Label>
+                <Subheading className="mb-1.5">Cookbooks</Subheading>
                 {results.shelves.map((sh) => (
                   <Link
                     key={sh.id}

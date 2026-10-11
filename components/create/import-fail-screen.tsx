@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ChevronIcon, LinkIcon, PencilIcon, WandIcon } from '@/components/icons';
-import { Label } from '@/components/label';
 import { TopBar } from '@/components/top-bar';
+import { Subheading } from '@/components/subheading';
 
 interface Params {
   reason: string;
@@ -68,7 +68,7 @@ export function ImportFailScreen() {
 
         {p.title && (
           <>
-            <Label className="mb-2">What we did get</Label>
+            <Subheading className="mb-2">What we did get</Subheading>
             <div className="mb-[18px] border-t border-rule-soft pt-2.5">
               <div className="mb-0.5 font-display text-[17px] font-bold text-ink">{p.title}</div>
               {p.host && <div className="font-mono text-[12px] text-ink-mute">{p.host} · source saved</div>}
@@ -76,7 +76,7 @@ export function ImportFailScreen() {
           </>
         )}
 
-        <Label className="mb-2">Three ways forward</Label>
+        <Subheading className="mb-2">Three ways forward</Subheading>
         {rows.map((row, i) => (
           <button
             key={row.label}

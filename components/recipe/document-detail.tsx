@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { Avatar } from '@/components/avatar';
 import { IngredientsBlock } from '@/components/recipe/ingredients-block';
-import { Label } from '@/components/label';
 import { MethodBlock } from '@/components/recipe/method-block';
 import { NotesSection } from '@/components/recipe/notes-section';
 import { RecipeActions } from '@/components/recipe/recipe-actions';
 import { RecipeMeta } from '@/components/recipe/recipe-meta';
 import { Tag } from '@/components/tag';
 import type { Person, Recipe, RecipeComment } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 // The default Recipe Detail layout — a single scrolling document, noods-style.
 export function DocumentDetail({
@@ -74,7 +74,7 @@ export function DocumentDetail({
 
       {recipe.notes.length > 0 && (
         <div className="mb-5 border border-rule bg-cream-deep p-3.5">
-          <Label className="mb-2">Author&rsquo;s notes</Label>
+          <Subheading className="mb-2">Author&rsquo;s notes</Subheading>
           {recipe.notes.map((note, i) => (
             <div key={i} className="mb-1 font-mono text-[14px] leading-relaxed text-ink-mute">
               — {note.text}

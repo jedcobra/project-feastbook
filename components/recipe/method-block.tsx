@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Label } from '@/components/label';
 import { OutlineBox } from '@/components/outline-box';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import type { RecipeStep } from '@/lib/types';
+import { Subheading } from '@/components/subheading';
 
 export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
   const [active, setActive] = useState<number | null>(null);
 
   return (
     <div>
-      <Label className="mb-2.5">Method</Label>
+      <Subheading className="mb-2.5">Method</Subheading>
       {steps.map((step, i) => {
         const isActive = active === i;
         return (

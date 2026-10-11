@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
 import { HeartIcon, PencilIcon } from '@/components/icons';
-import { Label } from '@/components/label';
 import { NoteComposer } from '@/components/recipe/note-composer';
 import { ZoomablePhoto } from '@/components/photo-viewer';
 import { deleteComment, hasCooked, postComment, toggleCommentLike, updateComment } from '@/lib/supabase/queries';
 import type { RecipeComment } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
+import { Subheading } from '@/components/subheading';
 
 type Filter = 'all' | 'cooked' | 'questions';
 
@@ -152,7 +152,7 @@ export function NotesSection({
     <div id="notes" className="scroll-mt-4">
       <div className="mb-3.5 border-t border-rule-soft" />
       <div className="mb-3 flex items-baseline gap-2">
-        <Label className="flex-1">Notes from the table</Label>
+        <Subheading className="flex-1">Notes from the table</Subheading>
         {total > 0 && (
           <span className="font-mono text-[12px] text-ink-mute">
             {total} note{total === 1 ? '' : 's'}

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/checkbox';
-import { Label } from '@/components/label';
 import { suggestSubstitution, type DietMode } from '@/lib/diet-substitutions';
 import { scaleIngredientText, type UnitSystem } from '@/lib/ingredient-scaling';
 import { getServingsPreference } from '@/lib/servings-preference';
 import type { IngredientSection } from '@/lib/types';
 import { getUnitsPreference } from '@/lib/units-preference';
+import { Subheading } from '@/components/subheading';
 
 const UNIT_OPTIONS: { id: UnitSystem; label: string }[] = [
   { id: 'original', label: 'As written' },
@@ -44,7 +44,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
   return (
     <div>
       <div className="mb-2.5 flex items-baseline justify-between">
-        <Label>Ingredients</Label>
+        <Subheading>Ingredients</Subheading>
         {servings > 0 && (
           <div className="flex items-center gap-1.5 print:hidden">
             <button

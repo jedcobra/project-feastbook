@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Checkbox } from '@/components/checkbox';
-import { Label } from '@/components/label';
 import { TopBar } from '@/components/top-bar';
 import {
   getExistingSubscriptionEndpoint,
@@ -14,6 +13,7 @@ import {
 } from '@/lib/push-subscribe';
 import { deletePushSubscription, savePushSubscription, updateNotificationPrefs } from '@/lib/supabase/queries';
 import type { NotificationPrefs } from '@/lib/supabase/types';
+import { Subheading } from '@/components/subheading';
 
 const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'notes', label: 'Someone notes on your recipe', sub: 'Including replies to your own notes' },
@@ -79,7 +79,7 @@ export function NotificationsSettingsScreen() {
     <>
       <TopBar title="Notifications" backHref="/settings" subtitle={saving ? 'Saving…' : undefined} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <Label className="mb-0.5 mt-1 text-[11px] tracking-[0.12em]">On this device</Label>
+        <Subheading className="mb-1 mt-1">On this device</Subheading>
         {pushSupported ? (
           <button
             type="button"
@@ -106,7 +106,7 @@ export function NotificationsSettingsScreen() {
           </div>
         )}
 
-        <Label className="mb-0.5 mt-5 text-[11px] tracking-[0.12em]">In the app</Label>
+        <Subheading className="mb-1 mt-5">In the app</Subheading>
         {ROWS.map((row, i) => (
           <button
             key={row.key}

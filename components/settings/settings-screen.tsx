@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { Label } from '@/components/label';
 import { SettingRow } from '@/components/settings/setting-row';
 import { TopBar } from '@/components/top-bar';
 import type { UnitSystem } from '@/lib/ingredient-scaling';
@@ -15,6 +14,7 @@ import type { Visibility } from '@/lib/types';
 import { getThemePreference, setThemePreference, type ThemePreference } from '@/lib/theme';
 import { getUnitsPreference, setUnitsPreference } from '@/lib/units-preference';
 import { VISIBILITY_OPTIONS, visibilityLabel } from '@/lib/visibility';
+import { Subheading } from '@/components/subheading';
 
 const UNIT_LABEL: Record<UnitSystem, string> = { original: 'As written', metric: 'Metric', imperial: 'Imperial' };
 const NEXT_UNIT: Record<UnitSystem, UnitSystem> = { original: 'metric', metric: 'imperial', imperial: 'original' };
@@ -98,7 +98,7 @@ export function SettingsScreen() {
       <TopBar title="Settings" backHref="/me" />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-9">
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">You</Label>
+          <Subheading className="mb-1">You</Subheading>
           <SettingRow label="Account and password" onClick={() => router.push('/settings/account')} first />
           <SettingRow
             label="Who can follow you"
@@ -108,12 +108,12 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Appearance</Label>
+          <Subheading className="mb-1">Appearance</Subheading>
           <SettingRow label="Theme" value={THEME_LABEL[theme]} onClick={cycleTheme} first />
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Cooking</Label>
+          <Subheading className="mb-1">Cooking</Subheading>
           <SettingRow label="Units" value={UNIT_LABEL[units]} onClick={cycleUnits} first />
           <SettingRow label="Keep screen awake while cooking" value={awake ? 'On' : 'Off'} onClick={toggleAwake} />
           <SettingRow
@@ -124,7 +124,7 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">Publishing</Label>
+          <Subheading className="mb-1">Publishing</Subheading>
           <SettingRow
             label="Default privacy for new recipes"
             value={profile.default_visibility ? visibilityLabel(profile.default_visibility) : 'Ask each time'}
@@ -135,7 +135,7 @@ export function SettingsScreen() {
         </div>
 
         <div className="mb-[22px]">
-          <Label className="mb-0.5 text-[11px] tracking-[0.12em]">About</Label>
+          <Subheading className="mb-1">About</Subheading>
           <SettingRow label="Version" value="Beta" first />
         </div>
 
