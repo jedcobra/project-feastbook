@@ -6,7 +6,7 @@ import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { ChevronIcon, HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
-import { EditShelfSheet } from '@/components/shelves/edit-shelf-sheet';
+import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { ShelfIcon } from '@/components/shelves/shelf-icon';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
@@ -35,6 +35,7 @@ export function ProfileTabs({
   onShelfRemoved,
   onShelfArchived,
   onShelfChange,
+  onShelfCreated,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
@@ -52,6 +53,7 @@ export function ProfileTabs({
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
   onShelfChange?: (shelf: Shelf) => void;
+  onShelfCreated?: (shelf: Shelf) => void;
 }) {
   const [tab, setTab] = useState<TabId>('recipes');
   const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
@@ -152,6 +154,7 @@ export function ProfileTabs({
             onShelfRemoved={onShelfRemoved}
             onShelfArchived={onShelfArchived}
             onShelfChange={onShelfChange}
+            onShelfCreated={onShelfCreated}
           />
         )}
         {tab === 'cooked' && (
@@ -198,6 +201,7 @@ function RecipesTab({
   onShelfRemoved,
   onShelfArchived,
   onShelfChange,
+  onShelfCreated,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
@@ -212,6 +216,7 @@ function RecipesTab({
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
   onShelfChange?: (shelf: Shelf) => void;
+  onShelfCreated?: (shelf: Shelf) => void;
 }) {
   // Which row is swiped open — a shelf's id or a recipe's, never both.
   const [openId, setOpenId] = useState<string | null>(null);
@@ -219,6 +224,7 @@ function RecipesTab({
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [editingShelfId, setEditingShelfId] = useState<string | null>(null);
+  const [creatingShelf, setCreatingShelf] = useState(false);
 
   const ownIds = new Set(recipes.map((r) => r.id));
   const recipeById = new Map([...shelfRecipes, ...savedRecipes, ...recipes].map((r) => [r.id, r]));
@@ -285,6 +291,19 @@ function RecipesTab({
   const editingShelf = editingShelfId ? groups.find((s) => s.id === editingShelfId) : undefined;
   const confirmSheets = (
     <>
+      {creatingShelf && (
+        <NewShelfSheet
+          onClose={() => setCreatingShelf(false)}
+          // The new shelf goes to the top, open, with its Edit sheet up so
+          // recipes can go straight onto it.
+          onCreated={(shelf) => {
+            onShelfCreated?.(shelf);
+            setCreatingShelf(false);
+            setExpanded((cur) => new Set(cur).add(shelf.id));
+            setEditingShelfId(shelf.id);
+          }}
+        />
+      )}
       {editingShelf && (
         <EditShelfSheet
           shelf={editingShelf}
@@ -446,10 +465,10 @@ function RecipesTab({
     <div className="mx-5 pb-8">
       {isOwn && (
         <div className="flex items-center justify-between gap-4 py-2 font-mono text-[12px] text-ink-mute">
-          <Link href="/new-shelf" className="flex items-center gap-1">
+          <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
             <PlusIcon size={11} />
             New shelf
-          </Link>
+          </button>
           {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived shelves ({archivedShelfCount})</Link>}
         </div>
       )}
