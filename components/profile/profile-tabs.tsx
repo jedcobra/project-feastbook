@@ -490,23 +490,31 @@ function RecipesTab({
 
   return (
     <div className="mx-5 pb-8">
-      {isOwn && (
-        <div className="flex items-center justify-between gap-4 py-2 font-mono text-[12px] text-ink-mute">
-          <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
-            <PlusIcon size={11} />
-            New shelf
-          </button>
-          {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived shelves ({archivedShelfCount})</Link>}
-        </div>
+      {/* Your own Shelves heading always shows, so New shelf is always there. */}
+      {(groups.length > 0 || isOwn) && (
+        <SectionHeading
+          action={
+            isOwn && (
+              <span className="flex items-center gap-4">
+                {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
+                <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
+                  <PlusIcon size={11} />
+                  New shelf
+                </button>
+              </span>
+            )
+          }
+        >
+          Shelves
+        </SectionHeading>
       )}
 
       {groups.length === 0 && looseRows.length === 0 && (
-        <div className={`border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? '' : 'mt-6'}`}>
+        <div className={`border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? 'mt-3' : 'mt-6'}`}>
           Recipes written or saved here will show up here.
         </div>
       )}
 
-      {groups.length > 0 && <SectionHeading>Shelves</SectionHeading>}
       {groups.map((shelf) => {
         const rows = shelfRows(shelf);
         const open = expanded.has(shelf.id);
@@ -583,10 +591,14 @@ function RecipesTab({
 
 // The small heading over each part of the Recipes tab: the shelves, then
 // the recipes that aren't on one. Set in the body font, like the
-// "Ingredients" subhead on an expanded feed post.
-function SectionHeading({ children }: { children: React.ReactNode }) {
+// "Ingredients" subhead on an expanded feed post, with room for an action
+// on the far right (Shelves has New shelf).
+function SectionHeading({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="mt-5 font-mono text-[12px] uppercase tracking-[0.08em] text-ink-mute first:mt-2">{children}</div>
+    <div className="mt-5 flex items-center justify-between gap-3 font-mono text-[12px] leading-none text-ink-mute first:mt-3">
+      <span className="uppercase tracking-[0.08em]">{children}</span>
+      {action}
+    </div>
   );
 }
 
