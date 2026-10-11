@@ -194,7 +194,7 @@ export function ShelfSheet({
         className="flex max-h-[90dvh] flex-col rounded-t-2xl border-t border-ink bg-cream"
       >
         <div className="flex flex-shrink-0 items-center justify-between px-5 pb-3 pt-4">
-          <h3 className="font-display text-[19px] font-bold text-ink">{title}</h3>
+          <h3 className="font-display text-[24px] font-bold leading-tight text-ink">{title}</h3>
           <button
             type="button"
             onClick={onClose}

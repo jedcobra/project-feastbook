@@ -25,7 +25,7 @@ export function TopBar({ title, subtitle, trailing, backHref, onBack }: TopBarPr
       </div>
       <div className="min-w-0 text-center">
         {title && (
-          <h2 className="truncate font-display text-[18px] font-bold leading-[1.35] tracking-[-0.005em] text-ink">
+          <h2 className="truncate font-display text-[24px] font-bold leading-[1.25] tracking-[-0.005em] text-ink">
             {title}
           </h2>
         )}

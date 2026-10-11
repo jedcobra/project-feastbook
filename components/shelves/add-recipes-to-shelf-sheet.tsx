@@ -64,7 +64,7 @@ export function AddRecipesToShelfSheet({
         onClick={(e) => e.stopPropagation()}
         className="flex max-h-[80vh] flex-col rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
       >
-        <h3 className="mb-3 flex-shrink-0 font-display text-[19px] font-bold text-ink">Add recipes</h3>
+        <h3 className="mb-3 flex-shrink-0 font-display text-[24px] font-bold leading-tight text-ink">Add recipes</h3>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {recipes === null ? (
