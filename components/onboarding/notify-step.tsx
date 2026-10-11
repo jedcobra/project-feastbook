@@ -13,7 +13,14 @@ const ROWS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
   { key: 'digest', label: 'Weekly: what your people cooked', sub: 'One message, Sunday morning' },
 ];
 
-const ALL_OFF: NotificationPrefs = { notes: false, follows: false, messages: false, cooked: false, digest: false };
+const ALL_OFF: NotificationPrefs = {
+  notes: false,
+  follows: false,
+  messages: false,
+  cooked: false,
+  digest: false,
+  shelves: false,
+};
 
 // Step 5 of 5 — these persist for real, to profiles.notification_prefs
 // (Settings > Notifications reads and writes the same row).
@@ -30,6 +37,8 @@ export function NotifyStep({
     messages: true,
     cooked: false,
     digest: false,
+    // Not asked about here; on unless they turn it off in Settings.
+    shelves: true,
   });
 
   return (

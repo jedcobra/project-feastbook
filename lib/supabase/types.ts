@@ -8,6 +8,8 @@ export interface NotificationPrefs {
   cooked: boolean;
   digest: boolean;
   messages: boolean;
+  // Someone you follow makes a shelf you can see.
+  shelves: boolean;
 }
 
 export interface ProfileRow {

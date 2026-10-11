@@ -51,6 +51,8 @@ function describe(n: AppNotification): string {
       return 'added a chef’s kiss to your photo';
     case 'photo_comment':
       return 'commented on your photo';
+    case 'shelf':
+      return 'made a new shelf:';
     case 'digest':
       return n.excerpt ?? 'Weekly digest';
     default:
@@ -67,6 +69,7 @@ const KIND_ICON: Record<NotificationKind, typeof HeartIcon> = {
   message: MessageIcon,
   kiss: ChefKissIcon,
   photo_comment: MessageIcon,
+  shelf: BookIcon,
 };
 
 export function NotificationsScreen() {
@@ -135,6 +138,7 @@ export function NotificationsScreen() {
     setItems((is) => is?.map((x) => (x.id === n.id ? { ...x, read: true } : x)) ?? is);
     if (!n.read) await markNotificationRead(n.id);
     if (n.cookPhotoId) router.push(`/me?photo=${n.cookPhotoId}`);
+    else if (n.shelfId) router.push(`/shelf/${n.shelfId}`);
     else if (n.conversationId) router.push(`/messages/${n.conversationId}`);
     else if (n.recipeId) router.push(`/recipe/${n.recipeId}`);
     else if (n.actorHandle) router.push(`/${n.actorHandle}`);
@@ -222,6 +226,7 @@ export function NotificationsScreen() {
                             )}
                             <span className="text-ink-mute">{describe(n)}</span>
                             {n.recipeTitle && !n.cookPhotoId && <span> {n.recipeTitle}</span>}
+                            {n.shelfTitle && <span> {n.shelfTitle}</span>}
                           </div>
                           {n.excerpt && n.kind !== 'digest' && (
                             <div className="mt-1 border-l border-dashed border-rule pl-2.5 font-mono text-[12px] leading-[1.5] text-ink-mute">

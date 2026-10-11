@@ -1012,6 +1012,7 @@ const PREF_KEY: Record<NotificationKind, keyof NotificationPrefs> = {
   message: 'messages',
   kiss: 'notes',
   photo_comment: 'notes',
+  shelf: 'shelves',
 };
 
 // Writes a notification for someone else's inbox. Never for your own —
@@ -1021,7 +1022,14 @@ async function notify(
   recipientId: string,
   actorId: string,
   kind: NotificationKind,
-  extra: { recipeId?: string; commentId?: string; conversationId?: string; cookPhotoId?: string; excerpt?: string } = {},
+  extra: {
+    recipeId?: string;
+    commentId?: string;
+    conversationId?: string;
+    cookPhotoId?: string;
+    shelfId?: string;
+    excerpt?: string;
+  } = {},
 ) {
   if (recipientId === actorId) return;
   const { data: recipient } = await supabase
@@ -1045,6 +1053,7 @@ async function notify(
     comment_id: extra.commentId ?? null,
     conversation_id: extra.conversationId ?? null,
     cook_photo_id: extra.cookPhotoId ?? null,
+    shelf_id: extra.shelfId ?? null,
     excerpt: extra.excerpt ?? null,
   });
   if (error) {
@@ -1319,6 +1328,7 @@ export async function createShelf(
     console.error('createShelf', error);
     return null;
   }
+  if (visibility !== 'private') void announceShelf(data.id as string);
   return { id: data.id as string, title: data.title as string };
 }
 
@@ -1386,7 +1396,42 @@ export async function updateShelf(
     console.error('updateShelf', error);
     return false;
   }
+  if (values.visibility !== 'private') void announceShelf(shelfId);
   return true;
+}
+
+// Tells the owner's followers about a shelf the first time it's visible to
+// them — on creation, or when it's later changed from "only me". Both
+// visible settings ("people I follow back" and "anyone with the link") let
+// every follower see it. Claiming announced_at first, in one conditional
+// update, means a shelf is only ever announced once, however many times
+// its visibility is switched back and forth.
+async function announceShelf(shelfId: string) {
+  const { data: claimed, error } = await supabase
+    .from('shelves')
+    .update({ announced_at: new Date().toISOString() })
+    .eq('id', shelfId)
+    .is('announced_at', null)
+    .neq('visibility', 'private')
+    .select('owner_id, title');
+  const shelf = claimed?.[0];
+  if (error || !shelf) {
+    if (error) console.error('announceShelf: claim', error);
+    return;
+  }
+  // The heart button's default shelf isn't news.
+  if (shelf.title === 'Saved') return;
+  const { data: followers, error: followersError } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('followee_id', shelf.owner_id);
+  if (followersError) {
+    console.error('announceShelf: followers', followersError);
+    return;
+  }
+  await Promise.all(
+    (followers ?? []).map((f: { follower_id: string }) => notify(f.follower_id, shelf.owner_id, 'shelf', { shelfId })),
+  );
 }
 
 export async function setShelfArchived(shelfId: string, archived: boolean): Promise<boolean> {
@@ -1863,7 +1908,7 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
     // so the embed must name which column to join on — otherwise it's
     // ambiguous to PostgREST and silently resolves to nothing.
     .select(
-      'id, kind, excerpt, conversation_id, cook_photo_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title)',
+      'id, kind, excerpt, conversation_id, cook_photo_id, created_at, read_at, actor:profiles!actor_id(name, handle), recipe:recipes(id, title), shelf:shelves(id, title)',
     )
     .eq('recipient_id', recipientId)
     .neq('kind', 'message')
@@ -1884,9 +1929,11 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
       read_at: string | null;
       actor: { name: string; handle: string } | { name: string; handle: string }[] | null;
       recipe: { id: string; title: string } | { id: string; title: string }[] | null;
+      shelf: { id: string; title: string } | { id: string; title: string }[] | null;
     }) => {
       const actor = unwrapOne(n.actor);
       const recipe = unwrapOne(n.recipe);
+      const shelf = unwrapOne(n.shelf);
       return {
         id: n.id,
         kind: n.kind,
@@ -1895,6 +1942,8 @@ export async function fetchNotifications(recipientId: string): Promise<AppNotifi
         recipeTitle: recipe?.title ?? null,
         conversationId: n.conversation_id,
         cookPhotoId: n.cook_photo_id,
+        shelfId: shelf?.id ?? null,
+        shelfTitle: shelf?.title ?? null,
         excerpt: n.excerpt,
         createdAt: n.created_at,
         read: !!n.read_at,

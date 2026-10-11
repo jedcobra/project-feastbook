@@ -50,7 +50,16 @@ export interface RecipeComment {
   replies: RecipeComment[];
 }
 
-export type NotificationKind = 'note' | 'reply' | 'follow' | 'cooked' | 'digest' | 'message' | 'kiss' | 'photo_comment';
+export type NotificationKind =
+  | 'note'
+  | 'reply'
+  | 'follow'
+  | 'cooked'
+  | 'digest'
+  | 'message'
+  | 'kiss'
+  | 'photo_comment'
+  | 'shelf';
 
 export interface AppNotification {
   id: string;
@@ -60,6 +69,8 @@ export interface AppNotification {
   recipeTitle: string | null;
   conversationId: string | null;
   cookPhotoId: string | null;
+  shelfId: string | null;
+  shelfTitle: string | null;
   excerpt: string | null;
   createdAt: string;
   read: boolean;

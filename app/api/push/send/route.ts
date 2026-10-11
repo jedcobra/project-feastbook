@@ -14,6 +14,7 @@ const KIND_VERB: Record<string, string> = {
   message: 'sent you a message',
   kiss: 'added a chef’s kiss to your photo',
   photo_comment: 'commented on your photo',
+  shelf: 'made a new shelf:',
 };
 
 function unwrapOne<T>(value: T | T[] | null | undefined): T | undefined {
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
   const { data: notifRow, error: notifError } = await admin
     .from('notifications')
     .select(
-      'recipient_id, actor_id, kind, recipe_id, conversation_id, cook_photo_id, actor:profiles!actor_id(handle), recipe:recipes(title)',
+      'recipient_id, actor_id, kind, recipe_id, conversation_id, cook_photo_id, shelf_id, actor:profiles!actor_id(handle), recipe:recipes(title), shelf:shelves(title)',
     )
     .eq('id', notificationId)
     .maybeSingle();
@@ -98,18 +99,22 @@ export async function POST(request: Request) {
   const actorHandle = unwrapOne(notifRow.actor as { handle: string } | { handle: string }[] | null)?.handle;
   const actorName = actorHandle ?? 'Someone';
   const recipeTitle = unwrapOne(notifRow.recipe as { title: string } | { title: string }[] | null)?.title;
+  const shelfTitle = unwrapOne(notifRow.shelf as { title: string } | { title: string }[] | null)?.title;
   const verb = KIND_VERB[notifRow.kind] ?? 'did something on';
   // Photo kisses and comments read as complete sentences on their own
   // ("sam added a chef’s kiss to your photo"), so they don't name the recipe.
-  const body =
-    recipeTitle && !notifRow.cook_photo_id ? `${actorName} ${verb} ${recipeTitle}` : `${actorName} ${verb}`;
+  // A new shelf names the shelf instead.
+  const subject = shelfTitle ?? (notifRow.cook_photo_id ? undefined : recipeTitle);
+  const body = subject ? `${actorName} ${verb} ${subject}` : `${actorName} ${verb}`;
   const url = notifRow.cook_photo_id
     ? `/me?photo=${notifRow.cook_photo_id}`
-    : notifRow.conversation_id
-      ? `/messages/${notifRow.conversation_id}`
-      : notifRow.recipe_id
-        ? `/recipe/${notifRow.recipe_id}`
-        : '/notifications';
+    : notifRow.shelf_id
+      ? `/shelf/${notifRow.shelf_id}`
+      : notifRow.conversation_id
+        ? `/messages/${notifRow.conversation_id}`
+        : notifRow.recipe_id
+          ? `/recipe/${notifRow.recipe_id}`
+          : '/notifications';
   const payload = JSON.stringify({ title: 'Special Spoon', body, url });
 
   let sent = 0;
