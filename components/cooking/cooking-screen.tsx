@@ -186,7 +186,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
         )}
 
         {step === 0 && allIngredients.length > 0 && (
-          <div className="mt-auto border border-dashed border-paper/15 px-3.5 py-3">
+          <div className="mt-auto border border-paper/15 px-3.5 py-3">
             <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-paper/35">
               You&rsquo;ll need
             </div>

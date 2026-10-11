@@ -62,7 +62,7 @@ export function PeopleListScreen({ handle, kind }: { handle: string; kind: Kind 
         {people === null ? (
           <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : people.length === 0 ? (
-          <div className="mt-4 border border-dashed border-rule p-[22px] text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
+          <div className="mt-4 border border-rule p-[22px] text-center font-mono text-[14px] leading-[1.55] text-ink-mute">
             {copy.empty}
           </div>
         ) : (

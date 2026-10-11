@@ -523,7 +523,7 @@ function RecipesTab({
       )}
 
       {groups.length === 0 && looseRows.length === 0 && (
-        <div className={`border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? 'mt-3' : 'mt-6'}`}>
+        <div className={`border border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? 'mt-3' : 'mt-6'}`}>
           Recipes written or saved here will show up here.
         </div>
       )}
@@ -759,7 +759,7 @@ function CookedTab({
     <div className="pb-8">
       {photos.length === 0 ? (
         <div className="mx-5 pt-6">
-          <div className="border border-dashed border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
+          <div className="border border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute">
             {isOwn ? (
               <>
                 Tap Cooked it on a recipe, or finish cooking mode,

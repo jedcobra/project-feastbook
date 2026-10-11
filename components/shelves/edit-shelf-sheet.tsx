@@ -121,7 +121,7 @@ export function EditShelfSheet({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="mt-1 flex w-full items-center justify-center gap-1.5 border border-dashed border-rule py-3 font-mono text-[14px] text-ink-mute"
+          className="mt-1 flex w-full items-center justify-center gap-1.5 border border-rule py-3 font-mono text-[14px] text-ink-mute"
         >
           <PlusIcon size={13} />
           Add recipes

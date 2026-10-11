@@ -420,7 +420,7 @@ export function ComposerScreen() {
                   key={t}
                   type="button"
                   onClick={() => toggleTag(t)}
-                  className="rounded-tag border border-dashed border-rule px-2 py-[3px] font-mono text-meta text-ink-mute"
+                  className="rounded-tag border border-rule px-2 py-[3px] font-mono text-meta text-ink-mute"
                 >
                   + {t}
                 </button>
@@ -436,7 +436,7 @@ export function ComposerScreen() {
               }}
               onBlur={addCustomTag}
               placeholder="Add a tag…"
-              className="w-[108px] min-w-0 flex-shrink-0 rounded-tag border border-dashed border-rule bg-transparent px-2 py-[3px] font-mono text-meta text-ink outline-none placeholder:text-ink-mute focus:border-ink"
+              className="w-[108px] min-w-0 flex-shrink-0 rounded-tag border border-rule bg-transparent px-2 py-[3px] font-mono text-meta text-ink outline-none placeholder:text-ink-mute focus:border-ink"
             />
           </div>
         </div>

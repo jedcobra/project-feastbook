@@ -85,7 +85,7 @@ export function PrintCookbookScreen() {
                 </div>
               )}
               {recipe.notes.length > 0 && (
-                <div className="mb-5 border border-dashed border-rule bg-cream-deep p-3.5">
+                <div className="mb-5 border border-rule bg-cream-deep p-3.5">
                   <Label className="mb-2">Author’s notes</Label>
                   {recipe.notes.map((note, ni) => (
                     <div key={ni} className="mb-1 font-mono text-[12px] leading-relaxed text-ink-mute">

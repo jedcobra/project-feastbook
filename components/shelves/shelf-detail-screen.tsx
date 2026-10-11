@@ -161,7 +161,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         ))}
 
         {sorted.length === 0 && (
-          <div className="mt-2.5 border border-dashed border-rule p-[26px] text-center">
+          <div className="mt-2.5 border border-rule p-[26px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">Empty cookbook</div>
             <div className="mb-3.5 font-mono text-[14px] leading-[1.5] text-ink-mute">
               Save a recipe and add it here, or bring one over from another cookbook.

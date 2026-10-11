@@ -73,7 +73,7 @@ export function DocumentDetail({
       )}
 
       {recipe.notes.length > 0 && (
-        <div className="mb-5 border border-dashed border-rule bg-cream-deep p-3.5">
+        <div className="mb-5 border border-rule bg-cream-deep p-3.5">
           <Label className="mb-2">Author&rsquo;s notes</Label>
           {recipe.notes.map((note, i) => (
             <div key={i} className="mb-1 font-mono text-[14px] leading-relaxed text-ink-mute">

@@ -206,7 +206,7 @@ export function NotesSection({
           />
         </div>
       ) : (
-        <div className="mb-3 flex items-center gap-2 rounded-button border border-dashed border-rule px-3 py-2.5 font-mono text-[14px] text-ink-mute">
+        <div className="mb-3 flex items-center gap-2 rounded-button border border-rule px-3 py-2.5 font-mono text-[14px] text-ink-mute">
           <PencilIcon size={15} />
           Sign in to leave a note
         </div>

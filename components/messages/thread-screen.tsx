@@ -247,7 +247,7 @@ export function ThreadScreen({ conversationId }: { conversationId: string }) {
       {profile && (
         <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-4 pb-[18px] pt-2.5">
           {blockedByMe ? (
-            <div className="flex items-center gap-2.5 rounded-button border border-dashed border-rule px-3 py-2.5">
+            <div className="flex items-center gap-2.5 rounded-button border border-rule px-3 py-2.5">
               <span className="flex-1 font-mono text-[12px] text-ink-mute">
                 You&rsquo;ve blocked <HandleLink bare handle={peer.handle} className="text-ink" />.
               </span>

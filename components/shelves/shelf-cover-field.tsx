@@ -130,7 +130,7 @@ export function ShelfCoverField({
             className="flex h-11 w-11 items-center justify-center"
           >
             {uploading ? (
-              <div className="flex h-full w-full items-center justify-center rounded-button border border-dashed border-ink font-mono text-[12px] text-ink-mute">
+              <div className="flex h-full w-full items-center justify-center rounded-button border border-ink font-mono text-[12px] text-ink-mute">
                 …
               </div>
             ) : value.coverUrl ? (
@@ -154,7 +154,7 @@ export function ShelfCoverField({
             >
               {menuItem('Emoji', () => choose('emoji'))}
               {menuItem('Photo', () => choose('photo'))}
-                            {chosen && menuItem('Remove', () => choose('remove'), 'text-accent')}
+              {chosen && menuItem('Remove', () => choose('remove'), 'text-accent')}
             </div>
           )}
         </div>
@@ -180,7 +180,7 @@ export function ShelfCoverField({
       <div ref={panelRef}>
         {panel === 'emoji' && <EmojiGrid value={value.emoji} onPick={(emoji) => pick({ ...NONE, emoji })} />}
         {panel === 'photo' && (
-          <div className="mt-2.5 border border-dashed border-rule p-1.5">
+          <div className="mt-2.5 border border-rule p-1.5">
             <div className="px-0.5 pb-1.5 pt-0.5 font-mono text-[11px] text-ink-mute">
               From this cookbook&rsquo;s recipes
             </div>
@@ -263,7 +263,7 @@ function EmojiGrid({ value, onPick }: { value: string | null; onPick: (emoji: st
   };
 
   return (
-    <div className="mt-2.5 border border-dashed border-rule">
+    <div className="mt-2.5 border border-rule">
       <div className="flex gap-1.5 border-b border-rule-soft p-1.5">
         {GROUPS.map((g) => (
           <button

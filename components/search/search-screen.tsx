@@ -125,7 +125,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
               key={key}
               type="button"
               onClick={() => toggleFilter(key)}
-              className={`rounded border border-dashed px-[7px] py-[2px] font-mono text-[12px] ${
+              className={`rounded border px-[7px] py-[2px] font-mono text-[12px] ${
                 filters.has(key) ? 'border-rule bg-cream-deep text-ink' : 'border-rule text-ink-mute'
               }`}
             >
@@ -188,7 +188,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
         ) : loading ? (
           <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Searching…</div>
         ) : total === 0 ? (
-          <div className="mt-2 border border-dashed border-rule p-[22px] text-center">
+          <div className="mt-2 border border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[19px] font-bold text-ink">Nothing for &ldquo;{q}&rdquo;</div>
             <div className="mb-3.5 font-mono text-[14px] leading-[1.55] text-ink-mute">
               Try a different word, or write it yourself.

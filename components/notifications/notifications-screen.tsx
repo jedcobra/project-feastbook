@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
-import { BookIcon, ChefKissIcon, CookIcon, HeartIcon, MessageIcon, UserIcon } from '@/components/icons';
+import { BookIcon, ChefKissIcon, CookIcon, HeartIcon, MessageIcon, OpenBookIcon, UserIcon } from '@/components/icons';
 import { Avatar } from '@/components/avatar';
 import { OutlineBox } from '@/components/outline-box';
 import { TopBar } from '@/components/top-bar';
@@ -69,7 +69,7 @@ const KIND_ICON: Record<NotificationKind, typeof HeartIcon> = {
   message: MessageIcon,
   kiss: ChefKissIcon,
   photo_comment: MessageIcon,
-  shelf: BookIcon,
+  shelf: OpenBookIcon,
 };
 
 export function NotificationsScreen() {
@@ -184,7 +184,7 @@ export function NotificationsScreen() {
         {items === null ? (
           <div className="py-8 text-center font-mono text-[14px] text-ink-mute">Loading…</div>
         ) : shown.length === 0 ? (
-          <div className="mt-4 border border-dashed border-rule p-[22px] text-center">
+          <div className="mt-4 border border-rule p-[22px] text-center">
             <div className="mb-1.5 font-display text-[18px] font-bold text-ink">Nothing here</div>
             <div className="font-mono text-[14px] leading-[1.55] text-ink-mute">
               When someone cooks or notes on one of yours, it lands here. Nothing else does.

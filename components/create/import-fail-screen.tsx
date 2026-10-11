@@ -60,7 +60,7 @@ export function ImportFailScreen() {
     <>
       <TopBar title="Couldn't read that page" backHref="/new" subtitle={p.host || p.url} />
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
-        <div className="mb-[18px] border border-dashed border-rule p-[13px] font-mono text-[14px] leading-[1.6] text-ink-mute">
+        <div className="mb-[18px] border border-rule p-[13px] font-mono text-[14px] leading-[1.6] text-ink-mute">
           {p.reason === 'fetch-failed'
             ? 'We couldn’t reach that page — it might be blocking automated requests, or temporarily down.'
             : 'We got the title, but no ingredient list we trust. Some sites hide the recipe behind a script, and guessing at quantities is worse than not guessing.'}

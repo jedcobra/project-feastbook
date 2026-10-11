@@ -68,7 +68,7 @@ export function PhotoField({ label, photoUrl, onChange, profileId, kind, size = 
             type="button"
             onClick={pick}
             disabled={uploading}
-            className="flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-button border border-dashed border-rule text-ink-mute disabled:opacity-60"
+            className="flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-button border border-rule text-ink-mute disabled:opacity-60"
             style={{ width: size, height: size }}
           >
             <CameraIcon size={18} />
