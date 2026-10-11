@@ -99,7 +99,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
   return (
     <>
       <TopBar
-        title={shelf.title}
+        title={shelf.emoji ? `${shelf.emoji} ${shelf.title}` : shelf.title}
         backHref="/me"
         subtitle={`${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} · ${shelfVisibilityLabel(shelf.visibility)}`}
         trailing={
@@ -114,7 +114,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         {editing && isOwner ? (
           <div className="mb-5 border-b border-dashed border-rule pb-5">
             <ShelfForm
-              initial={{ title: shelf.title, subtitle: shelf.subtitle, visibility: shelf.visibility }}
+              initial={{ title: shelf.title, subtitle: shelf.subtitle, visibility: shelf.visibility, emoji: shelf.emoji }}
               submitLabel="Save changes"
               submittingLabel="Saving…"
               // The heart button finds its default shelf by this exact name.

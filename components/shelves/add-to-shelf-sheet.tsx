@@ -6,6 +6,7 @@ import { PlusIcon } from '@/components/icons';
 import { NewShelfForm } from '@/components/shelves/new-shelf-form';
 import { fetchShelfIdsForRecipe, fetchShelvesForOwner, setRecipeShelves } from '@/lib/supabase/queries';
 import type { Shelf } from '@/lib/types';
+import { EMOJI_FONT_CLASS } from '@/lib/food-emoji';
 
 interface AddToShelfSheetProps {
   ownerId: string;
@@ -69,7 +70,10 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
                 >
                   <Checkbox checked={selected.has(shelf.id)} />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-mono text-[14px] text-ink">{shelf.title}</span>
+                    <span className="block font-mono text-[14px] text-ink">
+                      {shelf.emoji && <span className={`mr-1.5 ${EMOJI_FONT_CLASS}`}>{shelf.emoji}</span>}
+                      {shelf.title}
+                    </span>
                     <span className="block font-mono text-[12px] text-ink-mute">{shelf.count} recipes</span>
                   </span>
                 </button>

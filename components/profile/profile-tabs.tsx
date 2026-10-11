@@ -6,6 +6,7 @@ import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { ChevronIcon, HeartIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
+import { ShelfIcon } from '@/components/shelves/shelf-icon';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
@@ -327,9 +328,7 @@ function RecipesTab({
 
   const shelfBody = (shelf: Shelf) => (
     <>
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
-        <span className="font-mono text-[14px] font-semibold text-ink">{shelfRows(shelf).length}</span>
-      </div>
+      <ShelfIcon emoji={shelf.emoji} count={shelfRows(shelf).length} />
       <div className="min-w-0 flex-1">
         <h3 className="font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
         {shelf.subtitle && <div className="mt-0.5 truncate font-mono text-meta text-ink-mute">{shelf.subtitle}</div>}

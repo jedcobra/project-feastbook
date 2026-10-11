@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ChevronIcon } from '@/components/icons';
 import { SwipeableRow } from '@/components/swipeable-row';
+import { ShelfIcon } from '@/components/shelves/shelf-icon';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import { deleteShelf, fetchArchivedShelves, setShelfArchived } from '@/lib/supabase/queries';
@@ -57,9 +58,7 @@ export function ArchivedShelvesScreen() {
                 href={`/shelf/${shelf.id}`}
                 className={`flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
               >
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-ink">
-                  <span className="font-mono text-[14px] font-semibold text-ink">{shelf.count}</span>
-                </div>
+                <ShelfIcon emoji={shelf.emoji} count={shelf.count} />
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
                   <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>

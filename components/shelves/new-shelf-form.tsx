@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Field } from '@/components/create/field';
 import { Label } from '@/components/label';
 import { useAuth } from '@/components/auth/auth-provider';
+import { ShelfEmojiField } from '@/components/shelves/shelf-emoji-field';
 import { createShelf } from '@/lib/supabase/queries';
 import type { ShelfVisibility } from '@/lib/types';
 import { SHELF_VISIBILITY_OPTIONS } from '@/lib/visibility';
@@ -12,11 +13,12 @@ export interface ShelfFormValues {
   title: string;
   subtitle: string;
   visibility: ShelfVisibility;
+  emoji: string | null;
 }
 
-const EMPTY: ShelfFormValues = { title: '', subtitle: '', visibility: 'private' };
+const EMPTY: ShelfFormValues = { title: '', subtitle: '', visibility: 'private', emoji: null };
 
-// Name, one-line description, and privacy — used to create a shelf (the
+// Name, icon, one-line description, and privacy — used to create a shelf (the
 // "New shelf" screen and the add-to-shelf sheet) and to edit one later.
 // With `initial` it's an edit form: Save only lights up once something
 // actually changed.
@@ -36,6 +38,7 @@ export function ShelfForm({
   const [title, setTitle] = useState(initial?.title ?? EMPTY.title);
   const [subtitle, setSubtitle] = useState(initial?.subtitle ?? EMPTY.subtitle);
   const [visibility, setVisibility] = useState<ShelfVisibility>(initial?.visibility ?? EMPTY.visibility);
+  const [emoji, setEmoji] = useState<string | null>(initial?.emoji ?? EMPTY.emoji);
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -43,13 +46,14 @@ export function ShelfForm({
     !initial ||
     title.trim() !== initial.title ||
     subtitle.trim() !== initial.subtitle ||
-    visibility !== initial.visibility;
+    visibility !== initial.visibility ||
+    emoji !== initial.emoji;
   const ready = title.trim().length > 0 && dirty;
 
   const handleSubmit = async () => {
     if (!ready || submitting) return;
     setSubmitting(true);
-    const ok = await onSubmit({ title: title.trim(), subtitle: subtitle.trim(), visibility });
+    const ok = await onSubmit({ title: title.trim(), subtitle: subtitle.trim(), visibility, emoji });
     setSubmitting(false);
     setSaved(ok);
   };
@@ -70,6 +74,7 @@ export function ShelfForm({
       ) : (
         <Field label="Name" value={title} onChange={edit(setTitle)} placeholder="Sunday Projects" mono={false} size={22} />
       )}
+      <ShelfEmojiField value={emoji} onChange={edit(setEmoji)} />
       <Field
         label="One line about it"
         value={subtitle}
@@ -113,9 +118,9 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
     <ShelfForm
       submitLabel="Create shelf"
       submittingLabel="Creating…"
-      onSubmit={async ({ title, subtitle, visibility }) => {
+      onSubmit={async ({ title, subtitle, visibility, emoji }) => {
         if (!profile) return false;
-        const created = await createShelf(profile.id, title, subtitle, visibility);
+        const created = await createShelf(profile.id, title, subtitle, visibility, emoji);
         if (created) onCreated(created);
         return !!created;
       }}
