@@ -12,10 +12,10 @@ const PREVIEW = 5;
 // A shelf its owner posted with "Tell my followers": a feed entry like a
 // recipe's, led by the shelf's cover photo if it has one (or its emoji or
 // sticker beside the name), with a peek at what's on it. Tapping it opens
-// the shelf.
+// the shelf where it lives, on its owner's profile.
 export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
   const router = useRouter();
-  const open = () => router.push(`/shelf/${shelf.id}`);
+  const open = () => router.push(`/${shelf.ownerHandle}?shelf=${shelf.id}`);
   const photos = shelf.recipes.filter((r) => r.coverPhotoUrl).slice(0, PREVIEW);
   const count = shelf.recipes.length;
 

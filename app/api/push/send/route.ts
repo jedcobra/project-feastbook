@@ -109,7 +109,9 @@ export async function POST(request: Request) {
   const url = notifRow.cook_photo_id
     ? `/me?photo=${notifRow.cook_photo_id}`
     : notifRow.shelf_id
-      ? `/shelf/${notifRow.shelf_id}`
+      ? actorHandle
+        ? `/${actorHandle}?shelf=${notifRow.shelf_id}`
+        : `/shelf/${notifRow.shelf_id}`
       : notifRow.conversation_id
         ? `/messages/${notifRow.conversation_id}`
         : notifRow.recipe_id

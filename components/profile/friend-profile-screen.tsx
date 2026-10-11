@@ -41,7 +41,8 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   // Follow button on it.
   useEffect(() => {
     if (profile && profile.handle === handle.toLowerCase()) {
-      router.replace('/me');
+      // Keep any ?photo= / ?shelf= so the link still opens what it pointed at.
+      router.replace(`/me${window.location.search}`);
     }
   }, [profile, handle, router]);
 

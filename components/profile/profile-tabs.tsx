@@ -57,17 +57,28 @@ export function ProfileTabs({
 }) {
   const [tab, setTab] = useState<TabId>('recipes');
   const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
+  const [focusShelfId, setFocusShelfId] = useState<string | null>(null);
 
-  // A notification about one of your photos links here as ?photo=<id>:
-  // open the Cooked tab on that photo, then drop the param so closing it
-  // and refreshing doesn't reopen it.
+  // Links can point into the profile. ?photo=<id> (a notification about one
+  // of your photos) opens the Cooked tab on that photo; ?shelf=<id> (a
+  // shelf post in the feed, or its notification) opens that shelf on the
+  // Recipes tab. Either param is then dropped so closing and refreshing
+  // doesn't reopen it.
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get('photo');
-    if (!id) return;
-    setTab('cooked');
-    setOpenPhotoId(id);
+    const params = new URLSearchParams(window.location.search);
+    const photoId = params.get('photo');
+    const shelfId = params.get('shelf');
+    if (!photoId && !shelfId) return;
+    if (photoId) {
+      setTab('cooked');
+      setOpenPhotoId(photoId);
+    } else if (shelfId) {
+      setTab('recipes');
+      setFocusShelfId(shelfId);
+    }
     const url = new URL(window.location.href);
     url.searchParams.delete('photo');
+    url.searchParams.delete('shelf');
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }, []);
 
@@ -155,6 +166,7 @@ export function ProfileTabs({
             onShelfArchived={onShelfArchived}
             onShelfChange={onShelfChange}
             onShelfCreated={onShelfCreated}
+            focusShelfId={focusShelfId}
           />
         )}
         {tab === 'cooked' && (
@@ -202,6 +214,7 @@ function RecipesTab({
   onShelfArchived,
   onShelfChange,
   onShelfCreated,
+  focusShelfId,
 }: {
   shelves: Shelf[];
   recipes: Recipe[];
@@ -217,12 +230,24 @@ function RecipesTab({
   onShelfArchived?: (shelfId: string) => void;
   onShelfChange?: (shelf: Shelf) => void;
   onShelfCreated?: (shelf: Shelf) => void;
+  // A shelf to open and scroll to on arrival (from a ?shelf= link).
+  focusShelfId?: string | null;
 }) {
   // Which row is swiped open — a shelf's id or a recipe's, never both.
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(focusShelfId ? [focusShelfId] : []));
+  const shelfEls = useRef(new Map<string, HTMLElement>());
+
+  useEffect(() => {
+    if (!focusShelfId) return;
+    setExpanded((cur) => new Set(cur).add(focusShelfId));
+    // After the open shelf has rendered, bring its top into view.
+    requestAnimationFrame(() =>
+      shelfEls.current.get(focusShelfId)?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
+    );
+  }, [focusShelfId]);
   const [editingShelfId, setEditingShelfId] = useState<string | null>(null);
   const [creatingShelf, setCreatingShelf] = useState(false);
 
@@ -483,7 +508,14 @@ function RecipesTab({
         const rows = shelfRows(shelf);
         const open = expanded.has(shelf.id);
         return (
-          <div key={shelf.id} className="border-b border-dashed border-rule">
+          <div
+            key={shelf.id}
+            ref={(el) => {
+              if (el) shelfEls.current.set(shelf.id, el);
+              else shelfEls.current.delete(shelf.id);
+            }}
+            className="scroll-mt-2 border-b border-dashed border-rule"
+          >
             <div {...shelfReorder.pressProps}>
               <button
                 type="button"

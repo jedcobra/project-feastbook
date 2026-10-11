@@ -138,7 +138,7 @@ export function NotificationsScreen() {
     setItems((is) => is?.map((x) => (x.id === n.id ? { ...x, read: true } : x)) ?? is);
     if (!n.read) await markNotificationRead(n.id);
     if (n.cookPhotoId) router.push(`/me?photo=${n.cookPhotoId}`);
-    else if (n.shelfId) router.push(`/shelf/${n.shelfId}`);
+    else if (n.shelfId) router.push(n.actorHandle ? `/${n.actorHandle}?shelf=${n.shelfId}` : `/shelf/${n.shelfId}`);
     else if (n.conversationId) router.push(`/messages/${n.conversationId}`);
     else if (n.recipeId) router.push(`/recipe/${n.recipeId}`);
     else if (n.actorHandle) router.push(`/${n.actorHandle}`);
