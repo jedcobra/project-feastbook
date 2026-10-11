@@ -6,7 +6,7 @@ import { PlusIcon } from '@/components/icons';
 import { NewShelfForm } from '@/components/shelves/new-shelf-form';
 import { fetchShelfIdsForRecipe, fetchShelvesForOwner, setRecipeShelves } from '@/lib/supabase/queries';
 import type { Shelf } from '@/lib/types';
-import { EMOJI_FONT_CLASS } from '@/lib/food-emoji';
+import { EMOJI_FONT_CLASS } from '@/lib/shelf-emoji';
 
 interface AddToShelfSheetProps {
   ownerId: string;

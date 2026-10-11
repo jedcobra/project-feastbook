@@ -1,4 +1,4 @@
-import { EMOJI_FONT_CLASS } from '@/lib/food-emoji';
+import { EMOJI_FONT_CLASS } from '@/lib/shelf-emoji';
 
 // A shelf's square icon: its food emoji if one was picked, otherwise how
 // many recipes are on it.
