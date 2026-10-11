@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Checkbox } from '@/components/checkbox';
 import { Field } from '@/components/create/field';
 import { Label } from '@/components/label';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -27,8 +28,9 @@ const EMPTY: ShelfFormValues = {
   stickerUrl: null,
 };
 
-// Name, cover, one-line description, and privacy — used to create a shelf (the
-// "New shelf" screen and the add-to-shelf sheet) and to edit one later.
+// Name, icon, one-line description, privacy, and whether to tell followers —
+// used to create a shelf (the New shelf sheet and the add-to-shelf sheet)
+// and to edit one later.
 // With `initial` it's an edit form: Save only lights up once something
 // actually changed.
 export function ShelfForm({
@@ -37,6 +39,7 @@ export function ShelfForm({
   submittingLabel,
   titleLocked,
   recipePhotos,
+  posted = false,
   onSubmit,
 }: {
   initial?: ShelfFormValues;
@@ -45,7 +48,9 @@ export function ShelfForm({
   titleLocked?: string;
   // The shelf's recipes' photos, offered as covers when editing a shelf.
   recipePhotos?: ShelfRecipePhoto[];
-  onSubmit: (values: ShelfFormValues) => Promise<boolean>;
+  // Already posted to the feed: "Tell my followers" has been used up.
+  posted?: boolean;
+  onSubmit: (values: ShelfFormValues & { tellFollowers: boolean }) => Promise<boolean>;
 }) {
   const [title, setTitle] = useState(initial?.title ?? EMPTY.title);
   const [subtitle, setSubtitle] = useState(initial?.subtitle ?? EMPTY.subtitle);
@@ -55,8 +60,11 @@ export function ShelfForm({
     coverUrl: initial?.coverUrl ?? EMPTY.coverUrl,
     stickerUrl: initial?.stickerUrl ?? EMPTY.stickerUrl,
   });
+  const [tell, setTell] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  // Only a shelf other people can see can be posted, and only once.
+  const canTell = visibility !== 'private' && !posted;
 
   const dirty =
     !initial ||
@@ -65,15 +73,23 @@ export function ShelfForm({
     visibility !== initial.visibility ||
     cover.emoji !== initial.emoji ||
     cover.coverUrl !== initial.coverUrl ||
-    cover.stickerUrl !== initial.stickerUrl;
+    cover.stickerUrl !== initial.stickerUrl ||
+    (tell && canTell);
   const ready = title.trim().length > 0 && dirty;
 
   const handleSubmit = async () => {
     if (!ready || submitting) return;
     setSubmitting(true);
-    const ok = await onSubmit({ title: title.trim(), subtitle: subtitle.trim(), visibility, ...cover });
+    const ok = await onSubmit({
+      title: title.trim(),
+      subtitle: subtitle.trim(),
+      visibility,
+      ...cover,
+      tellFollowers: tell && canTell,
+    });
     setSubmitting(false);
     setSaved(ok);
+    if (ok) setTell(false);
   };
 
   const edit = <T,>(set: (v: T) => void) => (v: T) => {
@@ -116,6 +132,27 @@ export function ShelfForm({
           </button>
         ))}
       </div>
+      {visibility !== 'private' &&
+        (posted ? (
+          <div className="border-t border-dashed border-rule py-[11px] font-mono text-[12px] text-ink-mute">
+            Posted to your followers&rsquo; feed.
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => edit(setTell)(!tell)}
+            aria-pressed={tell}
+            className="mt-1.5 flex w-full items-start gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
+          >
+            <Checkbox checked={tell} size={14} className="mt-[3px]" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-mono text-[14px] text-ink">Tell my followers</span>
+              <span className="block font-mono text-[12px] leading-[1.5] text-ink-mute">
+                Posts it to the feed and lets them know.
+              </span>
+            </span>
+          </button>
+        ))}
       <button
         type="button"
         onClick={handleSubmit}
@@ -136,9 +173,9 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
     <ShelfForm
       submitLabel="Create shelf"
       submittingLabel="Creating…"
-      onSubmit={async ({ title, subtitle, visibility, emoji, coverUrl, stickerUrl }) => {
+      onSubmit={async ({ title, ...rest }) => {
         if (!profile) return false;
-        const created = await createShelf(profile.id, title, subtitle, visibility, emoji, coverUrl, stickerUrl);
+        const created = await createShelf(profile.id, title, rest);
         if (created) onCreated(created);
         return !!created;
       }}

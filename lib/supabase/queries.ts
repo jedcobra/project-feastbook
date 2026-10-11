@@ -10,6 +10,7 @@ import type {
   DirectMessage,
   FeedActivity,
   FeedItem,
+  FeedShelf,
   NotificationKind,
   Person,
   Recipe,
@@ -151,32 +152,46 @@ export async function fetchFeedPage(
     .select(COOK_PHOTO_SELECT)
     .order('created_at', { ascending: false })
     .limit(limit);
+  // Shelves their owners posted with "Tell my followers"; RLS leaves out
+  // any this viewer isn't allowed to see.
+  let shelfQuery = supabase
+    .from('shelves')
+    .select(
+      'id, title, subtitle, emoji, cover_url, sticker_url, posted_at, owner:profiles(handle, avatar_url), shelf_recipes(recipe_id, position, recipes(title, cover_photo_url))',
+    )
+    .not('posted_at', 'is', null)
+    .is('archived_at', null)
+    .order('posted_at', { ascending: false })
+    .limit(limit);
   if (before) {
     activityQuery = activityQuery.lt('happened_at', before);
     photoQuery = photoQuery.lt('created_at', before);
+    shelfQuery = shelfQuery.lt('posted_at', before);
   }
-  const [{ data: activity, error }, { data: photoRows, error: photoError }] = await Promise.all([
-    activityQuery,
-    photoQuery,
-  ]);
+  const [{ data: activity, error }, { data: photoRows, error: photoError }, { data: shelfRows, error: shelfError }] =
+    await Promise.all([activityQuery, photoQuery, shelfQuery]);
   if (error || !activity) {
     console.error('fetchFeedPage', error);
     return null;
   }
   if (photoError) console.error('fetchFeedPage photos', photoError);
+  if (shelfError) console.error('fetchFeedPage shelves', shelfError);
 
   // Merge both sources by time and keep the newest `limit`; the cursor is
   // the oldest kept timestamp, so the next page picks up strictly before it.
   type Raw =
     | { type: 'activity'; at: string; row: (typeof activity)[number] }
-    | { type: 'photo'; at: string; row: CookPhotoRow };
+    | { type: 'photo'; at: string; row: CookPhotoRow }
+    | { type: 'shelf'; at: string; row: FeedShelfRow };
   const merged: Raw[] = [
     ...activity.map((row): Raw => ({ type: 'activity', at: row.happened_at, row })),
     ...((photoRows ?? []) as CookPhotoRow[]).map((row): Raw => ({ type: 'photo', at: row.created_at, row })),
+    ...((shelfRows ?? []) as FeedShelfRow[]).map((row): Raw => ({ type: 'shelf', at: row.posted_at, row })),
   ]
     .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
     .slice(0, limit);
-  const fetchedEnough = activity.length >= limit || (photoRows?.length ?? 0) >= limit;
+  const fetchedEnough =
+    activity.length >= limit || (photoRows?.length ?? 0) >= limit || (shelfRows?.length ?? 0) >= limit;
   const nextCursor = merged.length > 0 && fetchedEnough ? merged[merged.length - 1].at : null;
 
   const activityRows = merged.flatMap((m) => (m.type === 'activity' ? [m.row] : []));
@@ -204,6 +219,7 @@ export async function fetchFeedPage(
   const photographed = new Set(photos.map((p) => `${p.userId}:${p.recipeId}`));
 
   const items = merged.flatMap((m): FeedItem[] => {
+    if (m.type === 'shelf') return [{ type: 'shelf', key: `shelf:${m.row.id}`, shelf: mapFeedShelf(m.row) }];
     if (m.type === 'photo') {
       const photo = photoById.get(m.row.id);
       return photo ? [{ type: 'photo', key: `photo:${photo.id}`, photo }] : [];
@@ -233,6 +249,46 @@ export async function fetchFeedPage(
     ];
   });
   return { items, nextCursor };
+}
+
+interface FeedShelfRow {
+  id: string;
+  title: string;
+  subtitle: string;
+  emoji: string | null;
+  cover_url: string | null;
+  sticker_url: string | null;
+  posted_at: string;
+  owner: { handle: string; avatar_url: string | null } | { handle: string; avatar_url: string | null }[] | null;
+  shelf_recipes: {
+    recipe_id: string;
+    position: number;
+    recipes: { title: string; cover_photo_url: string | null } | { title: string; cover_photo_url: string | null }[] | null;
+  }[];
+}
+
+function mapFeedShelf(row: FeedShelfRow): FeedShelf {
+  const owner = unwrapOne(row.owner);
+  return {
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle,
+    emoji: row.emoji,
+    coverUrl: row.cover_url,
+    stickerUrl: row.sticker_url,
+    ownerHandle: owner?.handle ?? '',
+    ownerAvatarUrl: owner?.avatar_url ?? undefined,
+    when: formatRelativeTime(row.posted_at),
+    // Recipes the viewer can't see come back without their recipe.
+    recipes: [...row.shelf_recipes]
+      .sort((a, b) => a.position - b.position)
+      .flatMap((sr) => {
+        const recipe = unwrapOne(sr.recipes);
+        return recipe
+          ? [{ id: sr.recipe_id, title: recipe.title, coverPhotoUrl: recipe.cover_photo_url ?? undefined }]
+          : [];
+      }),
+  };
 }
 
 // The little a feed post shows when it's expanded: the ingredient names in
@@ -574,7 +630,7 @@ export async function fetchProfileByHandle(handle: string) {
     supabase.from('recipes').select('*').eq('author_id', profileRow.id).order('created_at', { ascending: false }),
     supabase
       .from('shelves')
-      .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, shelf_recipes(recipe_id, position, recipes(title))')
+      .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title))')
       .eq('owner_id', profileRow.id)
       .is('archived_at', null)
       .order('position', { ascending: true, nullsFirst: true })
@@ -609,6 +665,7 @@ interface ShelfRow {
   emoji: string | null;
   cover_url: string | null;
   sticker_url: string | null;
+  posted_at: string | null;
   shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
 }
 
@@ -623,6 +680,7 @@ function mapShelfRows(rows: ShelfRow[]): Shelf[] {
       emoji: s.emoji,
       coverUrl: s.cover_url,
       stickerUrl: s.sticker_url,
+      postedAt: s.posted_at,
       count: sorted.length,
       recipes: sorted.map((sr) => ({
         id: sr.recipe_id,
@@ -1316,11 +1374,22 @@ export async function deleteComment(commentId: string) {
 export async function createShelf(
   ownerId: string,
   title: string,
-  subtitle = '',
-  visibility: ShelfVisibility = 'private',
-  emoji: string | null = null,
-  coverUrl: string | null = null,
-  stickerUrl: string | null = null,
+  {
+    subtitle = '',
+    visibility = 'private',
+    emoji = null,
+    coverUrl = null,
+    stickerUrl = null,
+    tellFollowers = false,
+  }: {
+    subtitle?: string;
+    visibility?: ShelfVisibility;
+    emoji?: string | null;
+    coverUrl?: string | null;
+    stickerUrl?: string | null;
+    // Post it to the feed and notify followers (shared shelves only).
+    tellFollowers?: boolean;
+  } = {},
 ) {
   const { data, error } = await supabase
     .from('shelves')
@@ -1331,7 +1400,7 @@ export async function createShelf(
     console.error('createShelf', error);
     return null;
   }
-  if (visibility !== 'private') void announceShelf(data.id as string);
+  if (tellFollowers && visibility !== 'private') void postShelf(data.id as string);
   return { id: data.id as string, title: data.title as string };
 }
 
@@ -1341,7 +1410,7 @@ export async function createShelf(
 export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, shelf_recipes(recipe_id)')
+    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id)')
     .eq('owner_id', ownerId)
     .is('archived_at', null)
     .order('created_at', { ascending: true });
@@ -1358,6 +1427,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
       emoji: string | null;
       cover_url: string | null;
       sticker_url: string | null;
+      posted_at: string | null;
       shelf_recipes: unknown[];
     }) => ({
       id: s.id,
@@ -1367,6 +1437,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
       emoji: s.emoji,
       coverUrl: s.cover_url,
       stickerUrl: s.sticker_url,
+      postedAt: s.posted_at,
       count: s.shelf_recipes.length,
       recipes: [],
     }),
@@ -1378,7 +1449,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
 export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, shelf_recipes(recipe_id, position, recipes(title))')
+    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title))')
     .eq('owner_id', ownerId)
     .not('archived_at', 'is', null);
   if (error || !data) {
@@ -1397,9 +1468,11 @@ export async function updateShelf(
     emoji: string | null;
     coverUrl: string | null;
     stickerUrl: string | null;
+    // Post it to the feed and notify followers, if it isn't already posted.
+    tellFollowers?: boolean;
   },
 ): Promise<boolean> {
-  const { coverUrl, stickerUrl, ...rest } = values;
+  const { coverUrl, stickerUrl, tellFollowers, ...rest } = values;
   const { error } = await supabase
     .from('shelves')
     .update({ ...rest, cover_url: coverUrl, sticker_url: stickerUrl })
@@ -1408,37 +1481,37 @@ export async function updateShelf(
     console.error('updateShelf', error);
     return false;
   }
-  if (values.visibility !== 'private') void announceShelf(shelfId);
+  if (tellFollowers && values.visibility !== 'private') void postShelf(shelfId);
   return true;
 }
 
-// Tells the owner's followers about a shelf the first time they can see it
-// — on creation, or when it's later changed from "Just me". "Everyone"
-// tells all of them; "People I follow" only the followers the owner follows
-// back, since nobody else can open it. Claiming announced_at first, in one
-// conditional update, means a shelf is only ever announced once, however
-// many times its visibility is switched back and forth.
-async function announceShelf(shelfId: string) {
+// "Tell my followers": puts a shared shelf in the feed and lets the
+// owner's followers know. "Everyone" notifies all of them; "People I
+// follow" only the followers the owner follows back, since nobody else can
+// open it. Claiming posted_at in one conditional update means a shelf is
+// only ever posted once; a shelf announced before posting existed
+// (announced_at already set) isn't notified about a second time.
+async function postShelf(shelfId: string) {
   const { data: claimed, error } = await supabase
     .from('shelves')
-    .update({ announced_at: new Date().toISOString() })
+    .update({ posted_at: new Date().toISOString() })
     .eq('id', shelfId)
-    .is('announced_at', null)
+    .is('posted_at', null)
     .neq('visibility', 'private')
-    .select('owner_id, title, visibility');
+    .select('owner_id, title, visibility, announced_at');
   const shelf = claimed?.[0];
   if (error || !shelf) {
-    if (error) console.error('announceShelf: claim', error);
+    if (error) console.error('postShelf: claim', error);
     return;
   }
-  // The heart button's default shelf isn't news.
-  if (shelf.title === 'Saved') return;
+  if (shelf.announced_at) return;
+  await supabase.from('shelves').update({ announced_at: new Date().toISOString() }).eq('id', shelfId);
   const { data: followers, error: followersError } = await supabase
     .from('follows')
     .select('follower_id')
     .eq('followee_id', shelf.owner_id);
   if (followersError) {
-    console.error('announceShelf: followers', followersError);
+    console.error('postShelf: followers', followersError);
     return;
   }
   let recipientIds = (followers ?? []).map((f: { follower_id: string }) => f.follower_id);
@@ -1448,7 +1521,7 @@ async function announceShelf(shelfId: string) {
       .select('followee_id')
       .eq('follower_id', shelf.owner_id);
     if (followedError) {
-      console.error('announceShelf: following', followedError);
+      console.error('postShelf: following', followedError);
       return;
     }
     const followedIds = new Set((followed ?? []).map((f: { followee_id: string }) => f.followee_id));
@@ -1560,6 +1633,7 @@ export interface ShelfDetail {
   emoji: string | null;
   coverUrl: string | null;
   stickerUrl: string | null;
+  postedAt: string | null;
   ownerId: string;
   recipes: Recipe[];
 }
@@ -1567,7 +1641,7 @@ export interface ShelfDetail {
 export async function fetchShelfDetail(shelfId: string): Promise<ShelfDetail | null> {
   const { data: shelfRow, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, owner_id')
+    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, owner_id')
     .eq('id', shelfId)
     .maybeSingle();
   if (error || !shelfRow) {
@@ -1598,6 +1672,7 @@ export async function fetchShelfDetail(shelfId: string): Promise<ShelfDetail | n
     emoji: shelfRow.emoji,
     coverUrl: shelfRow.cover_url,
     stickerUrl: shelfRow.sticker_url,
+    postedAt: shelfRow.posted_at,
     ownerId: shelfRow.owner_id,
     recipes,
   };

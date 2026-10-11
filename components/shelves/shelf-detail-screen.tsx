@@ -129,9 +129,14 @@ export function ShelfDetailScreen({ id }: { id: string }) {
               submittingLabel="Saving…"
               // The heart button finds its default shelf by this exact name.
               titleLocked={shelf.title === 'Saved' ? 'Your heart button saves here, so this name stays.' : undefined}
-              onSubmit={async (values) => {
-                const ok = await updateShelf(id, values);
-                if (ok) setShelf((s) => (s ? { ...s, ...values } : s));
+              posted={!!shelf.postedAt}
+              onSubmit={async ({ tellFollowers, ...values }) => {
+                const ok = await updateShelf(id, { ...values, tellFollowers });
+                if (ok) {
+                  setShelf((s) =>
+                    s ? { ...s, ...values, postedAt: tellFollowers ? new Date().toISOString() : s.postedAt } : s,
+                  );
+                }
                 return ok;
               }}
             />

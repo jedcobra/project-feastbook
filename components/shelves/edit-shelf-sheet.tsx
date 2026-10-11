@@ -89,9 +89,10 @@ export function EditShelfSheet({
         submittingLabel="Saving…"
         // The heart button finds its default shelf by this exact name.
         titleLocked={shelf.title === 'Saved' ? 'Your heart button saves here, so this name stays.' : undefined}
-        onSubmit={async (values) => {
-          const ok = await updateShelf(shelf.id, values);
-          if (ok) onChange({ ...shelf, ...values });
+        posted={!!shelf.postedAt}
+        onSubmit={async ({ tellFollowers, ...values }) => {
+          const ok = await updateShelf(shelf.id, { ...values, tellFollowers });
+          if (ok) onChange({ ...shelf, ...values, postedAt: tellFollowers ? new Date().toISOString() : shelf.postedAt });
           return ok;
         }}
       />
@@ -219,11 +220,19 @@ export function NewShelfSheet({ onCreated, onClose }: { onCreated: (shelf: Shelf
       <ShelfForm
         submitLabel="Create shelf"
         submittingLabel="Creating…"
-        onSubmit={async (values) => {
+        onSubmit={async ({ title, tellFollowers, ...values }) => {
           if (!profile) return false;
-          const { title, subtitle, visibility, emoji, coverUrl, stickerUrl } = values;
-          const created = await createShelf(profile.id, title, subtitle, visibility, emoji, coverUrl, stickerUrl);
-          if (created) onCreated({ id: created.id, ...values, count: 0, recipes: [] });
+          const created = await createShelf(profile.id, title, { ...values, tellFollowers });
+          if (created) {
+            onCreated({
+              id: created.id,
+              title,
+              ...values,
+              postedAt: tellFollowers ? new Date().toISOString() : null,
+              count: 0,
+              recipes: [],
+            });
+          }
           return !!created;
         }}
       />

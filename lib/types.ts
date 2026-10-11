@@ -143,7 +143,23 @@ export interface FeedActivity {
 // or someone's photo of a dish they cooked.
 export type FeedItem =
   | { type: 'activity'; key: string; activity: FeedActivity; recipe: Recipe; author: Person }
-  | { type: 'photo'; key: string; photo: CookPhoto };
+  | { type: 'photo'; key: string; photo: CookPhoto }
+  | { type: 'shelf'; key: string; shelf: FeedShelf };
+
+// A shelf its owner posted to the feed, with enough of its recipes to
+// preview.
+export interface FeedShelf {
+  id: string;
+  title: string;
+  subtitle: string;
+  emoji: string | null;
+  coverUrl: string | null;
+  stickerUrl: string | null;
+  ownerHandle: string;
+  ownerAvatarUrl?: string;
+  when: string;
+  recipes: { id: string; title: string; coverPhotoUrl?: string }[];
+}
 
 export interface ShelfRecipeRef {
   id: string;
@@ -163,6 +179,8 @@ export interface Shelf {
   emoji?: string | null;
   coverUrl?: string | null;
   stickerUrl?: string | null;
+  // When the owner posted it to the feed ("Tell my followers"); null if never.
+  postedAt?: string | null;
   count: number;
   recipes: ShelfRecipeRef[];
 }

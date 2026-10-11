@@ -5,6 +5,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { ErrorScreen } from '@/components/error-screen';
 import { FeedPhotoPost } from '@/components/feed/feed-photo-post';
 import { FeedRow } from '@/components/feed/feed-row';
+import { FeedShelfPost } from '@/components/feed/feed-shelf-post';
 import { FeedSkeleton } from '@/components/feed/feed-skeleton';
 import { fetchFeedPage } from '@/lib/supabase/queries';
 import type { CookPhoto, FeedItem } from '@/lib/types';
@@ -170,7 +171,9 @@ export function FeedScreen() {
         </div>
       ) : (
         items.map((item) =>
-          item.type === 'photo' ? (
+          item.type === 'shelf' ? (
+            <FeedShelfPost key={item.key} shelf={item.shelf} />
+          ) : item.type === 'photo' ? (
             <FeedPhotoPost key={item.key} photo={item.photo} onChange={updatePhoto} onDeleted={removePhoto} />
           ) : (
             <FeedRow key={item.key} item={item.activity} recipe={item.recipe} author={item.author} />
