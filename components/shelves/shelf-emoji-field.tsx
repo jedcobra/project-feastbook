@@ -11,11 +11,11 @@ const GROUPS = [
 type GroupId = (typeof GROUPS)[number]['id'];
 
 // Picks a shelf's icon from the Food & Drink emoji or the country flags,
-// all in one scrolling grid like the emoji keyboard. Tap the square to
-// open it; the buttons above jump to where each group starts, and the one
-// for the group in view stays highlighted as you scroll. With none chosen
-// the shelf shows its recipe count, so the empty square shows "#" as a
-// hint of that.
+// all in one scrolling grid like the emoji keyboard. Tap the icon to open
+// it; the buttons above jump to where each group starts, and the one for
+// the group in view stays highlighted as you scroll. Matching ShelfIcon, a
+// chosen emoji stands on its own; with none, the shelf shows its recipe
+// count, so an empty rounded square shows "#" as a hint of that.
 export function ShelfEmojiField({
   value,
   onChange,
@@ -66,17 +66,19 @@ export function ShelfEmojiField({
           onClick={() => setOpen((o) => !o)}
           aria-label={value ? `Icon ${value}, change it` : 'Choose an icon'}
           aria-expanded={open}
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center border border-ink"
+          className={`flex h-11 w-11 flex-shrink-0 items-center justify-center ${
+            value ? '' : 'rounded-button border border-ink'
+          }`}
         >
           {value ? (
-            <span className={`text-[24px] ${EMOJI_FONT_CLASS}`}>{value}</span>
+            <span className={`text-[34px] ${EMOJI_FONT_CLASS}`}>{value}</span>
           ) : (
             <span className="font-mono text-[14px] font-semibold text-ink-mute">#</span>
           )}
         </button>
         <div className="min-w-0 flex-1 font-mono text-[12px] leading-[1.5] text-ink-mute">
           {value
-            ? 'Shows beside the shelf’s name.'
+            ? 'Shows beside the shelf’s name. Tap it to change.'
             : 'Optional. Without one, the shelf shows how many recipes are on it.'}
         </div>
         {value && (
