@@ -97,7 +97,7 @@ export function CookPhotoViewer({
         onClick={(e) => e.stopPropagation()}
         className="mt-auto flex max-h-[100dvh] min-h-0 flex-col overflow-hidden bg-cream sm:my-auto"
       >
-        <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-dashed border-rule px-4 py-2.5">
+        <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-rule-soft px-4 py-2.5">
           <Link href={`/${photo.handle}`} onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
             <Avatar name={photo.handle} size={28} />
             <span className="truncate font-mono text-[14px] font-semibold text-ink">@{photo.handle}</span>
@@ -187,7 +187,7 @@ export function CookPhotoViewer({
         </div>
 
         {profile && (
-          <div className="flex-shrink-0 border-t border-dashed border-rule px-4 pb-[18px] pt-2.5">
+          <div className="flex-shrink-0 border-t border-rule-soft px-4 pb-[18px] pt-2.5">
             {error && <div className="mb-2 font-mono text-[12px] text-accent">{error}</div>}
             <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
               <AutoGrowTextarea

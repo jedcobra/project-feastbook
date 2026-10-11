@@ -18,7 +18,7 @@ export function MethodBlock({ steps }: { steps: RecipeStep[] }) {
           <div
             key={i}
             onClick={() => setActive(isActive ? null : i)}
-            className="cursor-pointer border-t border-dashed border-rule py-3"
+            className="cursor-pointer border-t border-rule-soft py-3"
           >
             <div className="flex items-start gap-3">
               <span className="w-5 flex-shrink-0 pt-px font-mono text-meta text-ink-mute">

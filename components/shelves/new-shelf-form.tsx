@@ -98,7 +98,7 @@ export function ShelfForm({
   return (
     <div>
       {titleLocked ? (
-        <div className="mb-[18px] border-b border-dashed border-rule pb-2">
+        <div className="mb-[18px] border-b border-rule-soft pb-2">
           <Label className="mb-1.5">Name</Label>
           <div className="font-display text-[22px] font-bold text-ink">{title}</div>
           <div className="mt-1 font-mono text-[12px] text-ink-mute">{titleLocked}</div>
@@ -121,7 +121,7 @@ export function ShelfForm({
             key={o.id}
             type="button"
             onClick={() => edit(setVisibility)(o.id)}
-            className="flex w-full items-center gap-2.5 border-t border-dashed border-rule py-[11px] text-left"
+            className="flex w-full items-center gap-2.5 border-t border-rule-soft py-[11px] text-left"
           >
             <span className="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
               {visibility === o.id && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
@@ -132,7 +132,7 @@ export function ShelfForm({
       </div>
       {visibility !== 'private' &&
         (posted ? (
-          <div className="border-t border-dashed border-rule py-[11px] font-mono text-[12px] text-ink-mute">
+          <div className="border-t border-rule-soft py-[11px] font-mono text-[12px] text-ink-mute">
             Posted to your followers&rsquo; feed.
           </div>
         ) : (
@@ -140,7 +140,7 @@ export function ShelfForm({
             type="button"
             onClick={() => edit(setTell)(!tell)}
             aria-pressed={tell}
-            className="mt-1.5 flex w-full items-start gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
+            className="mt-1.5 flex w-full items-start gap-2.5 border-y border-rule-soft py-[11px] text-left"
           >
             <Checkbox checked={tell} size={14} className="mt-[3px]" />
             <span className="min-w-0 flex-1">

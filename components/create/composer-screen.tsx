@@ -254,7 +254,7 @@ export function ComposerScreen() {
                 </button>
               ))}
             </div>
-            <div className="mt-1.5 border-b border-dashed border-rule" />
+            <div className="mt-1.5 border-b border-rule-soft" />
           </div>
         </div>
 
@@ -269,7 +269,7 @@ export function ComposerScreen() {
         />
 
         <div className="mb-5 mt-[22px]">
-          <div className="mb-2.5 flex items-baseline justify-between border-b border-dashed border-rule pb-1.5">
+          <div className="mb-2.5 flex items-baseline justify-between border-b border-rule-soft pb-1.5">
             <Label>Ingredients</Label>
             <button type="button" onClick={addSection} className="font-mono text-[11px] text-ink-mute">
               + section
@@ -290,7 +290,7 @@ export function ComposerScreen() {
                     if (el) ingredientRows.current.set(`${si}:${ii}`, el);
                     else ingredientRows.current.delete(`${si}:${ii}`);
                   }}
-                  className={`flex items-start gap-2 border-t border-dotted border-rule py-1.5 ${
+                  className={`flex items-start gap-2 border-t border-rule-soft py-1.5 ${
                     dragging?.si === si && dragging.ii === ii ? 'bg-cream-deep' : ''
                   }`}
                 >
@@ -325,7 +325,7 @@ export function ComposerScreen() {
               <button
                 type="button"
                 onClick={() => addItem(si)}
-                className="w-full border-t border-dotted border-rule py-1.5 pl-5 text-left font-mono text-[12px] text-ink-mute"
+                className="w-full border-t border-rule-soft py-1.5 pl-5 text-left font-mono text-[12px] text-ink-mute"
               >
                 + ingredient
               </button>
@@ -334,11 +334,11 @@ export function ComposerScreen() {
         </div>
 
         <div className="mb-5">
-          <div className="mb-2.5 border-b border-dashed border-rule pb-1.5">
+          <div className="mb-2.5 border-b border-rule-soft pb-1.5">
             <Label>Method</Label>
           </div>
           {draft.steps.map((step, i) => (
-            <div key={i} className={`mb-3 ${i === 0 ? '' : 'border-t border-dashed border-rule pt-3'}`}>
+            <div key={i} className={`mb-3 ${i === 0 ? '' : 'border-t border-rule-soft pt-3'}`}>
               <div className="flex gap-2.5 items-baseline">
                 <span className="w-5 flex-shrink-0 font-mono text-meta text-ink-mute">
                   {String(i + 1).padStart(2, '0')}
@@ -389,7 +389,7 @@ export function ComposerScreen() {
           <button
             type="button"
             onClick={addStep}
-            className="w-full border-t border-dashed border-rule pl-[30px] pt-2 text-left font-mono text-[12px] text-ink-mute"
+            className="w-full border-t border-rule-soft pl-[30px] pt-2 text-left font-mono text-[12px] text-ink-mute"
           >
             + step
           </button>
@@ -443,7 +443,7 @@ export function ComposerScreen() {
 
       </div>
 
-      <div className="flex flex-shrink-0 gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
+      <div className="flex flex-shrink-0 gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <OutlineBox onClick={() => goBack(closeHref)} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>

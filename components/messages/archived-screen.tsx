@@ -58,7 +58,7 @@ export function ArchivedScreen() {
             >
               <Link
                 href={`/messages/${c.id}`}
-                className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3 ${i === 0 ? 'border-t' : ''}`}
+                className={`flex items-center gap-2.5 border-b border-rule-soft py-3 ${i === 0 ? 'border-t' : ''}`}
               >
                 <Avatar name={c.person.handle} src={c.person.avatarUrl} size={34} />
                 <div className="min-w-0 flex-1">

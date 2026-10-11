@@ -105,7 +105,7 @@ function RevisionRow({
   action?: React.ReactNode;
 }) {
   return (
-    <div onClick={onToggle} className="flex cursor-pointer gap-3 border-t border-dashed border-rule py-3">
+    <div onClick={onToggle} className="flex cursor-pointer gap-3 border-t border-rule-soft py-3">
       <div className="flex w-2 flex-shrink-0 flex-col items-center pt-[5px]">
         <span className={`h-[7px] w-[7px] rounded-full border border-ink ${isCurrent ? 'bg-ink' : 'bg-transparent'}`} />
       </div>

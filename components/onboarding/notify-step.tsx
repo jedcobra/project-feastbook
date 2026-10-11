@@ -58,7 +58,7 @@ export function NotifyStep({
             key={row.key}
             type="button"
             onClick={() => setOn((o) => ({ ...o, [row.key]: !o[row.key] }))}
-            className="flex w-full items-start gap-2.5 border-t border-dashed border-rule py-3 text-left"
+            className="flex w-full items-start gap-2.5 border-t border-rule-soft py-3 text-left"
           >
             <Checkbox checked={!!on[row.key]} className="mt-0.5" />
             <span className="flex-1">

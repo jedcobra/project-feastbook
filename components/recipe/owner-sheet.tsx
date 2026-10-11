@@ -82,7 +82,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => router.push(`/new/edit?edit=${recipeId}`)}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <PencilIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -97,7 +97,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => router.push(`/recipe/${recipeId}/revisions`)}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <SaveIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => setView('privacy')}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <BookIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={copyLink}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <LinkIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => window.print()}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <PrintIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -152,7 +152,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
               </span>
             </button>
 
-            <div className="mt-1 border-t border-dashed border-rule pt-3">
+            <div className="mt-1 border-t border-rule-soft pt-3">
               {!confirmingDelete ? (
                 <button
                   type="button"
@@ -202,7 +202,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
                   type="button"
                   disabled={savingVisibility}
                   onClick={() => chooseVisibility(o.id)}
-                  className={`flex w-full items-start gap-2.5 py-[11px] text-left ${i === 0 ? '' : 'border-t border-dotted border-rule'}`}
+                  className={`flex w-full items-start gap-2.5 py-[11px] text-left ${i === 0 ? '' : 'border-t border-rule-soft'}`}
                 >
                   <span className="mt-0.5 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
                     {on && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
@@ -219,7 +219,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
             <button
               type="button"
               onClick={() => setView('menu')}
-              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[14px] text-ink-mute"
+              className="mt-3 w-full border-t border-rule-soft pt-3 text-center font-mono text-[14px] text-ink-mute"
             >
               Back
             </button>

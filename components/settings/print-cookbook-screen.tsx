@@ -48,7 +48,7 @@ export function PrintCookbookScreen() {
               )}
               <RecipeMeta recipe={recipe} />
               {recipe.intro && (
-                <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">
+                <div className="mb-5 border-b border-rule-soft pb-5 font-mono text-[13px] leading-[1.65] text-ink-mute">
                   {recipe.intro}
                 </div>
               )}
@@ -61,7 +61,7 @@ export function PrintCookbookScreen() {
                 <div className="mb-5">
                   <Label className="mb-2.5">Method</Label>
                   {recipe.steps.map((step, si) => (
-                    <div key={si} className="border-t border-dashed border-rule py-3">
+                    <div key={si} className="border-t border-rule-soft py-3">
                       <div className="flex items-start gap-3">
                         <span className="w-5 flex-shrink-0 pt-px font-mono text-meta text-ink-mute">
                           {String(si + 1).padStart(2, '0')}

@@ -59,7 +59,7 @@ export function FollowStep({
         {people?.map((p) => {
           const on = following.has(p.id);
           return (
-            <div key={p.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-[11px]">
+            <div key={p.id} className="flex items-center gap-2.5 border-t border-rule-soft py-[11px]">
               <Avatar name={p.handle} src={p.avatarUrl} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="font-display text-[16px] font-bold text-ink">@{p.handle}</div>

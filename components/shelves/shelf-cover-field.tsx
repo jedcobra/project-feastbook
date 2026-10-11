@@ -110,7 +110,7 @@ export function ShelfCoverField({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`block w-full border-t border-dashed border-rule px-3 py-2.5 text-left font-mono text-[14px] first:border-t-0 ${className}`}
+      className={`block w-full border-t border-rule-soft px-3 py-2.5 text-left font-mono text-[14px] first:border-t-0 ${className}`}
     >
       {label}
     </button>
@@ -264,7 +264,7 @@ function EmojiGrid({ value, onPick }: { value: string | null; onPick: (emoji: st
 
   return (
     <div className="mt-2.5 border border-dashed border-rule">
-      <div className="flex gap-1.5 border-b border-dashed border-rule p-1.5">
+      <div className="flex gap-1.5 border-b border-rule-soft p-1.5">
         {GROUPS.map((g) => (
           <button
             key={g.id}

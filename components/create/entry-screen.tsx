@@ -145,7 +145,7 @@ export function EntryScreen() {
             >
               Import from a link
             </button>
-            <div className="mb-3 flex items-start gap-2 border-b border-dashed border-rule pb-2">
+            <div className="mb-3 flex items-start gap-2 border-b border-rule-soft pb-2">
               <LinkIcon size={14} className="mt-[3px] flex-shrink-0 text-ink-mute" />
               <AutoGrowLine
                 value={url}
@@ -174,7 +174,7 @@ export function EntryScreen() {
           <button
             type="button"
             onClick={() => setLinkOpen(true)}
-            className="flex w-full items-center gap-3 border-b border-t border-dashed border-rule py-3.5 text-left"
+            className="flex w-full items-center gap-3 border-b border-t border-rule-soft py-3.5 text-left"
           >
             <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center border border-ink">
               <LinkIcon size={16} className="text-ink" />
@@ -193,7 +193,7 @@ export function EntryScreen() {
           <Link
             key={row.title}
             href={row.href}
-            className={`flex w-full items-center gap-3 border-b border-dashed border-rule py-3.5 text-left ${
+            className={`flex w-full items-center gap-3 border-b border-rule-soft py-3.5 text-left ${
               i === 0 && linkOpen ? 'border-t' : ''
             }`}
           >

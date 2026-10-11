@@ -37,13 +37,13 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
         <HandleLink handle={author.handle} className="font-mono text-[14px] text-ink underline decoration-dashed underline-offset-[3px]" />
       </div>
 
-      <div className="mb-4 grid grid-cols-3 border-y border-dashed border-rule">
+      <div className="mb-4 grid grid-cols-3 border-y border-rule-soft">
         {([
           ['Time', recipe.time],
           ['Serves', recipe.serves],
           ['Level', recipe.difficulty],
         ] as [string, string | number][]).map(([k, v], i) => (
-          <div key={k} className={`py-2.5 text-center ${i < 2 ? 'border-r border-dashed border-rule' : ''}`}>
+          <div key={k} className={`py-2.5 text-center ${i < 2 ? 'border-r border-rule-soft' : ''}`}>
             <Label className="mb-0.5 text-[11px]">{k}</Label>
             <div className="font-mono text-[14px] text-ink">{v}</div>
           </div>
@@ -51,7 +51,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
       </div>
 
       {recipe.intro && (
-        <div className="mb-4 border-b border-dashed border-rule pb-4 font-mono text-[14px] leading-[1.65] text-ink-mute">
+        <div className="mb-4 border-b border-rule-soft pb-4 font-mono text-[14px] leading-[1.65] text-ink-mute">
           {recipe.intro}
         </div>
       )}
@@ -67,7 +67,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
                 </div>
               )}
               {section.items.map((item, i) => (
-                <div key={i} className="flex gap-2.5 border-t border-dotted border-rule py-1.5">
+                <div key={i} className="flex gap-2.5 border-t border-rule-soft py-1.5">
                   <span className="w-16 flex-shrink-0 font-mono text-[12px] text-ink-mute">{item.q}</span>
                   <span className="min-w-0 flex-1 break-words font-mono text-[14px] text-ink">{item.i}</span>
                 </div>
@@ -81,7 +81,7 @@ export function PublicRecipeDocument({ recipe, author }: { recipe: Recipe; autho
         <div className="mb-5">
           <Label className="mb-2">Method</Label>
           {recipe.steps.map((step, i) => (
-            <div key={i} className="flex gap-2.5 border-t border-dashed border-rule py-[11px]">
+            <div key={i} className="flex gap-2.5 border-t border-rule-soft py-[11px]">
               <span className="w-5 flex-shrink-0 pt-px font-mono text-meta text-ink-mute">
                 {String(i + 1).padStart(2, '0')}
               </span>

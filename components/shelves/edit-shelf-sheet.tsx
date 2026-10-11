@@ -100,12 +100,12 @@ export function EditShelfSheet({
       <div className="mt-6">
         <Label className="mb-2 text-[11px]">In this cookbook</Label>
         {recipes.length === 0 ? (
-          <div className="border-t border-dashed border-rule py-2.5 font-mono text-[12px] text-ink-mute">
+          <div className="border-t border-rule-soft py-2.5 font-mono text-[12px] text-ink-mute">
             Nothing in this cookbook yet.
           </div>
         ) : (
           recipes.map((r) => (
-            <div key={r.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-2.5">
+            <div key={r.id} className="flex items-center gap-2.5 border-t border-rule-soft py-2.5">
               {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
               <span className="min-w-0 flex-1 truncate font-display text-[15px] font-bold text-ink">{r.title}</span>
               <button
@@ -128,7 +128,7 @@ export function EditShelfSheet({
         </button>
       </div>
 
-      <div className="mt-6 border-t border-dashed border-rule pt-4">
+      <div className="mt-6 border-t border-rule-soft pt-4">
         {error && <div className="mb-2 font-mono text-[12px] text-accent">{error}</div>}
         {!confirmingDelete ? (
           <button

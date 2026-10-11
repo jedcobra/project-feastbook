@@ -77,7 +77,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
             key={shelf.id}
             type="button"
             onClick={() => toggle(shelf.id)}
-            className="flex w-full items-center gap-2.5 border-t border-dashed border-rule py-[11px] text-left"
+            className="flex w-full items-center gap-2.5 border-t border-rule-soft py-[11px] text-left"
           >
             <Checkbox checked={selected.has(shelf.id)} />
             <span className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
       <button
         type="button"
         onClick={() => setView('newShelf')}
-        className="mb-3.5 flex w-full items-center gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
+        className="mb-3.5 flex w-full items-center gap-2.5 border-y border-rule-soft py-[11px] text-left"
       >
         <PlusIcon size={15} className="text-ink" />
         <span className="font-mono text-[14px] text-ink">New cookbook…</span>

@@ -37,7 +37,7 @@ export function TimeField({ value, onChange }: { value: string; onChange: (value
         />
         <span className="font-mono text-[11px] text-ink-mute">min</span>
       </div>
-      <div className="mt-1.5 border-b border-dashed border-rule" />
+      <div className="mt-1.5 border-b border-rule-soft" />
     </div>
   );
 }

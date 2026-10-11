@@ -305,7 +305,7 @@ export function GuidedScreen() {
         )}
       </div>
 
-      <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
+      <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <button type="button" onClick={advance} className="px-1 py-3 font-mono text-[12px] text-ink-mute">
           Skip
         </button>

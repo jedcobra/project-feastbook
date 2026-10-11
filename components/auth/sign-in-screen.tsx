@@ -59,7 +59,7 @@ export function SignInScreen() {
           {error && <div className="mt-3.5 font-mono text-[14px] text-accent">{error}</div>}
         </div>
 
-        <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
+        <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
           <button
             type="submit"
             disabled={!ready || submitting}

@@ -85,7 +85,7 @@ export function NotificationsSettingsScreen() {
             type="button"
             onClick={togglePush}
             disabled={pushBusy || permission === 'denied'}
-            className="flex w-full items-start gap-2.5 border-y border-dashed border-rule py-3 text-left disabled:opacity-60"
+            className="flex w-full items-start gap-2.5 border-y border-rule-soft py-3 text-left disabled:opacity-60"
           >
             <Checkbox checked={pushOn} className="mt-0.5" />
             <span className="flex-1">
@@ -101,7 +101,7 @@ export function NotificationsSettingsScreen() {
             </span>
           </button>
         ) : (
-          <div className="border-y border-dashed border-rule py-3 font-mono text-[12px] text-ink-mute">
+          <div className="border-y border-rule-soft py-3 font-mono text-[12px] text-ink-mute">
             Push notifications aren’t supported in this browser.
           </div>
         )}
@@ -112,7 +112,7 @@ export function NotificationsSettingsScreen() {
             key={row.key}
             type="button"
             onClick={() => toggle(row.key)}
-            className={`flex w-full items-start gap-2.5 border-b border-dashed border-rule py-3 text-left ${
+            className={`flex w-full items-start gap-2.5 border-b border-rule-soft py-3 text-left ${
               i === 0 ? 'border-t' : ''
             }`}
           >

@@ -106,7 +106,7 @@ export function FeedRow({ item, recipe, author }: { item: FeedActivity; recipe: 
   };
 
   return (
-    <article className="border-b border-dashed border-rule">
+    <article className="border-b border-rule-soft">
       <div
         role="button"
         tabIndex={0}
@@ -190,7 +190,7 @@ function RecipeOverview({ recipe, overview }: { recipe: Recipe; overview: Overvi
   ].filter(Boolean);
 
   return (
-    <div className="border-t border-dashed border-rule bg-cream-surface px-5 pb-4 pt-3.5">
+    <div className="border-t border-rule-soft bg-cream-surface px-5 pb-4 pt-3.5">
       {recipe.subtitle && <p className="font-mono text-[14px] font-semibold leading-[1.5] text-ink">{recipe.subtitle}</p>}
       {recipe.intro && (
         <p className="mt-1.5 line-clamp-4 font-mono text-[14px] leading-[1.55] text-ink-mute">{recipe.intro}</p>

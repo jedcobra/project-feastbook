@@ -7,7 +7,7 @@ export function FeedSkeleton() {
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="border-b border-dashed border-rule">
+        <div key={i} className="border-b border-rule-soft">
           <div className="px-5 pb-2.5 pt-3.5">
             <SkeletonLine width="55%" height={9} />
           </div>

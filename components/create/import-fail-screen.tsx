@@ -69,7 +69,7 @@ export function ImportFailScreen() {
         {p.title && (
           <>
             <Label className="mb-2">What we did get</Label>
-            <div className="mb-[18px] border-t border-dashed border-rule pt-2.5">
+            <div className="mb-[18px] border-t border-rule-soft pt-2.5">
               <div className="mb-0.5 font-display text-[17px] font-bold text-ink">{p.title}</div>
               {p.host && <div className="font-mono text-[12px] text-ink-mute">{p.host} · source saved</div>}
             </div>
@@ -82,7 +82,7 @@ export function ImportFailScreen() {
             key={row.label}
             type="button"
             onClick={row.onClick}
-            className={`flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left ${
+            className={`flex w-full items-center gap-3 border-t border-rule-soft py-[13px] text-left ${
               i === rows.length - 1 ? 'border-b' : ''
             }`}
           >

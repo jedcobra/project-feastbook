@@ -205,7 +205,7 @@ export function NotificationsScreen() {
                         data-unread-id={n.read ? undefined : n.id}
                         type="button"
                         onClick={() => handleOpen(n)}
-                        className="flex w-full items-start gap-2.5 border-t border-dashed border-rule py-3 text-left"
+                        className="flex w-full items-start gap-2.5 border-t border-rule-soft py-3 text-left"
                       >
                         <div className="w-1.5 flex-shrink-0 pt-[7px]">
                           {!n.read && <div className="h-1.5 w-1.5 rounded-full bg-accent" />}
@@ -229,7 +229,7 @@ export function NotificationsScreen() {
                             {n.shelfTitle && <span> {n.shelfTitle}</span>}
                           </div>
                           {n.excerpt && n.kind !== 'digest' && (
-                            <div className="mt-1 border-l border-dashed border-rule pl-2.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
+                            <div className="mt-1 border-l border-rule-soft pl-2.5 font-mono text-[12px] leading-[1.5] text-ink-mute">
                               {n.excerpt}
                             </div>
                           )}

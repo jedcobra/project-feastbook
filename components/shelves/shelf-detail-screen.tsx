@@ -146,7 +146,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
         </div>
 
         {sorted.map((r) => (
-          <div key={r.id} className="flex items-center gap-2.5 border-t border-dashed border-rule py-3">
+          <div key={r.id} className="flex items-center gap-2.5 border-t border-rule-soft py-3">
             {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
             <Link href={`/recipe/${r.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
               <div className="min-w-0 flex-1">

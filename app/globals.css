@@ -48,12 +48,12 @@
 }
 
 @layer components {
-  /* The signature divider: dashed rule between content sections. */
+  /* The signature divider: a thin, quiet solid rule between sections. */
   .rule-y {
-    @apply border-b border-dashed border-rule;
+    @apply border-b border-rule-soft;
   }
   .rule-dotted-y {
-    @apply border-b border-dotted border-rule;
+    @apply border-b border-rule-soft;
   }
 }
 

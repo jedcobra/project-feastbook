@@ -47,7 +47,7 @@ export function DraftsScreen() {
           const row = (
             <Link
               href={`/new/edit?draft=${draft.id}`}
-              className={`block border-b border-dashed border-rule bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
+              className={`block border-b border-rule-soft bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
             >
               <div className="mb-1.5 flex items-baseline gap-2">
                 <h4

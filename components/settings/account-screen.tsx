@@ -96,7 +96,7 @@ export function AccountScreen() {
           {!changingPassword ? (
             <SettingRow label="Password" value="Change" onClick={() => setChangingPassword(true)} />
           ) : (
-            <div className="border-b border-dashed border-rule py-3">
+            <div className="border-b border-rule-soft py-3">
               <div className="mb-2 font-mono text-[14px] text-ink">Change password</div>
               {passwordDone ? (
                 <div className="font-mono text-[12px] text-ink-mute">Password changed.</div>

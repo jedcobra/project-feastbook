@@ -179,7 +179,7 @@ export function SettingsScreen() {
                 key={o.id}
                 type="button"
                 onClick={() => chooseDefaultVisibility(o.id)}
-                className="flex w-full items-start gap-2.5 border-t border-dotted border-rule py-[11px] text-left"
+                className="flex w-full items-start gap-2.5 border-t border-rule-soft py-[11px] text-left"
               >
                 <span className="mt-0.5 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
                   {profile.default_visibility === o.id && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
@@ -190,7 +190,7 @@ export function SettingsScreen() {
                 </span>
               </button>
             ))}
-            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
+            <div className="mt-2 border-t border-rule-soft pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
               Still shown and changeable every time you publish — this just picks what starts selected.
             </div>
           </div>
@@ -227,7 +227,7 @@ export function SettingsScreen() {
                 key={n}
                 type="button"
                 onClick={() => chooseServingsDefault(n)}
-                className="flex w-full items-start gap-2.5 border-t border-dotted border-rule py-[11px] text-left"
+                className="flex w-full items-start gap-2.5 border-t border-rule-soft py-[11px] text-left"
               >
                 <span className="mt-0.5 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
                   {servingsDefault === n && <span className="h-[7px] w-[7px] rounded-full bg-ink" />}
@@ -237,7 +237,7 @@ export function SettingsScreen() {
                 </span>
               </button>
             ))}
-            <div className="mt-2 border-t border-dashed border-rule pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
+            <div className="mt-2 border-t border-rule-soft pt-2.5 font-mono text-[12px] leading-snug text-ink-mute">
               Still shown and changeable on every recipe — this just picks what starts selected.
             </div>
           </div>

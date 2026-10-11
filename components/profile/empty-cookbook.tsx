@@ -22,7 +22,7 @@ export function EmptyCookbook({ name }: { name: string }) {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-[22px] border-b border-dashed border-rule"
+              className="h-[22px] border-b border-rule-soft"
               style={{ opacity: 1 - i * 0.18 }}
             />
           ))}
@@ -40,7 +40,7 @@ export function EmptyCookbook({ name }: { name: string }) {
         <Link
           key={w.n}
           href="/new"
-          className={`flex gap-3 border-b border-dashed border-rule py-3 ${i === 0 ? 'border-t' : ''}`}
+          className={`flex gap-3 border-b border-rule-soft py-3 ${i === 0 ? 'border-t' : ''}`}
         >
           <span className="w-5 flex-shrink-0 pt-0.5 font-mono text-[12px] text-ink-mute">{w.n}</span>
           <div className="min-w-0 flex-1">

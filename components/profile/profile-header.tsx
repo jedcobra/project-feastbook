@@ -62,7 +62,7 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
           )}
           <div className="grid min-w-0 flex-1 grid-cols-3">
             {stats.map(([label, value, href], i) => {
-              const cell = `py-1 text-center ${i < stats.length - 1 ? 'border-r border-dashed border-rule' : ''}`;
+              const cell = `py-1 text-center ${i < stats.length - 1 ? 'border-r border-rule-soft' : ''}`;
               const body = (
                 <>
                   <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>

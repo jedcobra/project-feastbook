@@ -182,7 +182,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
             <button
               type="button"
               onClick={shareProfile}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[13px] text-left"
             >
               <span className="min-w-0 flex-1">
                 <span className="block font-mono text-[14px] text-ink">
@@ -197,7 +197,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
               <button
                 type="button"
                 onClick={toggleBlock}
-                className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[13px] text-left"
+                className="flex w-full items-center gap-3 border-t border-rule-soft py-[13px] text-left"
               >
                 <span className="min-w-0 flex-1">
                   <span className={`block font-mono text-[14px] ${blockedByMe ? 'text-ink' : 'text-accent'}`}>

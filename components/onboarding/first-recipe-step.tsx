@@ -36,7 +36,7 @@ export function FirstRecipeStep({
             key={w.label}
             type="button"
             onClick={() => onImport(w.source)}
-            className={`flex w-full items-center gap-3 border-t border-dashed border-rule py-3.5 text-left ${
+            className={`flex w-full items-center gap-3 border-t border-rule-soft py-3.5 text-left ${
               i === WAYS.length - 1 ? 'border-b' : ''
             }`}
           >

@@ -130,7 +130,7 @@ export function PublishScreen() {
         </div>
 
         <div className="mb-6">
-          <div className="mb-2.5 flex items-baseline justify-between border-b border-dashed border-rule pb-1.5">
+          <div className="mb-2.5 flex items-baseline justify-between border-b border-rule-soft pb-1.5">
             <Label>Who can see it</Label>
             {!visibility && <span className="font-mono text-[11px] text-accent">required</span>}
           </div>
@@ -142,7 +142,7 @@ export function PublishScreen() {
                 type="button"
                 onClick={() => setVisibility(o.id)}
                 className={`flex w-full items-start gap-2.5 py-[11px] text-left ${
-                  i === 0 ? '' : 'border-t border-dotted border-rule'
+                  i === 0 ? '' : 'border-t border-rule-soft'
                 }`}
               >
                 <span className="mt-0.5 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border-[1.2px] border-ink">
@@ -160,7 +160,7 @@ export function PublishScreen() {
         </div>
 
         <div className="mb-6">
-          <div className="mb-2.5 border-b border-dashed border-rule pb-1.5">
+          <div className="mb-2.5 border-b border-rule-soft pb-1.5">
             <Label>Add to cookbooks</Label>
           </div>
           {shelves.map((shelf, i) => (
@@ -169,7 +169,7 @@ export function PublishScreen() {
               type="button"
               onClick={() => toggleShelf(shelf.id)}
               className={`flex w-full items-center gap-2.5 py-2.5 text-left ${
-                i === 0 ? '' : 'border-t border-dotted border-rule'
+                i === 0 ? '' : 'border-t border-rule-soft'
               }`}
             >
               <Checkbox checked={selectedShelves.has(shelf.id)} />
@@ -180,7 +180,7 @@ export function PublishScreen() {
           <button
             type="button"
             onClick={() => setNewShelfOpen(true)}
-            className="w-full border-t border-dotted border-rule pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
+            className="w-full border-t border-rule-soft pl-[23px] pt-[9px] text-left font-mono text-[12px] text-ink-mute"
           >
             + new cookbook
           </button>
@@ -190,14 +190,14 @@ export function PublishScreen() {
         <button
           type="button"
           onClick={() => setNotify(!notify)}
-          className="flex w-full items-center gap-2.5 border-y border-dashed border-rule py-[11px] text-left"
+          className="flex w-full items-center gap-2.5 border-y border-rule-soft py-[11px] text-left"
         >
           <Checkbox checked={notify} />
           <span className="flex-1 font-mono text-[14px] text-ink">Tell my followers</span>
         </button>
       </div>
 
-      <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
+      <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <button
           type="button"
           onClick={handlePublish}

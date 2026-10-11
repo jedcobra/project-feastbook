@@ -132,7 +132,7 @@ export function ProfileTabs({
 
   return (
     <div>
-      <div className="mx-5 grid grid-cols-2 border-b border-dashed border-rule">
+      <div className="mx-5 grid grid-cols-2 border-b border-rule-soft">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -429,7 +429,7 @@ function RecipesTab({
                 ]}
               >
                 <div
-                  className={`flex items-center gap-3.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                  className={`flex items-center gap-3.5 border-b border-rule-soft py-3.5 transition-colors ${
                     shelfReorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
                   }`}
                 >
@@ -452,7 +452,7 @@ function RecipesTab({
           .map(({ recipe: r, saved }) => {
             const row = (
               <div
-                className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3.5 transition-colors ${
+                className={`flex items-center gap-2.5 border-b border-rule-soft py-3.5 transition-colors ${
                   recipeReorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
                 }`}
               >
@@ -538,7 +538,7 @@ function RecipesTab({
               if (el) shelfEls.current.set(shelf.id, el);
               else shelfEls.current.delete(shelf.id);
             }}
-            className="scroll-mt-2 border-b border-dashed border-rule"
+            className="scroll-mt-2 border-b border-rule-soft"
           >
             <div {...shelfReorder.pressProps}>
               <button
@@ -563,7 +563,7 @@ function RecipesTab({
                     <div key={r.id} {...recipeReorder.pressProps}>
                       <Link
                         href={`/recipe/${r.id}`}
-                        className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3"
+                        className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3"
                       >
                         {recipeBody(r, saved)}
                       </Link>
@@ -591,7 +591,7 @@ function RecipesTab({
         <div key={r.id} {...recipeReorder.pressProps}>
           <Link
             href={`/recipe/${r.id}`}
-            className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
+            className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5"
           >
             {recipeBody(r, saved)}
           </Link>

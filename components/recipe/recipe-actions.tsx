@@ -118,7 +118,7 @@ export function RecipeActions({ recipe, authorId }: { recipe: Recipe; authorId: 
 
   return (
     <>
-      <div className="my-3.5 grid grid-cols-[auto_1fr_auto] items-center justify-items-center gap-x-3 gap-y-1.5 border-y border-dashed border-rule py-3">
+      <div className="my-3.5 grid grid-cols-[auto_1fr_auto] items-center justify-items-center gap-x-3 gap-y-1.5 border-y border-rule-soft py-3">
         <span className={stat}>{cookedCount} cooked</span>
         <span className={stat}>
           {average ? `${average} ★ · ${ratingCount} rating${ratingCount === 1 ? '' : 's'}` : 'No ratings yet'}

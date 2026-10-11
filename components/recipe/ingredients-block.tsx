@@ -121,7 +121,7 @@ export function IngredientsBlock({ sections, servings }: { sections: IngredientS
                 key={i}
                 onClick={() => toggle(key)}
                 className={`flex cursor-pointer items-start gap-2 py-1.5 transition-opacity ${
-                  noTopBorder ? '' : 'border-t border-dotted border-rule'
+                  noTopBorder ? '' : 'border-t border-rule-soft'
                 } ${done ? 'opacity-40' : 'opacity-100'}`}
               >
                 <Checkbox checked={done} size={18} />

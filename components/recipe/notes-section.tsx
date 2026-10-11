@@ -150,7 +150,7 @@ export function NotesSection({
 
   return (
     <div id="notes" className="scroll-mt-4">
-      <div className="mb-3.5 border-t border-dashed border-rule" />
+      <div className="mb-3.5 border-t border-rule-soft" />
       <div className="mb-3 flex items-baseline gap-2">
         <Label className="flex-1">Notes from the table</Label>
         {total > 0 && (
@@ -243,7 +243,7 @@ export function NotesSection({
         <div className="py-4 font-mono text-[14px] text-ink-mute">Nothing under this filter yet.</div>
       ) : (
         shown.map((comment) => (
-          <div key={comment.id} className="border-t border-dashed border-rule">
+          <div key={comment.id} className="border-t border-rule-soft">
             <NoteRow
               comment={comment}
               depth={0}

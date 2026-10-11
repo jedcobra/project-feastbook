@@ -81,7 +81,7 @@ export function FeedPhotoPost({
   const visibleComments = showComments && comments ? comments : posted;
 
   return (
-    <article className="border-b border-dashed border-rule pb-3.5">
+    <article className="border-b border-rule-soft pb-3.5">
       <div className="px-5 pb-2.5 pt-3.5">
         <FeedEntryByline
           handle={photo.handle}
@@ -150,7 +150,7 @@ export function FeedPhotoPost({
       )}
 
       {profile && (
-        <div className="mx-5 mt-2 flex items-end gap-2 border-b border-dotted border-rule pb-1">
+        <div className="mx-5 mt-2 flex items-end gap-2 border-b border-rule-soft pb-1">
           <AutoGrowTextarea
             id={inputId}
             value={draft}

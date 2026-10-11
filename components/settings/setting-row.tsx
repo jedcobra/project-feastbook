@@ -17,7 +17,7 @@ export function SettingRow({ label, value, onClick, danger, first }: SettingRowP
     <Tag
       type={onClick ? 'button' : undefined}
       onClick={onClick}
-      className={`flex w-full items-center gap-2.5 border-b border-dashed border-rule py-3 text-left ${
+      className={`flex w-full items-center gap-2.5 border-b border-rule-soft py-3 text-left ${
         first ? 'border-t' : ''
       }`}
     >

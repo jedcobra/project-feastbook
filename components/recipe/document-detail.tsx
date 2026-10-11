@@ -55,7 +55,7 @@ export function DocumentDetail({
       <RecipeMeta recipe={recipe} />
 
       {recipe.intro && (
-        <div className="mb-5 border-b border-dashed border-rule pb-5 font-mono text-[14px] leading-[1.65] text-ink-mute">
+        <div className="mb-5 border-b border-rule-soft pb-5 font-mono text-[14px] leading-[1.65] text-ink-mute">
           {recipe.intro}
         </div>
       )}

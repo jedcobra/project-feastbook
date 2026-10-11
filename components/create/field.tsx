@@ -81,7 +81,7 @@ export function Field({
           style={style}
         />
       )}
-      <div className="border-b border-dashed border-rule" />
+      <div className="border-b border-rule-soft" />
       {hint && <div className="mt-1 font-mono text-[11px] text-ink-mute">{hint}</div>}
     </div>
   );

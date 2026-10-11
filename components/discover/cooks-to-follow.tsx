@@ -37,7 +37,7 @@ export function CookRow({ person, first }: { person: Person; first: boolean }) {
   };
 
   return (
-    <div className={`flex items-center gap-2.5 border-b border-dashed border-rule py-3 ${first ? 'border-t' : ''}`}>
+    <div className={`flex items-center gap-2.5 border-b border-rule-soft py-3 ${first ? 'border-t' : ''}`}>
       <Link href={`/${person.handle}`} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar name={person.handle} src={person.avatarUrl} size={30} />
         <div className="min-w-0 flex-1">

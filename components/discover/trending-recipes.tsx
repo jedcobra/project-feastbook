@@ -13,7 +13,7 @@ export function TrendingRecipes({ recipes }: { recipes: Recipe[] }) {
         <Link
           key={recipe.id}
           href={`/recipe/${recipe.id}`}
-          className="flex items-center gap-2.5 border-b border-dashed border-rule bg-cream py-3.5"
+          className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5"
         >
           {recipe.coverPhotoUrl && <RecipeThumbnail src={recipe.coverPhotoUrl} alt={recipe.title} />}
           <div className="min-w-0 flex-1">

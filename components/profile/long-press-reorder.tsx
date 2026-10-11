@@ -124,7 +124,7 @@ export function useLongPressReorder({
 
 export function ReorderBar({ label, onDone }: { label: string; onDone: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-dashed border-rule py-2.5">
+    <div className="flex items-center justify-between gap-3 border-b border-rule-soft py-2.5">
       <span className="font-mono text-meta text-ink-mute">{label}</span>
       <OutlineBox compact filled onClick={onDone}>
         Done

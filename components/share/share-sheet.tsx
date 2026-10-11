@@ -98,7 +98,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
               <button
                 type="button"
                 onClick={() => setView('send')}
-                className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+                className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
               >
                 <MessageIcon size={16} className="flex-shrink-0 text-ink" />
                 <span className="min-w-0 flex-1">
@@ -113,7 +113,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
             <button
               type="button"
               onClick={copyLink}
-              className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+              className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
             >
               <LinkIcon size={16} className="flex-shrink-0 text-ink" />
               <span className="min-w-0 flex-1">
@@ -126,7 +126,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
               <button
                 type="button"
                 onClick={nativeShare}
-                className="flex w-full items-center gap-3 border-t border-dashed border-rule py-[11px] text-left"
+                className="flex w-full items-center gap-3 border-t border-rule-soft py-[11px] text-left"
               >
                 <ShareIcon size={16} className="flex-shrink-0 text-ink" />
                 <span className="min-w-0 flex-1">
@@ -158,7 +158,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
                     disabled={sent || sending}
                     onClick={() => sendToPerson(p.id)}
                     className={`flex w-full items-center gap-3 py-2.5 text-left disabled:opacity-60 ${
-                      i === 0 ? '' : 'border-t border-dotted border-rule'
+                      i === 0 ? '' : 'border-t border-rule-soft'
                     }`}
                   >
                     <Avatar name={p.handle} src={p.avatarUrl} size={28} />
@@ -173,7 +173,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
             <button
               type="button"
               onClick={() => setView('main')}
-              className="mt-3 w-full border-t border-dashed border-rule pt-3 text-center font-mono text-[14px] text-ink-mute"
+              className="mt-3 w-full border-t border-rule-soft pt-3 text-center font-mono text-[14px] text-ink-mute"
             >
               Back
             </button>

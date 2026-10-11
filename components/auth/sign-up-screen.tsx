@@ -104,7 +104,7 @@ export function SignUpScreen() {
                 className="min-w-0 flex-1 border-none bg-transparent py-1.5 font-mono text-[14px] text-ink outline-none"
               />
             </div>
-            <div className={`border-b ${taken ? 'border-solid border-accent' : 'border-dashed border-rule'}`} />
+            <div className={`border-b ${taken ? 'border-solid border-accent' : ' border-rule-soft'}`} />
             <div className="mt-1 font-mono text-[11px] text-ink-mute">
               {taken ? 'Someone has that one. Try another.' : 'This is how people find your profile.'}
             </div>
@@ -130,13 +130,13 @@ export function SignUpScreen() {
 
           {error && <div className="font-mono text-[14px] text-accent">{error}</div>}
 
-          <div className="mt-[18px] border-t border-dashed border-rule pt-3.5 font-mono text-[11px] leading-relaxed text-ink-mute">
+          <div className="mt-[18px] border-t border-rule-soft pt-3.5 font-mono text-[11px] leading-relaxed text-ink-mute">
             By creating an account you agree to the terms and privacy notice. Your recipes are
             private until you publish them.
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-dashed border-rule bg-cream px-5 pb-5 pt-3">
+        <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
           <button
             type="submit"
             disabled={!ready || submitting}

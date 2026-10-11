@@ -20,7 +20,7 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
   const count = shelf.recipes.length;
 
   return (
-    <article className="border-b border-dashed border-rule">
+    <article className="border-b border-rule-soft">
       <div
         role="link"
         tabIndex={0}

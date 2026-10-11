@@ -79,7 +79,7 @@ export function AddRecipesToShelfSheet({
                 key={r.id}
                 type="button"
                 onClick={() => toggle(r.id)}
-                className={`flex w-full items-center gap-2.5 py-2.5 text-left ${i === 0 ? '' : 'border-t border-dotted border-rule'}`}
+                className={`flex w-full items-center gap-2.5 py-2.5 text-left ${i === 0 ? '' : 'border-t border-rule-soft'}`}
               >
                 <Checkbox checked={selected.has(r.id)} />
                 {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}

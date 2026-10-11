@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 function ShareMasthead() {
   return (
-    <div className="flex flex-shrink-0 items-center gap-2 border-b border-dashed border-rule px-5 py-3">
+    <div className="flex flex-shrink-0 items-center gap-2 border-b border-rule-soft px-5 py-3">
       <span className="font-display text-[16px] font-bold text-ink">Special Spoon</span>
       <span className="flex-1" />
       <a
@@ -51,7 +51,7 @@ function ShareMasthead() {
 
 function ShareSaveBar() {
   return (
-    <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-dashed border-rule px-4 pb-7 pt-2.5">
+    <div className="flex flex-shrink-0 items-center gap-2.5 border-t border-rule-soft px-4 pb-7 pt-2.5">
       <div className="min-w-0 flex-1">
         <div className="truncate font-mono text-[12px] text-ink">Reading in a browser</div>
         <div className="font-mono text-[11px] text-ink-mute">Sign up to save it and cook from it</div>

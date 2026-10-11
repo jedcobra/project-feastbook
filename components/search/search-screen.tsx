@@ -140,7 +140,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
         {!hasQuery ? (
           <>
             {recent.length > 0 && (
-              <div className="mb-1 flex items-baseline border-b border-dashed border-rule pb-1.5">
+              <div className="mb-1 flex items-baseline border-b border-rule-soft pb-1.5">
                 <Label className="flex-1">Recent</Label>
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
               </div>
             )}
             {recent.map((s) => (
-              <div key={s} className="flex items-center gap-2.5 border-b border-dotted border-rule py-2.5">
+              <div key={s} className="flex items-center gap-2.5 border-b border-rule-soft py-2.5">
                 <button type="button" onClick={() => setQ(s)} className="flex-1 text-left font-mono text-[14px] text-ink">
                   {s}
                 </button>
@@ -206,7 +206,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                   <Link
                     key={r.id}
                     href={`/recipe/${r.id}`}
-                    className={`flex items-center gap-2.5 border-t border-dashed border-rule py-[11px] ${i === 0 ? '' : ''}`}
+                    className={`flex items-center gap-2.5 border-t border-rule-soft py-[11px] ${i === 0 ? '' : ''}`}
                   >
                     {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} size={36} />}
                     <div className="min-w-0 flex-1">
@@ -237,7 +237,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                   <Link
                     key={sh.id}
                     href={`/shelf/${sh.id}`}
-                    className="flex items-baseline gap-2.5 border-t border-dashed border-rule py-[11px]"
+                    className="flex items-baseline gap-2.5 border-t border-rule-soft py-[11px]"
                   >
                     <div className="flex-1">
                       <div className="font-display text-[14px] font-bold text-ink">{sh.title}</div>
