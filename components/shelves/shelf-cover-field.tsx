@@ -29,7 +29,7 @@ type Panel = 'emoji' | 'photo' | 'sticker';
 // A shelf's cover: an emoji (food or flag), one of its recipes' photos, a
 // photo of the owner's own, or a sticker — a cut-out with a see-through
 // background, shown loose like an emoji. Picking one replaces whichever
-// was there. Tapping the cover opens a menu of the three kinds; choosing
+// was there. Tapping the icon opens a menu of the three kinds; choosing
 // one opens its picker below. With none chosen the preview is a rounded
 // square with a camera, inviting a tap (on the shelf itself it shows the
 // recipe count). Recipe photos are only on offer once the shelf has
@@ -47,6 +47,7 @@ export function ShelfCoverField({
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const { cropImage, cropper } = useImageCrop();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +99,9 @@ export function ShelfCoverField({
     setPanel(null);
     onChange({ ...NONE, stickerUrl: uploaded.url });
     if (!prepared.transparent) {
-      setNote('That image has no see-through background, so it shows as a rectangle. Copy just the subject for a cut-out.');
+      setNote(
+        'That image has no see-through background, so it shows as a rectangle. Copy just the subject for a cut-out.',
+      );
     }
   };
 
@@ -143,6 +146,19 @@ export function ShelfCoverField({
     return () => document.removeEventListener('pointerdown', onDown);
   }, [menuOpen]);
 
+  // So does an open emoji, photo or sticker picker — except a tap on the
+  // icon itself, which opens the menu to switch kinds, and while a photo
+  // or sticker is still uploading.
+  useEffect(() => {
+    if (!panel || uploading) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (!panelRef.current?.contains(target) && !menuRef.current?.contains(target)) setPanel(null);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [panel, uploading]);
+
   const choose = (next: Panel | 'remove') => {
     setMenuOpen(false);
     setError(null);
@@ -166,13 +182,13 @@ export function ShelfCoverField({
 
   return (
     <div className="mb-[18px]">
-      <Label className="mb-2 text-[11px]">Cover</Label>
+      <Label className="mb-2 text-[11px]">Icon</Label>
       <div className="flex items-center gap-3">
         <div ref={menuRef} className="relative flex-shrink-0">
           <button
             type="button"
             onClick={() => !uploading && setMenuOpen((o) => !o)}
-            aria-label={chosen ? 'Change the cover' : 'Choose a cover'}
+            aria-label={chosen ? 'Change the icon' : 'Choose an icon'}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             className="flex h-11 w-11 items-center justify-center"
@@ -238,67 +254,69 @@ export function ShelfCoverField({
         />
       </div>
 
-      {panel === 'emoji' && (
-        <EmojiGrid value={value.emoji} onPick={(emoji) => pick({ ...NONE, emoji })} />
-      )}
-      {panel === 'photo' && (
-        <div className="mt-2.5 border border-dashed border-rule p-1.5">
-          <div className="px-0.5 pb-1.5 pt-0.5 font-mono text-[11px] text-ink-mute">From this shelf&rsquo;s recipes</div>
-          <div className="grid max-h-[196px] grid-cols-4 gap-1.5 overflow-y-auto">
-            {recipePhotos.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => pick({ ...NONE, coverUrl: r.url })}
-                aria-label={r.title}
-                aria-pressed={r.url === value.coverUrl}
-                className={`aspect-square overflow-hidden rounded-button bg-cream-deep ${
-                  r.url === value.coverUrl ? 'ring-2 ring-ink ring-offset-1 ring-offset-cream' : ''
-                }`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={r.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="mt-1.5 w-full rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
-          >
-            Upload a photo
-          </button>
-        </div>
-      )}
-      {panel === 'sticker' && (
-        <div className="mt-2.5 border border-dashed border-rule p-3">
-          <p className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
-            Use a cut-out with a see-through background. On iPhone, open a photo, touch and hold the
-            food until it lifts out, tap Copy, then Paste here. Or choose a cut-out you&rsquo;ve saved.
-          </p>
-          <div className="flex gap-2">
-            {canPaste && (
-              <button
-                type="button"
-                onClick={pasteSticker}
-                disabled={uploading}
-                className="flex-1 rounded-button border border-ink bg-ink py-2 font-mono text-[13px] font-semibold text-cream disabled:opacity-60"
-              >
-                Paste
-              </button>
-            )}
+      <div ref={panelRef}>
+        {panel === 'emoji' && <EmojiGrid value={value.emoji} onPick={(emoji) => pick({ ...NONE, emoji })} />}
+        {panel === 'photo' && (
+          <div className="mt-2.5 border border-dashed border-rule p-1.5">
+            <div className="px-0.5 pb-1.5 pt-0.5 font-mono text-[11px] text-ink-mute">
+              From this shelf&rsquo;s recipes
+            </div>
+            <div className="grid max-h-[196px] grid-cols-4 gap-1.5 overflow-y-auto">
+              {recipePhotos.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => pick({ ...NONE, coverUrl: r.url })}
+                  aria-label={r.title}
+                  aria-pressed={r.url === value.coverUrl}
+                  className={`aspect-square overflow-hidden rounded-button bg-cream-deep ${
+                    r.url === value.coverUrl ? 'ring-2 ring-ink ring-offset-1 ring-offset-cream' : ''
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={r.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
             <button
               type="button"
-              onClick={() => stickerFileRef.current?.click()}
+              onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex-1 rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
+              className="mt-1.5 w-full rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
             >
-              Choose image
+              Upload a photo
             </button>
           </div>
-        </div>
-      )}
+        )}
+        {panel === 'sticker' && (
+          <div className="mt-2.5 border border-dashed border-rule p-3">
+            <p className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
+              Use a cut-out with a see-through background. On iPhone, open a photo, touch and hold the food until it
+              lifts out, tap Copy, then Paste here. Or choose a cut-out you&rsquo;ve saved.
+            </p>
+            <div className="flex gap-2">
+              {canPaste && (
+                <button
+                  type="button"
+                  onClick={pasteSticker}
+                  disabled={uploading}
+                  className="flex-1 rounded-button border border-ink bg-ink py-2 font-mono text-[13px] font-semibold text-cream disabled:opacity-60"
+                >
+                  Paste
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => stickerFileRef.current?.click()}
+                disabled={uploading}
+                className="flex-1 rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
+              >
+                Choose image
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       {error && <div className="mt-2 font-mono text-[12px] text-accent">{error}</div>}
       {note && <div className="mt-2 font-mono text-[12px] leading-[1.5] text-ink-mute">{note}</div>}
       {cropper}
