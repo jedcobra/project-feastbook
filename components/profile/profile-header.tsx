@@ -65,8 +65,8 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
               const cell = `py-1 text-center ${i < stats.length - 1 ? 'border-r border-rule-soft' : ''}`;
               const body = (
                 <>
-                  <div className="font-display text-[18px] font-bold leading-tight text-ink">{value}</div>
-                  <div className="mt-0.5 font-display text-[11px] font-bold tracking-[0.05em] text-ink">
+                  <div className="font-display text-[26px] font-bold leading-none text-ink">{value}</div>
+                  <div className="mt-1.5 font-display text-[13px] font-bold leading-none text-ink">
                     {label}
                   </div>
                 </>
