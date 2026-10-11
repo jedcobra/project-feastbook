@@ -209,7 +209,7 @@ export function ShelfCoverField({
               : 'Uploading your photo…'
             : chosen
               ? 'Shows beside the shelf’s name. Tap it to change.'
-              : 'Optional. Tap to add an emoji, photo or sticker — without one, the shelf shows how many recipes are on it.'}
+              : 'Optional. Tap to add an emoji, photo or sticker.'}
         </div>
         <input
           ref={stickerFileRef}
