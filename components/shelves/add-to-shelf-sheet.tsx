@@ -78,6 +78,13 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
                           alt=""
                           className="mr-1.5 inline-block h-4 w-4 -translate-y-px rounded-[3px] object-cover align-middle"
                         />
+                      ) : shelf.stickerUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={shelf.stickerUrl}
+                          alt=""
+                          className="mr-1.5 inline-block h-4 w-4 -translate-y-px object-contain align-middle"
+                        />
                       ) : (
                         shelf.emoji && <span className={`mr-1.5 ${EMOJI_FONT_CLASS}`}>{shelf.emoji}</span>
                       )}

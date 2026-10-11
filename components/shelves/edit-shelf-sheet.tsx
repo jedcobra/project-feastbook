@@ -100,6 +100,7 @@ export function EditShelfSheet({
               visibility: shelf.visibility,
               emoji: shelf.emoji ?? null,
               coverUrl: shelf.coverUrl ?? null,
+              stickerUrl: shelf.stickerUrl ?? null,
             }}
             recipePhotos={recipes.flatMap((r) =>
               r.coverPhotoUrl ? [{ id: r.id, title: r.title, url: r.coverPhotoUrl }] : [],

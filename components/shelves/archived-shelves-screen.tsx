@@ -58,7 +58,7 @@ export function ArchivedShelvesScreen() {
                 href={`/shelf/${shelf.id}`}
                 className={`flex items-start gap-3.5 border-b border-dashed border-rule bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
               >
-                <ShelfIcon emoji={shelf.emoji} coverUrl={shelf.coverUrl} count={shelf.count} />
+                <ShelfIcon emoji={shelf.emoji} coverUrl={shelf.coverUrl} stickerUrl={shelf.stickerUrl} count={shelf.count} />
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
                   <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>

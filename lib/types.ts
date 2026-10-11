@@ -157,10 +157,12 @@ export interface Shelf {
   title: string;
   subtitle: string;
   visibility: ShelfVisibility;
-  // The shelf's icon: a cover photo, or else an emoji (food or flag);
-  // with neither it shows its count. Only one of the two is ever set.
+  // The shelf's icon: a cover photo, a sticker (a see-through cut-out) or
+  // an emoji (food or flag); with none it shows its count. Only one of the
+  // three is ever set.
   emoji?: string | null;
   coverUrl?: string | null;
+  stickerUrl?: string | null;
   count: number;
   recipes: ShelfRecipeRef[];
 }

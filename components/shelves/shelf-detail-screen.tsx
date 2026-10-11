@@ -120,6 +120,7 @@ export function ShelfDetailScreen({ id }: { id: string }) {
                 visibility: shelf.visibility,
                 emoji: shelf.emoji,
                 coverUrl: shelf.coverUrl,
+                stickerUrl: shelf.stickerUrl,
               }}
               recipePhotos={shelf.recipes.flatMap((r) =>
                 r.coverPhotoUrl ? [{ id: r.id, title: r.title, url: r.coverPhotoUrl }] : [],

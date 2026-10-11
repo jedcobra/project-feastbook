@@ -15,9 +15,17 @@ export interface ShelfFormValues {
   visibility: ShelfVisibility;
   emoji: string | null;
   coverUrl: string | null;
+  stickerUrl: string | null;
 }
 
-const EMPTY: ShelfFormValues = { title: '', subtitle: '', visibility: 'private', emoji: null, coverUrl: null };
+const EMPTY: ShelfFormValues = {
+  title: '',
+  subtitle: '',
+  visibility: 'private',
+  emoji: null,
+  coverUrl: null,
+  stickerUrl: null,
+};
 
 // Name, cover, one-line description, and privacy — used to create a shelf (the
 // "New shelf" screen and the add-to-shelf sheet) and to edit one later.
@@ -45,6 +53,7 @@ export function ShelfForm({
   const [cover, setCover] = useState({
     emoji: initial?.emoji ?? EMPTY.emoji,
     coverUrl: initial?.coverUrl ?? EMPTY.coverUrl,
+    stickerUrl: initial?.stickerUrl ?? EMPTY.stickerUrl,
   });
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -55,7 +64,8 @@ export function ShelfForm({
     subtitle.trim() !== initial.subtitle ||
     visibility !== initial.visibility ||
     cover.emoji !== initial.emoji ||
-    cover.coverUrl !== initial.coverUrl;
+    cover.coverUrl !== initial.coverUrl ||
+    cover.stickerUrl !== initial.stickerUrl;
   const ready = title.trim().length > 0 && dirty;
 
   const handleSubmit = async () => {
@@ -126,9 +136,9 @@ export function NewShelfForm({ onCreated }: { onCreated: (shelf: { id: string; t
     <ShelfForm
       submitLabel="Create shelf"
       submittingLabel="Creating…"
-      onSubmit={async ({ title, subtitle, visibility, emoji, coverUrl }) => {
+      onSubmit={async ({ title, subtitle, visibility, emoji, coverUrl, stickerUrl }) => {
         if (!profile) return false;
-        const created = await createShelf(profile.id, title, subtitle, visibility, emoji, coverUrl);
+        const created = await createShelf(profile.id, title, subtitle, visibility, emoji, coverUrl, stickerUrl);
         if (created) onCreated(created);
         return !!created;
       }}
