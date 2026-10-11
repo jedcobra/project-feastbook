@@ -37,19 +37,21 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
               <img src={shelf.coverUrl} alt="" loading="lazy" className={`${FEED_IMAGE_FILL} object-cover`} />
             )
           }
+          byline={
+            <FeedEntryByline
+              handle={shelf.ownerHandle}
+              avatarUrl={shelf.ownerAvatarUrl}
+              when={shelf.when}
+              verb={
+                <>
+                  <BookIcon size={14} />
+                  made a shelf
+                </>
+              }
+            />
+          }
         >
-          <FeedEntryByline
-            handle={shelf.ownerHandle}
-            avatarUrl={shelf.ownerAvatarUrl}
-            when={shelf.when}
-            verb={
-              <>
-                <BookIcon size={14} />
-                made a shelf
-              </>
-            }
-          />
-          <div className="mt-1.5 flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5">
             {!shelf.coverUrl && (shelf.stickerUrl || shelf.emoji) && (
               <ShelfIcon emoji={shelf.emoji} stickerUrl={shelf.stickerUrl} count={count} />
             )}

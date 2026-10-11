@@ -22,22 +22,35 @@ const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => Reac
   saved: HeartIcon,
 };
 
-// Recipe posts are horizontal entries, like a page in a recipe book: the
-// picture bleeds to the left edge and to the entry's top and bottom across
-// the first quarter, and the details fill the other three. The image is at
-// least square and grows with the entry if the text runs taller. Entries
-// without a picture are just the text. (Cooked photos get their own
-// full-width post — see FeedPhotoPost.)
-export function FeedEntry({ image, children }: { image?: React.ReactNode; children: React.ReactNode }) {
+// Recipe and shelf posts are horizontal entries, like a page in a recipe
+// book. Every post opens with the same line across the top-left — who did
+// what, and when (see FeedEntryByline). Under it the picture bleeds to the
+// left edge and the entry's bottom across the first quarter, and the
+// details fill the other three. The image is at least square and grows with
+// the entry if the text runs taller. Entries without a picture are just the
+// text. (Cooked photos get their own full-width post, with the same top
+// line — see FeedPhotoPost.)
+export function FeedEntry({
+  byline,
+  image,
+  children,
+}: {
+  byline: React.ReactNode;
+  image?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex">
-      {image && (
-        <div className="relative w-1/4 flex-shrink-0 bg-cream-deep">
-          <div className="aspect-square" aria-hidden />
-          {image}
-        </div>
-      )}
-      <div className={`min-w-0 flex-1 py-4 pr-5 ${image ? 'pl-3.5' : 'pl-5'}`}>{children}</div>
+    <div>
+      <div className="px-5 pb-2.5 pt-3.5">{byline}</div>
+      <div className="flex">
+        {image && (
+          <div className="relative w-1/4 flex-shrink-0 bg-cream-deep">
+            <div className="aspect-square" aria-hidden />
+            {image}
+          </div>
+        )}
+        <div className={`min-w-0 flex-1 pb-4 pr-5 ${image ? 'pl-3.5' : 'pl-5'}`}>{children}</div>
+      </div>
     </div>
   );
 }
@@ -119,23 +132,25 @@ export function FeedRow({ item, recipe, author }: { item: FeedActivity; recipe: 
               />
             )
           }
+          byline={
+            <FeedEntryByline
+              handle={author.handle}
+              avatarUrl={author.avatarUrl}
+              when={item.when}
+              verb={
+                <>
+                  {item.kind === 'saved' ? (
+                    <HeartIcon size={14} filled className="text-accent" />
+                  ) : (
+                    <VerbIcon size={14} />
+                  )}
+                  {VERB[item.kind]}
+                </>
+              }
+            />
+          }
         >
-          <FeedEntryByline
-            handle={author.handle}
-            avatarUrl={author.avatarUrl}
-            when={item.when}
-            verb={
-              <>
-                {item.kind === 'saved' ? (
-                  <HeartIcon size={14} filled className="text-accent" />
-                ) : (
-                  <VerbIcon size={14} />
-                )}
-                {VERB[item.kind]}
-              </>
-            }
-          />
-          <div className="mt-1 flex items-start gap-2">
+          <div className="flex items-start gap-2">
             <h3 className="min-w-0 flex-1 font-display text-[19px] font-bold leading-tight text-ink">{recipe.title}</h3>
             <ChevronIcon
               size={13}

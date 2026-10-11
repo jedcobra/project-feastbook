@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
-import { Avatar } from '@/components/avatar';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
+import { FeedEntryByline } from '@/components/feed/feed-row';
 import { HandleLink } from '@/components/handle-link';
 import { ChefHatIcon } from '@/components/icons';
 import { deleteCookPhotoComment, fetchCookPhotoComments, postCookPhotoComment } from '@/lib/supabase/queries';
@@ -82,16 +82,18 @@ export function FeedPhotoPost({
 
   return (
     <article className="border-b border-dashed border-rule pb-3.5">
-      <div className="flex items-center gap-2 px-5 pb-2.5 pt-3.5">
-        <Link href={`/${photo.handle}`} className="flex min-w-0 items-center gap-2">
-          <Avatar name={photo.handle} src={photo.avatarUrl} size={28} />
-          <span className="truncate font-mono text-[14px] font-semibold text-ink">@{photo.handle}</span>
-        </Link>
-        <span className="flex flex-shrink-0 items-center gap-1 font-mono text-meta text-ink-mute">
-          <ChefHatIcon size={16} />
-          cooked
-        </span>
-        <span className="ml-auto flex-shrink-0 font-mono text-meta text-ink-mute">{photo.at}</span>
+      <div className="px-5 pb-2.5 pt-3.5">
+        <FeedEntryByline
+          handle={photo.handle}
+          avatarUrl={photo.avatarUrl}
+          when={photo.at}
+          verb={
+            <>
+              <ChefHatIcon size={14} />
+              cooked
+            </>
+          }
+        />
       </div>
 
       <button type="button" onClick={() => setOpen(true)} aria-label="Open photo" className="block w-full bg-cream-deep">

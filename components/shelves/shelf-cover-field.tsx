@@ -7,7 +7,6 @@ import { useImageCrop } from '@/components/image-cropper';
 import { Label } from '@/components/label';
 import { STICKER_CLASS } from '@/components/shelves/shelf-icon';
 import { EMOJI_FONT_CLASS, FLAG_EMOJI, FOOD_EMOJI } from '@/lib/shelf-emoji';
-import { prepareSticker } from '@/lib/sticker';
 import { uploadPhoto } from '@/lib/supabase/storage';
 
 export interface ShelfCover {
@@ -24,13 +23,13 @@ export interface ShelfRecipePhoto {
   url: string;
 }
 
-type Panel = 'emoji' | 'photo' | 'sticker';
+type Panel = 'emoji' | 'photo';
 
-// A shelf's cover: an emoji (food or flag), one of its recipes' photos, a
-// photo of the owner's own, or a sticker — a cut-out with a see-through
-// background, shown loose like an emoji. Picking one replaces whichever
-// was there. Tapping the icon opens a menu of the three kinds; choosing
-// one opens its picker below. With none chosen the preview is a rounded
+// A shelf's icon: an emoji (food or flag), one of its recipes' photos, or a
+// photo of the owner's own. Picking one replaces whichever was there
+// (including a sticker from when stickers were offered — one already set
+// still shows). Tapping the icon opens a menu of the kinds; choosing one
+// opens its picker below. With none chosen the preview is a rounded
 // square with a camera, inviting a tap (on the shelf itself it shows the
 // recipe count). Recipe photos are only on offer once the shelf has
 // recipes with photos; until then, Photo goes straight to uploading one.
@@ -51,17 +50,13 @@ export function ShelfCoverField({
   const { cropImage, cropper } = useImageCrop();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const stickerFileRef = useRef<HTMLInputElement>(null);
   const chosen = !!(value.emoji || value.coverUrl || value.stickerUrl);
-  const canPaste = typeof navigator !== 'undefined' && !!navigator.clipboard?.read;
 
   const pick = (cover: ShelfCover) => {
     onChange(cover);
     setPanel(null);
     setError(null);
-    setNote(null);
   };
 
   const handleFile = async (picked: File | undefined) => {
@@ -71,70 +66,12 @@ export function ShelfCoverField({
     if (!file) return;
     setError(null);
     setPanel(null);
-    setNote(null);
     setUploading(true);
     const uploaded = await uploadPhoto(profile.id, file, 'shelf-cover');
     setUploading(false);
     if ('error' in uploaded) setError(uploaded.error);
     else onChange({ ...NONE, coverUrl: uploaded.url });
   };
-
-  const handleSticker = async (blob: Blob | undefined) => {
-    if (!blob || !profile || uploading) return;
-    setError(null);
-    setNote(null);
-    setUploading(true);
-    const prepared = await prepareSticker(blob);
-    if ('error' in prepared) {
-      setUploading(false);
-      setError(prepared.error);
-      return;
-    }
-    const uploaded = await uploadPhoto(profile.id, prepared.file, 'shelf-sticker');
-    setUploading(false);
-    if ('error' in uploaded) {
-      setError(uploaded.error);
-      return;
-    }
-    setPanel(null);
-    onChange({ ...NONE, stickerUrl: uploaded.url });
-    if (!prepared.transparent) {
-      setNote(
-        'That image has no see-through background, so it shows as a rectangle. Copy just the subject for a cut-out.',
-      );
-    }
-  };
-
-  // Reads an image straight off the clipboard — what "Copy" on a lifted
-  // photo subject puts there.
-  const pasteSticker = async () => {
-    try {
-      for (const item of await navigator.clipboard.read()) {
-        const type = item.types.find((t) => t.startsWith('image/'));
-        if (type) {
-          await handleSticker(await item.getType(type));
-          return;
-        }
-      }
-      setError('There’s no image on your clipboard — copy a cut-out first.');
-    } catch {
-      setError('Couldn’t read your clipboard — copy a cut-out first, then tap Paste.');
-    }
-  };
-
-  // While the sticker panel is open, a normal paste (⌘V, or Paste from the
-  // text menu) works too.
-  useEffect(() => {
-    if (panel !== 'sticker') return;
-    const onPaste = (e: ClipboardEvent) => {
-      const file = [...(e.clipboardData?.files ?? [])].find((f) => f.type.startsWith('image/'));
-      if (!file) return;
-      e.preventDefault();
-      void handleSticker(file);
-    };
-    window.addEventListener('paste', onPaste);
-    return () => window.removeEventListener('paste', onPaste);
-  });
 
   // The menu closes on any tap outside it.
   useEffect(() => {
@@ -146,9 +83,9 @@ export function ShelfCoverField({
     return () => document.removeEventListener('pointerdown', onDown);
   }, [menuOpen]);
 
-  // So does an open emoji, photo or sticker picker — except a tap on the
-  // icon itself, which opens the menu to switch kinds, and while a photo
-  // or sticker is still uploading.
+  // So does an open emoji or photo picker — except a tap on the icon
+  // itself, which opens the menu to switch kinds, and while a photo is
+  // still uploading.
   useEffect(() => {
     if (!panel || uploading) return;
     const onDown = (e: PointerEvent) => {
@@ -162,7 +99,6 @@ export function ShelfCoverField({
   const choose = (next: Panel | 'remove') => {
     setMenuOpen(false);
     setError(null);
-    setNote(null);
     if (next === 'remove') pick(NONE);
     // With no recipe photos to offer, Photo goes straight to the camera roll.
     else if (next === 'photo' && recipePhotos.length === 0) fileRef.current?.click();
@@ -218,30 +154,17 @@ export function ShelfCoverField({
             >
               {menuItem('Emoji', () => choose('emoji'))}
               {menuItem('Photo', () => choose('photo'))}
-              {menuItem('Sticker', () => choose('sticker'))}
-              {chosen && menuItem('Remove', () => choose('remove'), 'text-accent')}
+                            {chosen && menuItem('Remove', () => choose('remove'), 'text-accent')}
             </div>
           )}
         </div>
         <div className="min-w-0 flex-1 font-mono text-[12px] leading-[1.5] text-ink-mute">
           {uploading
-            ? panel === 'sticker'
-              ? 'Making your sticker…'
-              : 'Uploading your photo…'
+            ? 'Uploading your photo…'
             : chosen
               ? 'Shows beside the shelf’s name. Tap it to change.'
-              : 'Optional. Tap to add an emoji, photo or sticker.'}
+              : 'Optional. Tap to add an emoji or photo.'}
         </div>
-        <input
-          ref={stickerFileRef}
-          type="file"
-          accept="image/png,image/webp,image/heic,image/*"
-          className="hidden"
-          onChange={(e) => {
-            void handleSticker(e.target.files?.[0]);
-            e.target.value = '';
-          }}
-        />
         <input
           ref={fileRef}
           type="file"
@@ -288,37 +211,8 @@ export function ShelfCoverField({
             </button>
           </div>
         )}
-        {panel === 'sticker' && (
-          <div className="mt-2.5 border border-dashed border-rule p-3">
-            <p className="mb-2.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
-              Use a cut-out with a see-through background. On iPhone, open a photo, touch and hold the food until it
-              lifts out, tap Copy, then Paste here. Or choose a cut-out you&rsquo;ve saved.
-            </p>
-            <div className="flex gap-2">
-              {canPaste && (
-                <button
-                  type="button"
-                  onClick={pasteSticker}
-                  disabled={uploading}
-                  className="flex-1 rounded-button border border-ink bg-ink py-2 font-mono text-[13px] font-semibold text-cream disabled:opacity-60"
-                >
-                  Paste
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => stickerFileRef.current?.click()}
-                disabled={uploading}
-                className="flex-1 rounded-button border border-ink py-2 font-mono text-[13px] text-ink disabled:opacity-60"
-              >
-                Choose image
-              </button>
-            </div>
-          </div>
-        )}
       </div>
       {error && <div className="mt-2 font-mono text-[12px] text-accent">{error}</div>}
-      {note && <div className="mt-2 font-mono text-[12px] leading-[1.5] text-ink-mute">{note}</div>}
       {cropper}
     </div>
   );
