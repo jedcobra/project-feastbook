@@ -8,6 +8,7 @@ import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profil
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { ShelfIcon } from '@/components/shelves/shelf-icon';
+import { Label } from '@/components/label';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
@@ -413,6 +414,7 @@ function RecipesTab({
             recipeReorder.stop();
           }}
         />
+        {groups.length > 0 && <SectionHeading>Shelves</SectionHeading>}
         {(shelfReorder.reorderIds ?? [])
           .map((id) => shelfById.get(id))
           .filter((s): s is Shelf => !!s)
@@ -444,7 +446,7 @@ function RecipesTab({
               </SwipeableRow>
             </div>
           ))}
-        {groups.length > 0 && looseRows.length > 0 && <SectionDivider />}
+        {looseRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
         {(recipeReorder.reorderIds ?? [])
           .map((id) => rowById.get(id))
           .filter((row): row is RecipeListRow => !!row)
@@ -505,6 +507,7 @@ function RecipesTab({
         </div>
       )}
 
+      {groups.length > 0 && <SectionHeading>Shelves</SectionHeading>}
       {groups.map((shelf) => {
         const rows = shelfRows(shelf);
         const open = expanded.has(shelf.id);
@@ -563,7 +566,7 @@ function RecipesTab({
         );
       })}
 
-      {groups.length > 0 && looseRows.length > 0 && <SectionDivider />}
+      {looseRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
       {looseRows.map(({ recipe: r, saved }) => (
         <div key={r.id} {...recipeReorder.pressProps}>
           <Link
@@ -579,11 +582,10 @@ function RecipesTab({
   );
 }
 
-// A quiet break between the shelves and the recipes that aren't on one: a
-// little space and a solid hairline, set apart from the dashed rules
-// between rows.
-function SectionDivider() {
-  return <div aria-hidden className="mt-4 border-t border-ink/20" />;
+// The small heading over each part of the Recipes tab: the shelves, then
+// the recipes that aren't on one.
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return <Label className="mt-5 text-[11px] first:mt-2">{children}</Label>;
 }
 
 // Deleting a shelf just un-groups its recipes — they stay in the
