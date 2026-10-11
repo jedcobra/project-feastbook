@@ -9,15 +9,19 @@ import type { FeedShelf } from '@/lib/types';
 
 const PREVIEW = 5;
 
-// A shelf its owner posted with "Tell my followers": a feed entry like a
-// recipe's, led by the shelf's cover photo if it has one (or its emoji or
-// sticker beside the name), with a peek at what's on it. Tapping it opens
-// the shelf where it lives, on its owner's profile.
+// A cookbook its owner posted with "Tell my followers": a feed entry like
+// a recipe's, led by its cover photo if it has one, or else a 2×2 grid of
+// its recipes' photos (its emoji or sticker sits beside the name either
+// way), with a peek at what's in it. Tapping it opens the cookbook where it
+// lives, on its owner's profile.
 export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
   const router = useRouter();
   const open = () => router.push(`/${shelf.ownerHandle}?shelf=${shelf.id}`);
   const photos = shelf.recipes.filter((r) => r.coverPhotoUrl).slice(0, PREVIEW);
   const count = shelf.recipes.length;
+  // With no cover photo, up to four of its recipes' photos stand in for
+  // one: a 2×2 grid filling the picture space down the left.
+  const grid = !shelf.coverUrl && photos.length > 0 ? photos.slice(0, 4) : null;
 
   return (
     <article className="border-b border-rule-soft">
@@ -32,9 +36,28 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
       >
         <FeedEntry
           image={
-            shelf.coverUrl && (
+            shelf.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={shelf.coverUrl} alt="" loading="lazy" className={`${FEED_IMAGE_FILL} object-cover`} />
+            ) : (
+              grid && (
+                <div className={`${FEED_IMAGE_FILL} grid grid-cols-2 grid-rows-2 gap-px bg-cream`}>
+                  {[0, 1, 2, 3].map((i) =>
+                    grid[i] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={grid[i].id}
+                        src={grid[i].coverPhotoUrl}
+                        alt={grid[i].title}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div key={`empty-${i}`} className="bg-cream-deep" />
+                    ),
+                  )}
+                </div>
+              )
             )
           }
           byline={
@@ -62,9 +85,9 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
             <div className="mt-1 font-mono text-[14px] leading-relaxed text-ink-mute">{shelf.subtitle}</div>
           )}
           <div className="mt-1.5 font-mono text-meta text-ink-mute">
-            {count === 0 ? 'Nothing on it yet' : `${count} recipe${count === 1 ? '' : 's'}`}
+            {count === 0 ? 'Nothing in it yet' : `${count} recipe${count === 1 ? '' : 's'}`}
           </div>
-          {photos.length > 0 ? (
+          {grid ? null : photos.length > 0 ? (
             <div className="mt-2 flex gap-1.5">
               {photos.map((r) => (
                 // eslint-disable-next-line @next/next/no-img-element
