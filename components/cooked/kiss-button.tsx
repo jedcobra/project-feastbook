@@ -7,6 +7,7 @@ import { setCookPhotoKiss } from '@/lib/supabase/queries';
 import type { CookPhoto } from '@/lib/types';
 
 // Always "chef’s kiss", never pluralised: "1 chef’s kiss", "5 chef’s kiss".
+// With none yet the icon stands alone — callers don't show a "0".
 export const kissLabel = (n: number) => `${n} chef’s kiss`;
 
 // The kiss toggle on a cooked photo, shared by the feed and the photo popup.

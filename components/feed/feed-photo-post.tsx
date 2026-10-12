@@ -109,7 +109,7 @@ export function FeedPhotoPost({
       <div className="flex items-center gap-4 px-5 pt-2.5">
         <div className="flex items-center gap-2">
           <KissButton photo={photo} onChange={onChange} onError={setError} />
-          <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
+          {photo.kisses > 0 && <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>}
         </div>
       </div>
       {error && <div className="px-5 pt-1.5 font-mono text-[12px] text-accent">{error}</div>}

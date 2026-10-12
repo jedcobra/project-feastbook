@@ -119,7 +119,7 @@ export function CookPhotoViewer({
           <div className="px-4 pt-3">
             <div className="flex items-center gap-2">
               <KissButton photo={photo} onChange={onChange} onError={setError} />
-              <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>
+              {photo.kisses > 0 && <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>}
               {isOwner && (
                 <button
                   type="button"
