@@ -4,17 +4,20 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
-import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
+import { ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
-import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
-import { ShelfBubble, ShelfIcon } from '@/components/shelves/shelf-icon';
-import { SwipeableRow } from '@/components/swipeable-row';
+import { EditShelfSheet, NewShelfSheet, ShelfSheet } from '@/components/shelves/edit-shelf-sheet';
+import { ShelfBubble } from '@/components/shelves/shelf-icon';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
 
 type TabId = 'recipes' | 'cooked';
+
+// How far a cookbook in edit mode has to be pushed before it starts to
+// move rather than counting as a tap.
+const TILE_DRAG_THRESHOLD = 6;
 const TAB_ORDER: TabId[] = ['recipes', 'cooked'];
 
 export function ProfileTabs({
@@ -188,11 +191,12 @@ type RecipeListRow = { recipe: Recipe; saved: boolean };
 // recipes beneath the row. Then every recipe, newest first, whether or not
 // it's on a shelf. Recipes saved from other cooks carry a heart and that
 // cook's handle instead of living in a tab of their own. In your own
-// cookbook a long press switches to edit mode: drag shelves by their
-// handles to reorder (every drop is saved), swipe a shelf left to archive
-// (instant, reversible from Archived shelves) or delete it, or one of your
-// own recipes left to delete it. Outside edit mode rows are plain links
-// and toggles, so a stray swipe can't delete anything.
+// cookbook a long press switches to edit mode: the cookbooks stay in their
+// row and are dragged sideways to reorder (every drop is saved); tapping
+// one offers Edit, Archive (instant, reversible from Archived shelves) or
+// Delete, and tapping one of your own recipes offers Delete. Outside edit
+// mode rows are plain links and toggles, so nothing gets deleted by
+// accident.
 function RecipesTab({
   shelves,
   recipes,
@@ -223,8 +227,8 @@ function RecipesTab({
   // A shelf to open and scroll to on arrival (from a ?shelf= link).
   focusShelfId?: string | null;
 }) {
-  // Which row is swiped open — a shelf's id or a recipe's, never both.
-  const [openId, setOpenId] = useState<string | null>(null);
+  // In edit mode, the cookbook or recipe whose options are showing.
+  const [options, setOptions] = useState<{ kind: 'shelf' | 'recipe'; id: string } | null>(null);
   const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
   // The cookbook opened from the row of icons, its recipes shown beneath.
@@ -272,13 +276,43 @@ function RecipesTab({
   const addedAt = ({ recipe, saved }: RecipeListRow) => (saved ? (recipe.savedAt ?? recipe.createdAt) : recipe.createdAt);
   const recipeRows = rowsFor(recipeIds).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
 
-  // A long press anywhere on the tab puts it into edit mode.
+  // A long press anywhere on the tab puts it into edit mode, where the
+  // cookbooks stay in their row and are dragged sideways.
+  const editRowRef = useRef<HTMLDivElement>(null);
   const shelfReorder = useLongPressReorder({
     ids: groups.map((s) => s.id),
     onReorder: onReorderShelves && ((ids) => onReorderShelves(savedShelf ? [savedShelf.id, ...ids] : ids)),
-    onStart: () => setOpenId(null),
+    onStart: () => setOptions(null),
+    axis: 'x',
+    scrollRef: editRowRef,
   });
   const editing = shelfReorder.reorderIds !== null;
+
+  // In edit mode a cookbook moves once it's pushed a little way; let go
+  // without moving and it's a tap, which brings up its options.
+  const tilePress = useRef<{ id: string; x: number; y: number; dragging: boolean } | null>(null);
+  const tileProps = (shelfId: string) => ({
+    onPointerDown: (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+      tilePress.current = { id: shelfId, x: e.clientX, y: e.clientY, dragging: false };
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const press = tilePress.current;
+      if (!press || press.dragging || press.id !== shelfId) return;
+      if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > TILE_DRAG_THRESHOLD) {
+        press.dragging = true;
+        shelfReorder.startDrag(shelfId);
+      }
+    },
+    onPointerUp: () => {
+      const press = tilePress.current;
+      tilePress.current = null;
+      if (press && !press.dragging && press.id === shelfId) setOptions({ kind: 'shelf', id: shelfId });
+    },
+    onPointerCancel: () => {
+      tilePress.current = null;
+    },
+  });
 
   const toggleShelf = (shelfId: string) => setSelectedId((cur) => (cur === shelfId ? null : shelfId));
 
@@ -288,11 +322,31 @@ function RecipesTab({
     await setShelfArchived(shelfId, true);
   };
 
+  const optionsShelf = options?.kind === 'shelf' ? groups.find((s) => s.id === options.id) : undefined;
+  const optionsRecipe = options?.kind === 'recipe' ? recipes.find((r) => r.id === options.id) : undefined;
   const confirmingRecipe = confirmingRecipeId ? recipes.find((r) => r.id === confirmingRecipeId) : undefined;
   const confirmingShelf = confirmingShelfId ? groups.find((s) => s.id === confirmingShelfId) : undefined;
   const editingShelf = editingShelfId ? groups.find((s) => s.id === editingShelfId) : undefined;
   const confirmSheets = (
     <>
+      {optionsShelf && (
+        <OptionsSheet
+          title={optionsShelf.title}
+          onClose={() => setOptions(null)}
+          options={[
+            { label: 'Edit cookbook', onClick: () => setEditingShelfId(optionsShelf.id) },
+            { label: 'Archive', onClick: () => void archiveShelf(optionsShelf.id) },
+            { label: 'Delete', danger: true, onClick: () => setConfirmingShelfId(optionsShelf.id) },
+          ]}
+        />
+      )}
+      {optionsRecipe && (
+        <OptionsSheet
+          title={optionsRecipe.title}
+          onClose={() => setOptions(null)}
+          options={[{ label: 'Delete recipe', danger: true, onClick: () => setConfirmingRecipeId(optionsRecipe.id) }]}
+        />
+      )}
       {creatingShelf && (
         <NewShelfSheet
           onClose={() => setCreatingShelf(false)}
@@ -367,83 +421,65 @@ function RecipesTab({
     </>
   );
 
-  const shelfBody = (shelf: Shelf) => (
-    <>
-      <ShelfIcon emoji={shelf.emoji} coverUrl={shelf.coverUrl} stickerUrl={shelf.stickerUrl} count={shelfRows(shelf).length} />
-      <div className="min-w-0 flex-1">
-        <h3 className="font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
-        {shelf.subtitle && <div className="mt-0.5 truncate font-mono text-meta text-ink-mute">{shelf.subtitle}</div>}
-      </div>
-    </>
-  );
-
   if (editing) {
     const shelfById = new Map(groups.map((s) => [s.id, s]));
     return (
       <div className="mx-5 select-none pb-8">
         <ReorderBar
-          label="Drag cookbooks to reorder · swipe left for more"
+          label="Drag cookbooks to reorder · tap for options"
           onDone={() => {
-            setOpenId(null);
+            setOptions(null);
             shelfReorder.stop();
           }}
         />
         {groups.length > 0 && <SectionHeading>Cookbooks</SectionHeading>}
-        {(shelfReorder.reorderIds ?? [])
-          .map((id) => shelfById.get(id))
-          .filter((s): s is Shelf => !!s)
-          .map((shelf) => (
-            <div key={shelf.id} ref={shelfReorder.rowRef(shelf.id)}>
-              <SwipeableRow
-                open={openId === shelf.id}
-                onOpen={() => setOpenId(shelf.id)}
-                onClose={() => setOpenId((cur) => (cur === shelf.id ? null : cur))}
-                actions={[
-                  { label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingShelfId(shelf.id) },
-                  { label: 'Archive', className: 'bg-ink', onClick: () => archiveShelf(shelf.id) },
-                ]}
-              >
+        {groups.length > 0 && (
+          <div ref={editRowRef} data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 pt-1">
+            {(shelfReorder.reorderIds ?? [])
+              .map((id) => shelfById.get(id))
+              .filter((s): s is Shelf => !!s)
+              .map((shelf) => (
                 <div
-                  className={`flex items-center gap-3.5 border-b border-rule-soft py-3.5 transition-colors ${
-                    shelfReorder.draggingId === shelf.id ? 'bg-cream-deep' : 'bg-cream'
+                  key={shelf.id}
+                  ref={shelfReorder.rowRef(shelf.id)}
+                  {...tileProps(shelf.id)}
+                  aria-label={`${shelf.title}: drag to move, tap for options`}
+                  role="button"
+                  className={`flex w-[76px] flex-shrink-0 cursor-grab touch-none flex-col items-center gap-2 transition-transform ${
+                    shelfReorder.draggingId === shelf.id ? 'z-10 scale-110 opacity-90' : ''
                   }`}
                 >
-                  {shelfBody(shelf)}
-                  <DragHandle
-                    label={`Move ${shelf.title}`}
-                    onStart={() => {
-                      setOpenId(null);
-                      shelfReorder.startDrag(shelf.id);
-                    }}
+                  <ShelfBubble
+                    emoji={shelf.emoji}
+                    coverUrl={shelf.coverUrl}
+                    stickerUrl={shelf.stickerUrl}
+                    count={shelfRows(shelf).length}
+                    selected={shelfReorder.draggingId === shelf.id}
                   />
+                  <span className="w-full truncate text-center font-mono text-[12px] leading-tight text-ink-soft">
+                    {shelf.title}
+                  </span>
                 </div>
-              </SwipeableRow>
-            </div>
-          ))}
+              ))}
+          </div>
+        )}
         {recipeRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
-        {recipeRows.map(({ recipe: r, saved }) => {
-            const row = (
-              <div className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5">
-                {recipeBody(r, saved)}
-              </div>
-            );
-            return (
-              <div key={r.id}>
-                {isOwn && !saved ? (
-                  <SwipeableRow
-                    open={openId === r.id}
-                    onOpen={() => setOpenId(r.id)}
-                    onClose={() => setOpenId((cur) => (cur === r.id ? null : cur))}
-                    actions={[{ label: 'Delete', className: 'bg-accent', onClick: () => setConfirmingRecipeId(r.id) }]}
-                  >
-                    {row}
-                  </SwipeableRow>
-                ) : (
-                  row
-                )}
-              </div>
-            );
-          })}
+        {recipeRows.map(({ recipe: r, saved }) =>
+          isOwn && !saved ? (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => setOptions({ kind: 'recipe', id: r.id })}
+              className="flex w-full items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5 text-left"
+            >
+              {recipeBody(r, saved)}
+            </button>
+          ) : (
+            <div key={r.id} className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5">
+              {recipeBody(r, saved)}
+            </div>
+          ),
+        )}
         {confirmSheets}
       </div>
     );
@@ -580,6 +616,38 @@ function RecipesTab({
       ))}
       {confirmSheets}
     </div>
+  );
+}
+
+// What can be done to a cookbook or recipe in edit mode, as a short list
+// in the same sheet as the cookbook popups. Picking one closes the list.
+function OptionsSheet({
+  title,
+  options,
+  onClose,
+}: {
+  title: string;
+  options: { label: string; danger?: boolean; onClick: () => void }[];
+  onClose: () => void;
+}) {
+  return (
+    <ShelfSheet title={title} label={`Options for ${title}`} onClose={onClose}>
+      {options.map((o) => (
+        <button
+          key={o.label}
+          type="button"
+          onClick={() => {
+            onClose();
+            o.onClick();
+          }}
+          className={`block w-full border-t border-rule-soft py-3.5 text-left font-mono text-[14px] first:border-t-0 ${
+            o.danger ? 'text-accent' : 'text-ink'
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </ShelfSheet>
   );
 }
 

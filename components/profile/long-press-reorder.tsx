@@ -7,18 +7,29 @@ import { moveItem } from '@/lib/cookbook-order';
 
 const LONG_PRESS_MS = 450;
 const PRESS_MOVE_TOLERANCE = 8;
+// How near either end of a sideways list a dragged item starts scrolling
+// it, and how far each pointer move scrolls.
+const EDGE_SCROLL_ZONE = 44;
+const EDGE_SCROLL_STEP = 12;
 
 // Long press a row to switch a list into reorder mode, then drag rows by
 // their handle; every drop that changes the order is reported through
-// onReorder. Without onReorder the list never enters reorder mode.
+// onReorder. Without onReorder the list never enters reorder mode. A list
+// laid out sideways (axis 'x') orders by left-to-right position instead,
+// and, given its scrolling container, scrolls it along when a dragged item
+// nears either end.
 export function useLongPressReorder({
   ids,
   onReorder,
   onStart,
+  axis = 'y',
+  scrollRef,
 }: {
   ids: string[];
   onReorder?: (ids: string[]) => void;
   onStart?: () => void;
+  axis?: 'x' | 'y';
+  scrollRef?: React.RefObject<HTMLElement | null>;
 }) {
   // Non-null while reordering: the live order, ahead of what's saved.
   const [reorderIds, setReorderIds] = useState<string[] | null>(null);
@@ -40,11 +51,18 @@ export function useLongPressReorder({
     const onMove = (e: PointerEvent) => {
       const current = reorderIdsRef.current;
       if (!current) return;
+      const scroller = scrollRef?.current;
+      if (axis === 'x' && scroller) {
+        const box = scroller.getBoundingClientRect();
+        if (e.clientX < box.left + EDGE_SCROLL_ZONE) scroller.scrollLeft -= EDGE_SCROLL_STEP;
+        else if (e.clientX > box.right - EDGE_SCROLL_ZONE) scroller.scrollLeft += EDGE_SCROLL_STEP;
+      }
       let target = 0;
       for (const id of current) {
         if (id === draggingId) continue;
         const rect = rowEls.current.get(id)?.getBoundingClientRect();
-        if (rect && rect.top + rect.height / 2 < e.clientY) target++;
+        if (!rect) continue;
+        if (axis === 'x' ? rect.left + rect.width / 2 < e.clientX : rect.top + rect.height / 2 < e.clientY) target++;
       }
       const from = current.indexOf(draggingId);
       if (target !== from) setReorderIds(moveItem(current, from, target));
@@ -62,7 +80,7 @@ export function useLongPressReorder({
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  }, [draggingId, onReorder]);
+  }, [draggingId, onReorder, axis, scrollRef]);
 
   const clearPress = () => {
     if (press.current) clearTimeout(press.current.timer);
