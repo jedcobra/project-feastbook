@@ -7,7 +7,7 @@ import { AutoGrowLine, AutoGrowTextarea } from '@/components/auto-grow-textarea'
 import { Field } from '@/components/create/field';
 import { PhotoField } from '@/components/create/photo-field';
 import { TimeField } from '@/components/create/time-field';
-import { DragIcon, SaveIcon, TimerIcon } from '@/components/icons';
+import { DragIcon, SaveIcon, TimerIcon, XIcon } from '@/components/icons';
 import { Label } from '@/components/label';
 import { OutlineBox } from '@/components/outline-box';
 import { Tag } from '@/components/tag';
@@ -31,20 +31,67 @@ const LEVELS = ['Easy', 'Medium', 'Hard'] as const;
 const SUGGESTED_TAGS = ['pasta', 'weeknight', 'umami', 'vegetarian'];
 const STEP_DESCRIPTION_LIMIT = 300;
 
+type Drag = { kind: 'item'; si: number; ii: number } | { kind: 'step'; i: number };
+
+// How long "Undo" stays offered after removing an ingredient or step.
+const UNDO_MS = 6000;
+
+// The grip at the start of an ingredient or step: press and drag to move it.
+function DragHandle({ label, onStart }: { label: string; onStart: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        onStart();
+      }}
+      className="-my-1.5 -ml-1.5 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"
+    >
+      <DragIcon size={14} />
+    </button>
+  );
+}
+
+// The × at the end of an ingredient or step.
+function RemoveButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="-my-1 -mr-1.5 flex-shrink-0 p-1.5 text-ink-mute"
+    >
+      <XIcon size={11} />
+    </button>
+  );
+}
+
 export function ComposerScreen() {
   const router = useRouter();
   const goBack = useBackNav();
   const { loading, user, profile } = useAuth();
   const [draft, setDraft] = useState<RecipeDraft | null>(null);
   const [tagInput, setTagInput] = useState('');
-  // The ingredient being dragged by its handle, tracked by its live
+  // The ingredient or step being dragged by its handle, tracked by its live
   // position (it moves as the rows reorder under it).
-  const [dragging, setDragging] = useState<{ si: number; ii: number } | null>(null);
+  const [dragging, setDragging] = useState<Drag | null>(null);
   const draggingRef = useRef(dragging);
   draggingRef.current = dragging;
   const ingredientRows = useRef(new Map<string, HTMLElement>());
+  const stepRows = useRef(new Map<number, HTMLElement>());
   const draftRef = useRef(draft);
   draftRef.current = draft;
+  // The draft as it was before the last ingredient or step was removed,
+  // offered back for a few seconds.
+  const [undo, setUndo] = useState<{ label: string; draft: RecipeDraft } | null>(null);
+
+  useEffect(() => {
+    if (!undo) return;
+    const t = setTimeout(() => setUndo(null), UNDO_MS);
+    return () => clearTimeout(t);
+  }, [undo]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -80,35 +127,43 @@ export function ComposerScreen() {
     if (draft) saveDraft(draft);
   }, [draft]);
 
-  // While an ingredient is held, follow the pointer on the window (moving
-  // the row's DOM node would drop pointer capture on the handle) and slot
-  // it in wherever it's dragged within its section.
+  // While an ingredient or step is held, follow the pointer on the window
+  // (moving the row's DOM node would drop pointer capture on the handle)
+  // and slot it in wherever it's dragged — an ingredient within its
+  // section, a step within the method.
   const isDragging = !!dragging;
   useEffect(() => {
     if (!isDragging) return;
     const onMove = (e: PointerEvent) => {
       const cur = draggingRef.current;
-      const count = draftRef.current?.sections[cur?.si ?? -1]?.items.length;
-      if (!cur || !count) return;
+      const d = draftRef.current;
+      if (!cur || !d) return;
+      const from = cur.kind === 'item' ? cur.ii : cur.i;
+      const count = cur.kind === 'item' ? d.sections[cur.si]?.items.length ?? 0 : d.steps.length;
+      const rowAt = (j: number) =>
+        cur.kind === 'item' ? ingredientRows.current.get(`${cur.si}:${j}`) : stepRows.current.get(j);
       let target = 0;
       for (let j = 0; j < count; j++) {
-        if (j === cur.ii) continue;
-        const rect = ingredientRows.current.get(`${cur.si}:${j}`)?.getBoundingClientRect();
+        if (j === from) continue;
+        const rect = rowAt(j)?.getBoundingClientRect();
         if (rect && rect.top + rect.height / 2 < e.clientY) target++;
       }
-      if (target === cur.ii) return;
-      draggingRef.current = { si: cur.si, ii: target };
+      if (target === from) return;
+      if (cur.kind === 'item') {
+        draggingRef.current = { ...cur, ii: target };
+        setDraft((dd) =>
+          dd
+            ? {
+                ...dd,
+                sections: dd.sections.map((s, i) => (i !== cur.si ? s : { ...s, items: moveItem(s.items, from, target) })),
+              }
+            : dd,
+        );
+      } else {
+        draggingRef.current = { kind: 'step', i: target };
+        setDraft((dd) => (dd ? { ...dd, steps: moveItem(dd.steps, from, target) } : dd));
+      }
       setDragging(draggingRef.current);
-      setDraft((d) =>
-        d
-          ? {
-              ...d,
-              sections: d.sections.map((s, i) =>
-                i !== cur.si ? s : { ...s, items: moveItem(s.items, cur.ii, target) },
-              ),
-            }
-          : d,
-      );
     };
     const onUp = () => setDragging(null);
     window.addEventListener('pointermove', onMove);
@@ -172,13 +227,31 @@ export function ComposerScreen() {
           }
         : d,
     );
+  const removeItem = (si: number, ii: number) => {
+    setUndo({ label: 'Ingredient removed', draft });
+    setDraft((d) =>
+      d
+        ? { ...d, sections: d.sections.map((s, i) => (i !== si ? s : { ...s, items: s.items.filter((_, j) => j !== ii) })) }
+        : d,
+    );
+  };
   const addSection = () =>
     setDraft((d) => (d ? { ...d, sections: [...d.sections, { section: '', items: [{ q: '', i: '' }] }] } : d));
 
   const setStep = (i: number, key: 't' | 'd' | 'timer' | 'photoUrl', value: string) =>
     setDraft((d) => (d ? { ...d, steps: d.steps.map((s, j) => (j !== i ? s : { ...s, [key]: value })) } : d));
+  const removeStep = (i: number) => {
+    setUndo({ label: 'Step removed', draft });
+    setDraft((d) => (d ? { ...d, steps: d.steps.filter((_, j) => j !== i) } : d));
+  };
   const addStep = () =>
     setDraft((d) => (d ? { ...d, steps: [...d.steps, { t: '', d: '', timer: '', photoUrl: '' }] } : d));
+
+  const startDrag = (drag: Drag) => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    draggingRef.current = drag;
+    setDragging(drag);
+  };
 
   const toggleTag = (tag: string) =>
     setDraft((d) =>
@@ -292,23 +365,10 @@ export function ComposerScreen() {
                     else ingredientRows.current.delete(`${si}:${ii}`);
                   }}
                   className={`flex items-start gap-2 border-t border-rule-soft py-1.5 ${
-                    dragging?.si === si && dragging.ii === ii ? 'bg-cream-deep' : ''
+                    dragging?.kind === 'item' && dragging.si === si && dragging.ii === ii ? 'bg-cream-deep' : ''
                   }`}
                 >
-                  <button
-                    type="button"
-                    aria-label="Drag to reorder"
-                    onPointerDown={(e) => {
-                      if (e.button !== 0) return;
-                      e.preventDefault();
-                      (document.activeElement as HTMLElement | null)?.blur();
-                      draggingRef.current = { si, ii };
-                      setDragging({ si, ii });
-                    }}
-                    className="-my-1.5 -ml-1.5 flex-shrink-0 cursor-grab touch-none p-1.5 text-ink-mute active:cursor-grabbing"
-                  >
-                    <DragIcon size={14} />
-                  </button>
+                  <DragHandle label="Drag to reorder" onStart={() => startDrag({ kind: 'item', si, ii })} />
                   <AutoGrowLine
                     value={item.q}
                     onChange={(v) => setItem(si, ii, 'q', v)}
@@ -321,6 +381,7 @@ export function ComposerScreen() {
                     placeholder="bucatini"
                     className="block min-w-0 flex-1 resize-none border-none bg-transparent p-0 font-mono text-[14px] leading-[1.4] text-ink outline-none"
                   />
+                  <RemoveButton label="Remove ingredient" onClick={() => removeItem(si, ii)} />
                 </div>
               ))}
               <button
@@ -339,9 +400,19 @@ export function ComposerScreen() {
             <Subheading>Method</Subheading>
           </div>
           {draft.steps.map((step, i) => (
-            <div key={i} className={`mb-3 ${i === 0 ? '' : 'border-t border-rule-soft pt-3'}`}>
-              <div className="flex gap-2.5 items-baseline">
-                <span className="w-5 flex-shrink-0 font-mono text-meta text-ink-mute">
+            <div
+              key={i}
+              ref={(el) => {
+                if (el) stepRows.current.set(i, el);
+                else stepRows.current.delete(i);
+              }}
+              className={`pb-3 ${i === 0 ? '' : 'border-t border-rule-soft pt-3'} ${
+                dragging?.kind === 'step' && dragging.i === i ? 'bg-cream-deep' : ''
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                <DragHandle label="Drag to reorder" onStart={() => startDrag({ kind: 'step', i })} />
+                <span className="w-5 flex-shrink-0 pt-[3px] font-mono text-meta text-ink-mute">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -384,13 +455,14 @@ export function ComposerScreen() {
                     />
                   </div>
                 </div>
+                <RemoveButton label="Remove step" onClick={() => removeStep(i)} />
               </div>
             </div>
           ))}
           <button
             type="button"
             onClick={addStep}
-            className="w-full border-t border-rule-soft pl-[30px] pt-2 text-left font-mono text-[12px] text-ink-mute"
+            className="w-full border-t border-rule-soft pl-[58px] pt-2 text-left font-mono text-[12px] text-ink-mute"
           >
             + step
           </button>
@@ -444,6 +516,21 @@ export function ComposerScreen() {
 
       </div>
 
+      {undo && (
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-rule-soft bg-cream-deep px-5 py-2.5 font-mono text-[12px] text-ink">
+          <span>{undo.label}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(undo.draft);
+              setUndo(null);
+            }}
+            className="font-semibold underline"
+          >
+            Undo
+          </button>
+        </div>
+      )}
       <div className="tabbar-clearance flex flex-shrink-0 gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <OutlineBox onClick={() => goBack(closeHref)} aria-label="Save and close">
           <SaveIcon size={14} />
