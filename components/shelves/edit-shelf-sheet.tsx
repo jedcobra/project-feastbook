@@ -90,43 +90,44 @@ export function EditShelfSheet({
         // The heart button finds its default shelf by this exact name.
         titleLocked={shelf.title === 'Saved' ? 'Your heart button saves here, so this name stays.' : undefined}
         posted={!!shelf.postedAt}
+        middle={
+          <div className="mb-6 mt-2">
+            <Subheading className="mb-2">In this cookbook</Subheading>
+            {recipes.length === 0 ? (
+              <div className="border-t border-rule-soft py-2.5 font-mono text-[12px] text-ink-mute">
+                Nothing in this cookbook yet.
+              </div>
+            ) : (
+              recipes.map((r) => (
+                <div key={r.id} className="flex items-center gap-2.5 border-t border-rule-soft py-2.5">
+                  {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
+                  <span className="min-w-0 flex-1 truncate font-display text-[15px] font-bold text-ink">{r.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => remove(r)}
+                    className="flex-shrink-0 font-mono text-[12px] text-accent"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            )}
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="mt-1 flex w-full items-center justify-center gap-1.5 border border-rule py-3 font-mono text-[14px] text-ink-mute"
+            >
+              <PlusIcon size={13} />
+              Add recipes
+            </button>
+          </div>
+        }
         onSubmit={async ({ tellFollowers, ...values }) => {
           const ok = await updateShelf(shelf.id, { ...values, tellFollowers });
           if (ok) onChange({ ...shelf, ...values, postedAt: tellFollowers ? new Date().toISOString() : shelf.postedAt });
           return ok;
         }}
       />
-
-      <div className="mt-6">
-        <Subheading className="mb-2">In this cookbook</Subheading>
-        {recipes.length === 0 ? (
-          <div className="border-t border-rule-soft py-2.5 font-mono text-[12px] text-ink-mute">
-            Nothing in this cookbook yet.
-          </div>
-        ) : (
-          recipes.map((r) => (
-            <div key={r.id} className="flex items-center gap-2.5 border-t border-rule-soft py-2.5">
-              {r.coverPhotoUrl && <RecipeThumbnail src={r.coverPhotoUrl} alt={r.title} />}
-              <span className="min-w-0 flex-1 truncate font-display text-[15px] font-bold text-ink">{r.title}</span>
-              <button
-                type="button"
-                onClick={() => remove(r)}
-                className="flex-shrink-0 font-mono text-[12px] text-accent"
-              >
-                Remove
-              </button>
-            </div>
-          ))
-        )}
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="mt-1 flex w-full items-center justify-center gap-1.5 border border-rule py-3 font-mono text-[14px] text-ink-mute"
-        >
-          <PlusIcon size={13} />
-          Add recipes
-        </button>
-      </div>
 
       <div className="mt-6 border-t border-rule-soft pt-4">
         {error && <div className="mb-2 font-mono text-[12px] text-accent">{error}</div>}

@@ -30,7 +30,9 @@ const EMPTY: ShelfFormValues = {
 // used to create a shelf (the New shelf sheet and the add-to-shelf sheet)
 // and to edit one later.
 // With `initial` it's an edit form: Save only lights up once something
-// actually changed.
+// actually changed. `middle` goes between the description and Who can see
+// it, so editing can list the cookbook's recipes there and keep privacy
+// and Save at the bottom.
 export function ShelfForm({
   initial,
   submitLabel,
@@ -38,6 +40,7 @@ export function ShelfForm({
   titleLocked,
   recipePhotos,
   posted = false,
+  middle,
   onSubmit,
 }: {
   initial?: ShelfFormValues;
@@ -48,6 +51,7 @@ export function ShelfForm({
   recipePhotos?: ShelfRecipePhoto[];
   // Already posted to the feed: "Tell my followers" has been used up.
   posted?: boolean;
+  middle?: React.ReactNode;
   onSubmit: (values: ShelfFormValues & { tellFollowers: boolean }) => Promise<boolean>;
 }) {
   const [title, setTitle] = useState(initial?.title ?? EMPTY.title);
@@ -114,6 +118,7 @@ export function ShelfForm({
         placeholder="When I have time and nothing else to do"
         hint="Optional. Shows under the name."
       />
+      {middle}
       <div className="mt-1.5">
         <Label className="mb-2 text-[11px]">Who can see it</Label>
         {SHELF_VISIBILITY_OPTIONS.map((o) => (
