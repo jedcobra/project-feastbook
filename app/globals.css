@@ -177,6 +177,21 @@
   }
 }
 
+/* A screen that should sit still (the welcome screen): the document can't
+   scroll or rubber-band behind it. Pinning the body in place is what stops
+   iOS Safari's bounce; overscroll-behavior covers Chrome's pull-to-refresh. */
+html.scroll-locked,
+html.scroll-locked body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html.scroll-locked body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+}
+
 /* iOS/Android auto-zoom the page on focus for any text input under 16px —
    that's the "screen jumps in and cuts things off" behavior. Fields here
    are intentionally smaller for the mono type scale, so override on
