@@ -4,10 +4,10 @@
 
 /* The palette, as RGB triplets for tailwind.config.ts. Light is an aged-paper
    beige page with deep forest-green type. Dark is a near-black page with
-   neutral grey surfaces, lines and controls, and warm off-white and beige
-   type. ui-mute is the quiet colour for controls rather than text (the tab
-   bar's inactive icons), so it stays grey in the dark while text goes
-   beige. */
+   neutral grey surfaces, lines and controls; its headlines (the display
+   face) are beige and its smaller body text light and mid grey. ui-mute
+   is the quiet colour for controls rather than text (the tab bar's
+   inactive icons). */
 @layer base {
   :root {
     --c-cream: 242 233 216;
@@ -32,10 +32,11 @@
     --c-cream: 10 10 10;
     --c-cream-deep: 24 24 24;
     --c-cream-surface: 30 30 30;
-    --c-ink: 241 235 224;
-    --c-ink-soft: 224 212 190;
-    --c-ink-mute: 168 153 126;
+    --c-ink: 236 236 236;
+    --c-ink-soft: 200 200 200;
+    --c-ink-mute: 150 150 150;
     --c-ui-mute: 146 146 146;
+    --c-ink-display: 228 212 180;
     --c-rule: 66 66 66;
     --c-rule-soft: 42 42 42;
     --c-accent: 239 106 95;
@@ -43,7 +44,7 @@
     --c-accent-3: 217 165 72;
     --c-highlight: 92 84 40;
     --c-tag: 38 38 38;
-    --c-tag-ink: 222 205 165;
+    --c-tag-ink: 205 205 205;
     color-scheme: dark;
   }
 
@@ -115,6 +116,12 @@
 }
 [data-tab-shell]:has([data-tab-bar]) .tabbar-clearance {
   padding-bottom: var(--tabbar-clearance);
+}
+
+/* Dark mode's headlines: anything set in the display face in the ink
+   colour turns beige; body text stays grey. */
+:root.dark .font-display.text-ink {
+  color: rgb(var(--c-ink-display));
 }
 
 /* The tab bar's glass: see-through enough for the screen to show through,
