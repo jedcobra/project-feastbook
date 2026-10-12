@@ -11,8 +11,8 @@
     --c-cream: 248 243 235;
     --c-cream-deep: 240 232 219;
     --c-cream-surface: 252 249 244;
-    --c-ink: 27 54 39;
-    --c-ink-soft: 49 84 64;
+    --c-ink: 20 42 30;
+    --c-ink-soft: 38 68 51;
     --c-ink-mute: 128 140 128;
     --c-rule: 220 209 192;
     --c-rule-soft: 232 224 211;
@@ -26,9 +26,9 @@
   }
 
   :root.dark {
-    --c-cream: 18 31 24;
-    --c-cream-deep: 25 42 33;
-    --c-cream-surface: 28 46 36;
+    --c-cream: 14 26 19;
+    --c-cream-deep: 21 36 28;
+    --c-cream-surface: 24 40 31;
     --c-ink: 241 235 224;
     --c-ink-soft: 207 218 206;
     --c-ink-mute: 134 153 139;

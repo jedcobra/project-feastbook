@@ -263,8 +263,8 @@ Reuses the composer. `SSComposerScreen` accepts a `seed` prop shaped exactly lik
 --bg:          #F8F3EB   /* warm off-white paper — primary background */
 --bg-deep:     #F0E8DB   /* slightly deeper, for cards / inset blocks */
 --surface:     #FCF9F4   /* card surface white */
---ink:         #1B3627   /* deep forest green — primary text and accent */
---ink-soft:    #315440   /* secondary text */
+--ink:         #142A1E   /* deep forest green — primary text and accent */
+--ink-soft:    #264433   /* secondary text */
 --ink-mute:    #808C80   /* meta text */
 --rule:        #DCD1C0   /* rules and outlines */
 --rule-soft:   #E8E0D3   /* lighter rules */

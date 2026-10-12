@@ -40,7 +40,7 @@ const config: Config = {
           DEFAULT: 'rgb(var(--c-tag) / <alpha-value>)', // --tag-bg
           ink: 'rgb(var(--c-tag-ink) / <alpha-value>)', // --tag-ink
         },
-        night: 'rgb(27 54 39 / <alpha-value>)',
+        night: 'rgb(20 42 30 / <alpha-value>)',
         paper: 'rgb(248 243 235 / <alpha-value>)',
       },
       borderColor: {
