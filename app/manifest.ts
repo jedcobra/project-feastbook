@@ -14,8 +14,8 @@ export default function manifest(): MetadataRoute.Manifest {
     // Portrait only. Android honours this for the installed app; iOS ignores
     // it, so components/rotate-notice.tsx covers landscape phones instead.
     orientation: 'portrait',
-    background_color: '#F8F3EB',
-    theme_color: '#F8F3EB',
+    background_color: '#F2E9D8',
+    theme_color: '#F2E9D8',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },

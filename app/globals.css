@@ -2,26 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* The palette, as RGB triplets for tailwind.config.ts. Light is a warm
-   off-white page with deep forest-green type; dark keeps the same
+/* The palette, as RGB triplets for tailwind.config.ts. Light is an aged-paper
+   beige page with deep forest-green type; dark keeps the same
    ink-and-paper character with the two swapped: a deep forest page and
    off-white type. */
 @layer base {
   :root {
-    --c-cream: 248 243 235;
-    --c-cream-deep: 240 232 219;
-    --c-cream-surface: 252 249 244;
+    --c-cream: 242 233 216;
+    --c-cream-deep: 233 222 202;
+    --c-cream-surface: 248 242 231;
     --c-ink: 20 42 30;
     --c-ink-soft: 38 68 51;
-    --c-ink-mute: 128 140 128;
-    --c-rule: 220 209 192;
-    --c-rule-soft: 232 224 211;
+    --c-ink-mute: 122 133 120;
+    --c-rule: 214 200 176;
+    --c-rule-soft: 226 215 195;
     --c-accent: 209 62 62;
     --c-accent-2: 46 110 90;
     --c-accent-3: 176 122 31;
     --c-highlight: 242 226 122;
-    --c-tag: 238 229 214;
-    --c-tag-ink: 96 84 62;
+    --c-tag: 231 219 196;
+    --c-tag-ink: 94 80 54;
     color-scheme: light;
   }
 
