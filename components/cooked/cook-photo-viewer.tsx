@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Avatar } from '@/components/avatar';
-import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
+import { PhotoActions } from '@/components/cooked/photo-actions';
 import { XIcon } from '@/components/icons';
 import {
   deleteCookPhoto,
@@ -38,6 +38,7 @@ export function CookPhotoViewer({
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const commentBoxId = `photo-viewer-comment-${photo.id}`;
   const isOwner = profile?.id === photo.userId;
 
   useEffect(() => {
@@ -117,19 +118,23 @@ export function CookPhotoViewer({
           <img src={photo.photoUrl} alt={`${photo.handle}’s ${photo.recipeTitle}`} className="max-h-[60dvh] w-full bg-ink object-contain" />
 
           <div className="px-4 pt-3">
-            <div className="flex items-center gap-2">
-              <KissButton photo={photo} onChange={onChange} onError={setError} />
-              {photo.kisses > 0 && <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>}
-              {isOwner && (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete((c) => !c)}
-                  className="ml-auto font-mono text-[12px] text-ink-mute"
-                >
-                  Delete
-                </button>
-              )}
-            </div>
+            <PhotoActions
+              photo={photo}
+              onChange={onChange}
+              onError={setError}
+              onComment={() => document.getElementById(commentBoxId)?.focus()}
+              trailing={
+                isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete((c) => !c)}
+                    className="ml-auto font-mono text-[12px] text-ink-mute"
+                  >
+                    Delete
+                  </button>
+                )
+              }
+            />
             {confirmDelete && (
               <div className="mt-2.5 flex items-center gap-2 rounded-button bg-cream-deep px-3 py-2.5 font-mono text-[12px] text-ink">
                 <span className="flex-1">Delete this photo and its comments?</span>
@@ -191,6 +196,7 @@ export function CookPhotoViewer({
             {error && <div className="mb-2 font-mono text-[12px] text-accent">{error}</div>}
             <div className="flex items-end gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
               <AutoGrowTextarea
+                id={commentBoxId}
                 value={draft}
                 rows={1}
                 onChange={(e) => setDraft(e.target.value)}

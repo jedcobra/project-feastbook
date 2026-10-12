@@ -8,7 +8,7 @@ import { OutlineBox } from '@/components/outline-box';
 import { CookButton } from '@/components/recipe/cook-button';
 import { DocumentDetail } from '@/components/recipe/document-detail';
 import { OwnerSheet } from '@/components/recipe/owner-sheet';
-import { ShareSheet } from '@/components/share/share-sheet';
+import { recipeShareItem, ShareSheet } from '@/components/share/share-sheet';
 import { TopBar } from '@/components/top-bar';
 import { checkRecipeAccess, fetchRecipeFull } from '@/lib/supabase/queries';
 import type { Person, Recipe } from '@/lib/types';
@@ -93,7 +93,7 @@ export function RecipeDetailScreen({ id }: { id: string }) {
         />
       </div>
       <CookButton recipeId={id} hasSteps={data.recipe.steps.length > 0} />
-      {shareSheetOpen && <ShareSheet recipe={data.recipe} onClose={() => setShareSheetOpen(false)} />}
+      {shareSheetOpen && <ShareSheet item={recipeShareItem(data.recipe)} onClose={() => setShareSheetOpen(false)} />}
       {ownerSheetOpen && (
         <OwnerSheet
           recipeId={id}

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
-import { KissButton, kissLabel } from '@/components/cooked/kiss-button';
+import { PhotoActions } from '@/components/cooked/photo-actions';
 import { FeedEntryByline } from '@/components/feed/feed-row';
 import { HandleLink } from '@/components/handle-link';
 import { ChefHatIcon } from '@/components/icons';
@@ -106,11 +106,16 @@ export function FeedPhotoPost({
         />
       </button>
 
-      <div className="flex items-center gap-4 px-5 pt-2.5">
-        <div className="flex items-center gap-2">
-          <KissButton photo={photo} onChange={onChange} onError={setError} />
-          {photo.kisses > 0 && <span className="font-mono text-[14px] text-ink">{kissLabel(photo.kisses)}</span>}
-        </div>
+      <div className="px-5 pt-2.5">
+        <PhotoActions
+          photo={photo}
+          onChange={onChange}
+          onError={setError}
+          onComment={() => {
+            if (photo.commentCount > 0) expandComments();
+            document.getElementById(inputId)?.focus();
+          }}
+        />
       </div>
       {error && <div className="px-5 pt-1.5 font-mono text-[12px] text-accent">{error}</div>}
 

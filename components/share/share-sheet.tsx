@@ -5,26 +5,60 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
 import { LinkIcon, MessageIcon, ShareIcon } from '@/components/icons';
 import { fetchConversations, fetchFollowing, getOrCreateConversation, sendMessage } from '@/lib/supabase/queries';
-import type { Person, Recipe } from '@/lib/types';
+import type { CookPhoto, Person, Recipe } from '@/lib/types';
+
+// Something to share: what the sheet calls it, the link and text handed to
+// other apps, a line about who the link works for, and what a message sent
+// from here carries.
+export interface ShareItem {
+  title: string;
+  text: string;
+  path: string;
+  linkNote: string;
+  message: { recipeId?: string; photoUrl?: string };
+}
+
+// A recipe goes out as its public /r/[id] page, readable signed in or not.
+export function recipeShareItem(recipe: Recipe): ShareItem {
+  return {
+    title: recipe.title,
+    text: recipe.subtitle ? `${recipe.title} — ${recipe.subtitle}` : recipe.title,
+    path: `/r/${recipe.id}`,
+    linkNote: 'Anyone with the link can read it, signed in or not',
+    message: { recipeId: recipe.id },
+  };
+}
+
+// A cook photo goes out as a link to it on its cook's profile, and in a
+// message as the photo itself with the recipe it's of.
+export function cookPhotoShareItem(photo: CookPhoto): ShareItem {
+  return {
+    title: `@${photo.handle}’s ${photo.recipeTitle}`,
+    text: `${photo.handle} cooked ${photo.recipeTitle}`,
+    path: `/${photo.handle}?photo=${photo.id}`,
+    linkNote: 'Opens the photo in Special Spoon',
+    message: { recipeId: photo.recipeId, photoUrl: photo.photoUrl },
+  };
+}
 
 interface ShareSheetProps {
-  recipe: Recipe;
+  item: ShareItem;
   onClose: () => void;
 }
 
-// The Share button's menu: copy the public /r/[id] link, hand off to the
-// device's own share sheet when one exists, or go straight to a specific
-// platform. No brand-colored logos here — the design's palette is ink and
-// cream, one accent, so these are plain mono rows like everything else.
-export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
+// The Share button's menu: send it to someone in a message, copy its link,
+// or hand off to the device's own share sheet when one exists. No
+// brand-colored logos here — the design's palette is ink and cream, one
+// accent, so these are plain mono rows like everything else.
+export function ShareSheet({ item, onClose }: ShareSheetProps) {
   const { profile } = useAuth();
   const [view, setView] = useState<'main' | 'send'>('main');
   const [copied, setCopied] = useState(false);
   const [people, setPeople] = useState<Person[] | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
-  const url = `${window.location.origin}/r/${recipe.id}`;
-  const text = recipe.subtitle ? `${recipe.title} — ${recipe.subtitle}` : recipe.title;
+  const url = `${window.location.origin}${item.path}`;
+  const text = item.text;
   const canNativeShare = typeof navigator.share === 'function';
 
   // The people worth offering first: anyone already in a conversation,
@@ -55,7 +89,14 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
     setSendingId(personId);
     const conversationId = await getOrCreateConversation(profile.id, personId);
     if (conversationId) {
-      const message = await sendMessage(conversationId, profile.id, personId, '', undefined, recipe.id);
+      const message = await sendMessage(
+        conversationId,
+        profile.id,
+        personId,
+        '',
+        item.message.photoUrl,
+        item.message.recipeId,
+      );
       if (message) setSentIds((s) => new Set(s).add(personId));
     }
     setSendingId(null);
@@ -73,7 +114,7 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
 
   const nativeShare = async () => {
     try {
-      await navigator.share({ title: recipe.title, text, url });
+      await navigator.share({ title: item.title, text, url });
       onClose();
     } catch {
       // Cancelled by the person, or blocked mid-call — either way, no error to show.
@@ -91,8 +132,8 @@ export function ShareSheet({ recipe, onClose }: ShareSheetProps) {
       >
         {view === 'main' ? (
           <>
-            <h3 className="mb-0.5 truncate font-display text-[17px] font-bold text-ink">{recipe.title}</h3>
-            <div className="mb-1 font-mono text-[12px] text-ink-mute">Anyone with the link can read it, signed in or not</div>
+            <h3 className="mb-0.5 truncate font-display text-[17px] font-bold text-ink">{item.title}</h3>
+            <div className="mb-1 font-mono text-[12px] text-ink-mute">{item.linkNote}</div>
 
             {profile && (
               <button
