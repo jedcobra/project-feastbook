@@ -97,6 +97,9 @@ export interface Recipe {
   coverPhotoUrl?: string;
   intro: string;
   visibility: Visibility;
+  createdAt: string;
+  // When the viewer saved it, on recipes from fetchSavedRecipes.
+  savedAt?: string;
   ingredients: IngredientSection[];
   steps: RecipeStep[];
   notes: RecipeNote[];

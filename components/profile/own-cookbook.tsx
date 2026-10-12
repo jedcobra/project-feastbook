@@ -8,11 +8,9 @@ import { ProfileHeader } from '@/components/profile/profile-header';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import {
   fetchArchivedShelves,
-  fetchCookbookOrder,
   fetchCookPhotos,
   fetchProfileByHandle,
   fetchSavedRecipes,
-  saveCookbookOrder,
   saveShelfOrder,
 } from '@/lib/supabase/queries';
 import type { CookPhoto, Person, Recipe, Shelf } from '@/lib/types';
@@ -29,7 +27,6 @@ export function OwnCookbook() {
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [cookPhotos, setCookPhotos] = useState<CookPhoto[]>([]);
   const [archivedShelfCount, setArchivedShelfCount] = useState(0);
-  const [recipeOrder, setRecipeOrder] = useState<string[]>([]);
 
   useEffect(() => {
     if (!profile) {
@@ -37,14 +34,12 @@ export function OwnCookbook() {
       setSavedRecipes([]);
       setCookPhotos([]);
       setArchivedShelfCount(0);
-      setRecipeOrder([]);
       return;
     }
     fetchProfileByHandle(profile.handle).then(setData);
     fetchSavedRecipes(profile.id).then(setSavedRecipes);
     fetchCookPhotos(profile.id, profile.id).then(setCookPhotos);
     fetchArchivedShelves(profile.id).then((rows) => setArchivedShelfCount(rows.length));
-    fetchCookbookOrder(profile.id).then(setRecipeOrder);
   }, [profile]);
 
   if (loading) {
@@ -100,11 +95,6 @@ export function OwnCookbook() {
         archivedShelfCount={archivedShelfCount}
         ownerHandle={data.person.handle}
         isOwn
-        recipeOrder={recipeOrder}
-        onReorderRecipes={(ids) => {
-          setRecipeOrder(ids);
-          void saveCookbookOrder(profile.id, ids);
-        }}
         onReorderShelves={(ids) => {
           setData((cur) => {
             if (!cur) return cur;

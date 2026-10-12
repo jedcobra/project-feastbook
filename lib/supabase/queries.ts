@@ -81,6 +81,7 @@ interface RecipeRow {
   cover_photo_url: string | null;
   author_id: string;
   visibility: Visibility;
+  created_at: string;
 }
 
 async function fetchRecipeStatsByIds(ids: string[]): Promise<Map<string, RecipeStats>> {
@@ -108,6 +109,7 @@ function mapRecipeSummary(row: RecipeRow, authorHandle: string, stats?: RecipeSt
     coverPhotoUrl: row.cover_photo_url ?? undefined,
     intro: row.intro,
     visibility: row.visibility,
+    createdAt: row.created_at,
     ingredients: [],
     steps: [],
     notes: [],
@@ -695,7 +697,7 @@ function mapShelfRows(rows: ShelfRow[]): Shelf[] {
 export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
   const { data: saveRows, error } = await supabase
     .from('saves')
-    .select('recipe_id')
+    .select('recipe_id, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error || !saveRows) {
@@ -708,37 +710,10 @@ export async function fetchSavedRecipes(userId: string): Promise<Recipe[]> {
     .select('*')
     .in('id', saveRows.map((s) => s.recipe_id));
   const recipeById = new Map((await mapRecipeRows((recipeRows ?? []) as RecipeRow[])).map((r) => [r.id, r]));
-  return saveRows.map((s) => recipeById.get(s.recipe_id)).filter((r): r is Recipe => !!r);
-}
-
-// The owner's own arrangement of their cookbook's Recipes list, as recipe
-// ids in order. Recipes they haven't placed yet aren't in it — see
-// sortByCookbookOrder for where those land.
-export async function fetchCookbookOrder(ownerId: string): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('cookbook_order')
-    .select('recipe_id')
-    .eq('owner_id', ownerId)
-    .order('position', { ascending: true });
-  if (error || !data) {
-    if (error) console.error('fetchCookbookOrder', error);
-    return [];
-  }
-  return data.map((r: { recipe_id: string }) => r.recipe_id);
-}
-
-export async function saveCookbookOrder(ownerId: string, recipeIds: string[]): Promise<boolean> {
-  const { error } = await supabase
-    .from('cookbook_order')
-    .upsert(
-      recipeIds.map((recipeId, position) => ({ owner_id: ownerId, recipe_id: recipeId, position })),
-      { onConflict: 'owner_id,recipe_id' },
-    );
-  if (error) {
-    console.error('saveCookbookOrder', error);
-    return false;
-  }
-  return true;
+  return saveRows.flatMap((s) => {
+    const recipe = recipeById.get(s.recipe_id);
+    return recipe ? [{ ...recipe, savedAt: s.created_at }] : [];
+  });
 }
 
 export async function saveShelfOrder(ownerId: string, shelfIds: string[]): Promise<boolean> {

@@ -10,7 +10,6 @@ import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-s
 import { ShelfBubble, ShelfIcon } from '@/components/shelves/shelf-icon';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
-import { sortByCookbookOrder } from '@/lib/cookbook-order';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
@@ -28,8 +27,6 @@ export function ProfileTabs({
   archivedShelfCount = 0,
   ownerHandle,
   isOwn,
-  recipeOrder = [],
-  onReorderRecipes,
   onReorderShelves,
   onRecipeDeleted,
   onShelfRemoved,
@@ -46,8 +43,6 @@ export function ProfileTabs({
   archivedShelfCount?: number;
   ownerHandle: string;
   isOwn: boolean;
-  recipeOrder?: string[];
-  onReorderRecipes?: (recipeIds: string[]) => void;
   onReorderShelves?: (shelfIds: string[]) => void;
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
@@ -158,8 +153,6 @@ export function ProfileTabs({
             shelfRecipes={shelfRecipes}
             isOwn={isOwn}
             archivedShelfCount={archivedShelfCount}
-            recipeOrder={recipeOrder}
-            onReorderRecipes={isOwn ? onReorderRecipes : undefined}
             onReorderShelves={isOwn ? onReorderShelves : undefined}
             onRecipeDeleted={onRecipeDeleted}
             onShelfRemoved={onShelfRemoved}
@@ -191,14 +184,15 @@ const SAVED_SHELF_TITLE = 'Saved';
 type RecipeListRow = { recipe: Recipe; saved: boolean };
 
 // The whole cookbook on one tab. Shelves come first, as a row of
-// rounded-square icons like story highlights; tapping one opens its recipes beneath the
-// row. Every recipe not on a shelf follows, one row each. Recipes saved from other cooks carry a heart and
-// that cook's handle instead of living in a tab of their own. In your own
-// cookbook a long press switches to edit mode: drag shelves and loose
-// recipes by their handles to reorder (every drop is saved), swipe a shelf
-// left to archive (instant, reversible from Archived shelves) or delete it,
-// or one of your own recipes left to delete it. Outside edit mode rows are
-// plain links and toggles, so a stray swipe can't delete anything.
+// rounded-square icons like story highlights; tapping one opens its
+// recipes beneath the row. Then every recipe, newest first, whether or not
+// it's on a shelf. Recipes saved from other cooks carry a heart and that
+// cook's handle instead of living in a tab of their own. In your own
+// cookbook a long press switches to edit mode: drag shelves by their
+// handles to reorder (every drop is saved), swipe a shelf left to archive
+// (instant, reversible from Archived shelves) or delete it, or one of your
+// own recipes left to delete it. Outside edit mode rows are plain links
+// and toggles, so a stray swipe can't delete anything.
 function RecipesTab({
   shelves,
   recipes,
@@ -206,8 +200,6 @@ function RecipesTab({
   shelfRecipes,
   isOwn,
   archivedShelfCount,
-  recipeOrder,
-  onReorderRecipes,
   onReorderShelves,
   onRecipeDeleted,
   onShelfRemoved,
@@ -222,8 +214,6 @@ function RecipesTab({
   shelfRecipes: Recipe[];
   isOwn: boolean;
   archivedShelfCount: number;
-  recipeOrder: string[];
-  onReorderRecipes?: (recipeIds: string[]) => void;
   onReorderShelves?: (shelfIds: string[]) => void;
   onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
@@ -265,42 +255,30 @@ function RecipesTab({
 
   const savedShelf = shelves.find((s) => s.title === SAVED_SHELF_TITLE);
   const groups = shelves.filter((s) => s !== savedShelf);
-  const shelvedIds = new Set(groups.flatMap((s) => s.recipes.map((r) => r.id)));
   const shelfRows = (shelf: Shelf) => rowsFor(shelf.recipes.map((r) => r.id));
 
   // Saved recipes come from your own saves, or on someone else's profile
   // from their Saved shelf where you're allowed to see it. Saving your own
-  // recipe doesn't un-author it, hence the de-duplication.
-  const looseIds = [
+  // recipe doesn't un-author it, hence the de-duplication. Newest first: a
+  // recipe of your own by when it was posted, a saved one by when it was
+  // saved (or posted, where that isn't known).
+  const recipeIds = [
     ...new Set([
       ...recipes.map((r) => r.id),
       ...savedRecipes.map((r) => r.id),
       ...(savedShelf?.recipes.map((r) => r.id) ?? []),
     ]),
-  ].filter((id) => !shelvedIds.has(id));
-  const looseRows = sortByCookbookOrder(rowsFor(looseIds), (row) => row.recipe.id, recipeOrder);
+  ];
+  const addedAt = ({ recipe, saved }: RecipeListRow) => (saved ? (recipe.savedAt ?? recipe.createdAt) : recipe.createdAt);
+  const recipeRows = rowsFor(recipeIds).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
 
-  // A long press on either list puts both into edit mode together.
-  const startEditing = () => {
-    setOpenId(null);
-    shelfReorder.start();
-    recipeReorder.start();
-  };
+  // A long press anywhere on the tab puts it into edit mode.
   const shelfReorder = useLongPressReorder({
     ids: groups.map((s) => s.id),
     onReorder: onReorderShelves && ((ids) => onReorderShelves(savedShelf ? [savedShelf.id, ...ids] : ids)),
-    onStart: startEditing,
+    onStart: () => setOpenId(null),
   });
-  const recipeReorder = useLongPressReorder({
-    ids: looseRows.map((row) => row.recipe.id),
-    // Only loose recipes can be dragged here. Shelved ones keep their old
-    // places in the saved order, after these, for if they come off a shelf.
-    onReorder:
-      onReorderRecipes &&
-      ((ids) => onReorderRecipes([...ids, ...recipeOrder.filter((id) => !ids.includes(id))])),
-    onStart: startEditing,
-  });
-  const editing = shelfReorder.reorderIds !== null || recipeReorder.reorderIds !== null;
+  const editing = shelfReorder.reorderIds !== null;
 
   const toggleShelf = (shelfId: string) => setSelectedId((cur) => (cur === shelfId ? null : shelfId));
 
@@ -401,15 +379,13 @@ function RecipesTab({
 
   if (editing) {
     const shelfById = new Map(groups.map((s) => [s.id, s]));
-    const rowById = new Map(looseRows.map((row) => [row.recipe.id, row]));
     return (
       <div className="mx-5 select-none pb-8">
         <ReorderBar
-          label="Drag to reorder · swipe left for more"
+          label="Drag cookbooks to reorder · swipe left for more"
           onDone={() => {
             setOpenId(null);
             shelfReorder.stop();
-            recipeReorder.stop();
           }}
         />
         {groups.length > 0 && <SectionHeading>Cookbooks</SectionHeading>}
@@ -444,29 +420,15 @@ function RecipesTab({
               </SwipeableRow>
             </div>
           ))}
-        {looseRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
-        {(recipeReorder.reorderIds ?? [])
-          .map((id) => rowById.get(id))
-          .filter((row): row is RecipeListRow => !!row)
-          .map(({ recipe: r, saved }) => {
+        {recipeRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
+        {recipeRows.map(({ recipe: r, saved }) => {
             const row = (
-              <div
-                className={`flex items-center gap-2.5 border-b border-rule-soft py-3.5 transition-colors ${
-                  recipeReorder.draggingId === r.id ? 'bg-cream-deep' : 'bg-cream'
-                }`}
-              >
+              <div className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5">
                 {recipeBody(r, saved)}
-                <DragHandle
-                  label={`Move ${r.title}`}
-                  onStart={() => {
-                    setOpenId(null);
-                    recipeReorder.startDrag(r.id);
-                  }}
-                />
               </div>
             );
             return (
-              <div key={r.id} ref={recipeReorder.rowRef(r.id)}>
+              <div key={r.id}>
                 {isOwn && !saved ? (
                   <SwipeableRow
                     open={openId === r.id}
@@ -585,7 +547,7 @@ function RecipesTab({
               <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing in this cookbook yet.</div>
             ) : (
               selectedRows.map(({ recipe: r, saved }) => (
-                <div key={r.id} {...recipeReorder.pressProps}>
+                <div key={r.id} {...shelfReorder.pressProps}>
                   <Link
                     href={`/recipe/${r.id}`}
                     className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3 last:border-b-0"
@@ -599,15 +561,15 @@ function RecipesTab({
         )}
       </div>
 
-      {groups.length === 0 && looseRows.length === 0 && (
+      {groups.length === 0 && recipeRows.length === 0 && (
         <div className={`border border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? 'mt-3' : 'mt-6'}`}>
           Recipes written or saved here will show up here.
         </div>
       )}
 
-      {looseRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
-      {looseRows.map(({ recipe: r, saved }) => (
-        <div key={r.id} {...recipeReorder.pressProps}>
+      {recipeRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
+      {recipeRows.map(({ recipe: r, saved }) => (
+        <div key={r.id} {...shelfReorder.pressProps}>
           <Link
             href={`/recipe/${r.id}`}
             className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5"
