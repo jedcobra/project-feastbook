@@ -197,7 +197,7 @@ export function PublishScreen() {
         </button>
       </div>
 
-      <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
+      <div className="tabbar-clearance flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <button
           type="button"
           onClick={handlePublish}

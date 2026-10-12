@@ -94,6 +94,25 @@
   }
 }
 
+/* The floating tab bar (components/tab-bar.tsx) hovers over the bottom of
+   each tab screen. Each screen's scrolling area ends with enough room to
+   scroll its last row clear of the bar, and a screen's own bottom bar
+   (Start cooking, Publish, a message box) carries .tabbar-clearance to sit
+   above it. Popups are left alone; they cover the bar. Only while the bar
+   is actually showing. */
+:root {
+  --tabbar-clearance: calc(86px + env(safe-area-inset-bottom));
+}
+[data-tab-shell]:has([data-tab-bar]) .min-h-0.flex-1.overflow-y-auto:not([role='dialog'] *) {
+  padding-bottom: var(--tabbar-clearance);
+}
+[data-tab-shell]:has([data-tab-bar]) .min-h-0.flex-1.overflow-y-auto:has(~ .tabbar-clearance) {
+  padding-bottom: 2rem;
+}
+[data-tab-shell]:has([data-tab-bar]) .tabbar-clearance {
+  padding-bottom: var(--tabbar-clearance);
+}
+
 /* iOS/Android auto-zoom the page on focus for any text input under 16px —
    that's the "screen jumps in and cuts things off" behavior. Fields here
    are intentionally smaller for the mono type scale, so override on

@@ -6,7 +6,7 @@ const buttonClasses =
 
 export function CookButton({ recipeId, hasSteps }: { recipeId: string; hasSteps: boolean }) {
   return (
-    <div className="flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3 print:hidden">
+    <div className="tabbar-clearance flex-shrink-0 border-t border-rule-soft bg-cream px-5 pb-5 pt-3 print:hidden">
       {hasSteps ? (
         <Link href={`/cook/${recipeId}`} className={`${buttonClasses} border-ink bg-ink text-cream`}>
           <CookIcon size={16} weight={2} />
