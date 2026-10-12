@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     title: 'Special Spoon',
     // The status bar floats over the page: screens reach up behind it and
     // pad their tops by the notch (--safe-top in globals.css), and a
-    // frosted strip behind it keeps the clock readable.
+    // frosted strip of the page colour behind it keeps the clock readable.
     statusBarStyle: 'black-translucent',
   },
 };
