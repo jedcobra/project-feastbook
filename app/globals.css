@@ -118,9 +118,22 @@
   padding-bottom: var(--tabbar-clearance);
 }
 
-/* Dark mode's headlines: anything set in the display face in the ink
-   colour turns beige; body text stays grey. */
+/* Dark mode's headlines and buttons are beige; body text stays grey.
+   Headlines are anything set in the display face in the ink colour;
+   buttons are buttons and button-like links drawn in it — filled ones
+   take a beige fill, outlined ones a beige outline and label. Checkboxes
+   and radio dots inside a row-button aren't buttons themselves and stay
+   grey. */
 :root.dark .font-display.text-ink {
+  color: rgb(var(--c-ink-display));
+}
+:root.dark :is(button, a).bg-ink {
+  background-color: rgb(var(--c-ink-display));
+}
+:root.dark :is(button, a).border-ink {
+  border-color: rgb(var(--c-ink-display));
+}
+:root.dark :is(button, a).border-ink.text-ink {
   color: rgb(var(--c-ink-display));
 }
 
