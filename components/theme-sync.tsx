@@ -4,12 +4,9 @@ import { useEffect } from 'react';
 import { applyTheme, getThemePreference } from '@/lib/theme';
 
 // Keeps "Match phone" in step when the phone switches between light and
-// dark while the app is open. Also repaints once on load: React adds fresh
-// copies of the theme-color tags (app/layout.tsx) the theme script already
-// repainted, carrying their original colours.
+// dark while the app is open.
 export function ThemeSync() {
   useEffect(() => {
-    applyTheme();
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => {
       if (getThemePreference() === 'system') applyTheme('system');

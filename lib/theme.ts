@@ -9,7 +9,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export const THEME_KEY = 'ss-theme';
 
 // The browser bar / status bar tint for each theme — the page background.
-export const THEME_COLOR = { light: '#F2E9D8', dark: '#0A0A0A' };
+const THEME_COLOR = { light: '#F2E9D8', dark: '#0A0A0A' };
 
 export function getThemePreference(): ThemePreference {
   if (typeof window === 'undefined') return 'light';
@@ -29,12 +29,13 @@ export function applyTheme(pref: ThemePreference = getThemePreference()) {
   if (typeof document === 'undefined') return;
   const dark = pref === 'dark' || (pref === 'system' && prefersDark());
   document.documentElement.classList.toggle('dark', dark);
-  // The page starts with one tag per phone setting (app/layout.tsx); the
-  // theme picked in the app wins, so both get its colour.
-  const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
-  metas.forEach((meta) => {
-    meta.content = dark ? THEME_COLOR.dark : THEME_COLOR.light;
-  });
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.content = dark ? THEME_COLOR.dark : THEME_COLOR.light;
 }
 
 export function setThemePreference(pref: ThemePreference) {
@@ -49,4 +50,4 @@ export function setThemePreference(pref: ThemePreference) {
 
 // Runs inline in <head> before the page paints (see app/layout.tsx), so it
 // can't import anything — it repeats the logic above in plain JS.
-export const THEME_INIT_SCRIPT = `(function(){try{var p=localStorage.getItem('${THEME_KEY}');var d=p==='dark'||(p==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');var c=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content=c;});}catch(e){}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var p=localStorage.getItem('${THEME_KEY}');var d=p==='dark'||(p==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');var m=document.createElement('meta');m.name='theme-color';m.content=d?'${THEME_COLOR.dark}':'${THEME_COLOR.light}';document.head.appendChild(m);}catch(e){}})();`;

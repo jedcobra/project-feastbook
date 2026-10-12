@@ -15,9 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
     // it, so components/rotate-notice.tsx covers landscape phones instead.
     orientation: 'portrait',
     background_color: '#F2E9D8',
-    // No theme_color: the installed app would pin its status bar to it in
-    // both themes. The theme-color tags in the page (app/layout.tsx,
-    // lib/theme.ts) colour it to match light or dark instead.
+    theme_color: '#F2E9D8',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },

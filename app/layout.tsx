@@ -5,7 +5,7 @@ import { DismissKeyboardOnScroll } from '@/components/dismiss-keyboard-on-scroll
 import { RotateNotice } from '@/components/rotate-notice';
 import { ThemeSync } from '@/components/theme-sync';
 import { display, mono } from '@/lib/fonts';
-import { THEME_COLOR, THEME_INIT_SCRIPT } from '@/lib/theme';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -31,13 +31,6 @@ export default function RootLayout({
     // before React hydrates, so the server's class list won't match.
     <html lang="en" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        {/* The status bar / browser bar colour, in the page from the start so
-            it's right for the phone's light or dark setting before any script
-            runs; the theme script repaints both to the theme chosen in the
-            app. Here rather than in Next's viewport export, which re-adds its
-            own copies on navigation and undoes that repaint. */}
-        <meta name="theme-color" media="(prefers-color-scheme: light)" content={THEME_COLOR.light} suppressHydrationWarning />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content={THEME_COLOR.dark} suppressHydrationWarning />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
