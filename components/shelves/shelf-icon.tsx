@@ -37,3 +37,40 @@ export function ShelfIcon({
     </div>
   );
 }
+
+// A cookbook in the profile's row of highlights: a circle holding its
+// cover photo, sticker or emoji, or else its recipe count. The open one
+// gets a heavier ring.
+export function ShelfBubble({
+  emoji,
+  coverUrl,
+  stickerUrl,
+  count,
+  selected,
+}: {
+  emoji?: string | null;
+  coverUrl?: string | null;
+  stickerUrl?: string | null;
+  count: number;
+  selected: boolean;
+}) {
+  return (
+    <div
+      className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-cream-deep ${
+        selected ? 'ring-2 ring-ink ring-offset-2 ring-offset-cream' : 'ring-1 ring-rule'
+      }`}
+    >
+      {coverUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+      ) : stickerUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={stickerUrl} alt="" className={`h-11 w-11 ${STICKER_CLASS}`} />
+      ) : emoji ? (
+        <span className={`text-[32px] ${EMOJI_FONT_CLASS}`}>{emoji}</span>
+      ) : (
+        <span className="font-display text-[24px] font-bold leading-none text-ink">{count}</span>
+      )}
+    </div>
+  );
+}

@@ -84,6 +84,14 @@
   .rule-dotted-y {
     @apply border-b border-rule-soft;
   }
+
+  /* A sideways-scrolling row (the profile's cookbooks) with no visible bar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* iOS/Android auto-zoom the page on focus for any text input under 16px —

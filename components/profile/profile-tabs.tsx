@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
-import { ChevronIcon, HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { DragHandle, ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { EditShelfSheet, NewShelfSheet } from '@/components/shelves/edit-shelf-sheet';
-import { ShelfIcon } from '@/components/shelves/shelf-icon';
+import { ShelfBubble, ShelfIcon } from '@/components/shelves/shelf-icon';
 import { SwipeableRow } from '@/components/swipeable-row';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { sortByCookbookOrder } from '@/lib/cookbook-order';
@@ -190,9 +190,9 @@ const SAVED_SHELF_TITLE = 'Saved';
 
 type RecipeListRow = { recipe: Recipe; saved: boolean };
 
-// The whole cookbook in one list. Shelves come first, each a closed group
-// that opens in place to show its recipes; every recipe not on a shelf
-// follows, one row each. Recipes saved from other cooks carry a heart and
+// The whole cookbook on one tab. Shelves come first, as a row of round
+// icons like story highlights; tapping one opens its recipes beneath the
+// row. Every recipe not on a shelf follows, one row each. Recipes saved from other cooks carry a heart and
 // that cook's handle instead of living in a tab of their own. In your own
 // cookbook a long press switches to edit mode: drag shelves and loose
 // recipes by their handles to reorder (every drop is saved), swipe a shelf
@@ -237,16 +237,20 @@ function RecipesTab({
   const [openId, setOpenId] = useState<string | null>(null);
   const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(focusShelfId ? [focusShelfId] : []));
-  const shelfEls = useRef(new Map<string, HTMLElement>());
+  // The cookbook opened from the row of icons, its recipes shown beneath.
+  const [selectedId, setSelectedId] = useState<string | null>(focusShelfId ?? null);
+  const bubbleEls = useRef(new Map<string, HTMLElement>());
+  const cookbooksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!focusShelfId) return;
-    setExpanded((cur) => new Set(cur).add(focusShelfId));
-    // After the open shelf has rendered, bring its top into view.
-    requestAnimationFrame(() =>
-      shelfEls.current.get(focusShelfId)?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
-    );
+    setSelectedId(focusShelfId);
+    // Once it's open, bring the row into view with that cookbook's icon in
+    // the middle of it.
+    requestAnimationFrame(() => {
+      cookbooksRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      bubbleEls.current.get(focusShelfId)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    });
   }, [focusShelfId]);
   const [editingShelfId, setEditingShelfId] = useState<string | null>(null);
   const [creatingShelf, setCreatingShelf] = useState(false);
@@ -298,12 +302,7 @@ function RecipesTab({
   });
   const editing = shelfReorder.reorderIds !== null || recipeReorder.reorderIds !== null;
 
-  const toggleShelf = (shelfId: string) =>
-    setExpanded((cur) => {
-      const next = new Set(cur);
-      if (!next.delete(shelfId)) next.add(shelfId);
-      return next;
-    });
+  const toggleShelf = (shelfId: string) => setSelectedId((cur) => (cur === shelfId ? null : shelfId));
 
   const archiveShelf = async (shelfId: string) => {
     onShelfRemoved?.(shelfId);
@@ -319,12 +318,12 @@ function RecipesTab({
       {creatingShelf && (
         <NewShelfSheet
           onClose={() => setCreatingShelf(false)}
-          // The new shelf goes to the top, open, with its Edit sheet up so
+          // The new shelf goes to the front, open, with its Edit sheet up so
           // recipes can go straight onto it.
           onCreated={(shelf) => {
             onShelfCreated?.(shelf);
             setCreatingShelf(false);
-            setExpanded((cur) => new Set(cur).add(shelf.id));
+            setSelectedId(shelf.id);
             setEditingShelfId(shelf.id);
           }}
         />
@@ -488,103 +487,123 @@ function RecipesTab({
     );
   }
 
-  const newShelfButton = (
-    <button type="button" onClick={() => setCreatingShelf(true)} className="flex items-center gap-1">
-      <PlusIcon size={11} />
-      New cookbook
-    </button>
-  );
+  const selected = groups.find((s) => s.id === selectedId);
+  const selectedRows = selected ? shelfRows(selected) : [];
 
   return (
     <div className="mx-5 pb-8">
-      {/* With shelves, New shelf sits on the Shelves heading's right. With
-          none yet there's no heading, and on your own profile New shelf
-          takes its place on the left. */}
-      {groups.length > 0 ? (
-        <SectionHeading
-          action={
-            isOwn && (
-              <span className="flex items-center gap-4">
-                {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
-                {newShelfButton}
-              </span>
-            )
-          }
-        >
-          Cookbooks
-        </SectionHeading>
-      ) : (
-        isOwn && (
-          <div className="mt-3 flex items-center justify-between gap-3 font-mono text-[12px] leading-none text-ink-mute">
-            {newShelfButton}
-            {archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
+      {/* Cookbooks sit in a row of round icons, like story highlights; tap
+          one to open its recipes underneath, tap it again to close them.
+          With none yet there's no heading, and on your own profile the row
+          holds just New. */}
+      <div ref={cookbooksRef} className="scroll-mt-2">
+        {groups.length > 0 ? (
+          <SectionHeading
+            action={isOwn && archivedShelfCount > 0 && <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>}
+          >
+            Cookbooks
+          </SectionHeading>
+        ) : (
+          isOwn &&
+          archivedShelfCount > 0 && (
+            <div className="mt-3 flex justify-end font-mono text-[12px] leading-none text-ink-mute">
+              <Link href="/archived-shelves">Archived ({archivedShelfCount})</Link>
+            </div>
+          )
+        )}
+
+        {(groups.length > 0 || isOwn) && (
+          <div data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 pt-1">
+            {groups.map((shelf) => (
+              <div
+                key={shelf.id}
+                ref={(el) => {
+                  if (el) bubbleEls.current.set(shelf.id, el);
+                  else bubbleEls.current.delete(shelf.id);
+                }}
+                {...shelfReorder.pressProps}
+                className="flex-shrink-0"
+              >
+                <button
+                  type="button"
+                  aria-expanded={selectedId === shelf.id}
+                  aria-controls="cookbook-recipes"
+                  onClick={() => toggleShelf(shelf.id)}
+                  className="flex w-[76px] flex-col items-center gap-2"
+                >
+                  <ShelfBubble
+                    emoji={shelf.emoji}
+                    coverUrl={shelf.coverUrl}
+                    stickerUrl={shelf.stickerUrl}
+                    count={shelfRows(shelf).length}
+                    selected={selectedId === shelf.id}
+                  />
+                  <span
+                    className={`w-full truncate text-center font-mono text-[12px] leading-tight ${
+                      selectedId === shelf.id ? 'text-ink' : 'text-ink-soft'
+                    }`}
+                  >
+                    {shelf.title}
+                  </span>
+                </button>
+              </div>
+            ))}
+            {isOwn && (
+              <button
+                type="button"
+                onClick={() => setCreatingShelf(true)}
+                className="flex w-[76px] flex-shrink-0 flex-col items-center gap-2"
+              >
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ink text-ink">
+                  <PlusIcon size={20} />
+                </div>
+                <span className="w-full truncate text-center font-mono text-[12px] leading-tight text-ink-soft">New</span>
+              </button>
+            )}
           </div>
-        )
-      )}
+        )}
+
+        {selected && (
+          <div id="cookbook-recipes" className="mt-3 border-l-2 border-ink pl-3.5">
+            <div className="flex items-start justify-between gap-3 pb-1">
+              <div className="min-w-0">
+                <h3 className="font-display text-[20px] font-bold leading-tight text-ink">{selected.title}</h3>
+                {selected.subtitle && <div className="mt-0.5 font-mono text-meta text-ink-mute">{selected.subtitle}</div>}
+              </div>
+              {isOwn && (
+                <button
+                  type="button"
+                  onClick={() => setEditingShelfId(selected.id)}
+                  className="flex flex-shrink-0 items-center gap-1 pt-1 font-mono text-[12px] text-ink-mute"
+                >
+                  <PencilIcon size={11} />
+                  Edit
+                </button>
+              )}
+            </div>
+            {selectedRows.length === 0 ? (
+              <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing in this cookbook yet.</div>
+            ) : (
+              selectedRows.map(({ recipe: r, saved }) => (
+                <div key={r.id} {...recipeReorder.pressProps}>
+                  <Link
+                    href={`/recipe/${r.id}`}
+                    className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3 last:border-b-0"
+                  >
+                    {recipeBody(r, saved)}
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
       {groups.length === 0 && looseRows.length === 0 && (
         <div className={`border border-rule p-5 text-center font-mono text-[14px] leading-relaxed text-ink-mute ${isOwn ? 'mt-3' : 'mt-6'}`}>
           Recipes written or saved here will show up here.
         </div>
       )}
-
-      {groups.map((shelf) => {
-        const rows = shelfRows(shelf);
-        const open = expanded.has(shelf.id);
-        return (
-          <div
-            key={shelf.id}
-            ref={(el) => {
-              if (el) shelfEls.current.set(shelf.id, el);
-              else shelfEls.current.delete(shelf.id);
-            }}
-            className="scroll-mt-2 border-b border-rule-soft"
-          >
-            <div {...shelfReorder.pressProps}>
-              <button
-                type="button"
-                aria-expanded={open}
-                onClick={() => toggleShelf(shelf.id)}
-                className="flex w-full items-center gap-3.5 bg-cream py-3.5 text-left"
-              >
-                {shelfBody(shelf)}
-                <ChevronIcon
-                  size={16}
-                  className={`flex-shrink-0 text-ink-mute transition-transform ${open ? 'rotate-90' : ''}`}
-                />
-              </button>
-            </div>
-            {open && (
-              <div className="mb-3.5 border-l-2 border-ink pl-3.5">
-                {rows.length === 0 ? (
-                  <div className="py-2.5 font-mono text-[12px] text-ink-mute">Nothing in this cookbook yet.</div>
-                ) : (
-                  rows.map(({ recipe: r, saved }) => (
-                    <div key={r.id} {...recipeReorder.pressProps}>
-                      <Link
-                        href={`/recipe/${r.id}`}
-                        className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3"
-                      >
-                        {recipeBody(r, saved)}
-                      </Link>
-                    </div>
-                  ))
-                )}
-                {isOwn && (
-                  <button
-                    type="button"
-                    onClick={() => setEditingShelfId(shelf.id)}
-                    className="flex items-center gap-1 pt-2.5 font-mono text-[12px] text-ink-mute"
-                  >
-                    <PencilIcon size={11} />
-                    Edit cookbook
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
 
       {looseRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
       {looseRows.map(({ recipe: r, saved }) => (
