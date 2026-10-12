@@ -26,6 +26,7 @@ const config: Config = {
           soft: 'rgb(var(--c-ink-soft) / <alpha-value>)', // --ink-soft
           mute: 'rgb(var(--c-ink-mute) / <alpha-value>)', // --ink-mute
         },
+        'ui-mute': 'rgb(var(--c-ui-mute) / <alpha-value>)',
         rule: {
           DEFAULT: 'rgb(var(--c-rule) / <alpha-value>)', // --rule
           soft: 'rgb(var(--c-rule-soft) / <alpha-value>)', // --rule-soft

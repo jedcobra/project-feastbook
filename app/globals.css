@@ -3,9 +3,11 @@
 @tailwind utilities;
 
 /* The palette, as RGB triplets for tailwind.config.ts. Light is an aged-paper
-   beige page with deep forest-green type; dark keeps the same
-   ink-and-paper character with the two swapped: a deep forest page and
-   off-white type. */
+   beige page with deep forest-green type. Dark is a near-black page with
+   neutral grey surfaces, lines and controls, and warm off-white and beige
+   type. ui-mute is the quiet colour for controls rather than text (the tab
+   bar's inactive icons), so it stays grey in the dark while text goes
+   beige. */
 @layer base {
   :root {
     --c-cream: 242 233 216;
@@ -14,6 +16,7 @@
     --c-ink: 20 42 30;
     --c-ink-soft: 38 68 51;
     --c-ink-mute: 122 133 120;
+    --c-ui-mute: 122 133 120;
     --c-rule: 214 200 176;
     --c-rule-soft: 226 215 195;
     --c-accent: 209 62 62;
@@ -26,20 +29,21 @@
   }
 
   :root.dark {
-    --c-cream: 14 26 19;
-    --c-cream-deep: 21 36 28;
-    --c-cream-surface: 24 40 31;
+    --c-cream: 10 10 10;
+    --c-cream-deep: 24 24 24;
+    --c-cream-surface: 30 30 30;
     --c-ink: 241 235 224;
-    --c-ink-soft: 207 218 206;
-    --c-ink-mute: 134 153 139;
-    --c-rule: 55 78 64;
-    --c-rule-soft: 37 56 45;
+    --c-ink-soft: 224 212 190;
+    --c-ink-mute: 168 153 126;
+    --c-ui-mute: 146 146 146;
+    --c-rule: 66 66 66;
+    --c-rule-soft: 42 42 42;
     --c-accent: 239 106 95;
     --c-accent-2: 93 181 150;
     --c-accent-3: 217 165 72;
     --c-highlight: 92 84 40;
-    --c-tag: 35 54 43;
-    --c-tag-ink: 214 205 170;
+    --c-tag: 38 38 38;
+    --c-tag-ink: 222 205 165;
     color-scheme: dark;
   }
 

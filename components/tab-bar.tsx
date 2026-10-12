@@ -52,7 +52,7 @@ export function TabBar() {
               aria-label={tab.label}
               className="relative flex flex-1 flex-col items-center gap-1.5 pt-1.5"
             >
-              <Icon size={20} className={isActive ? 'text-ink' : 'text-ink-mute'} />
+              <Icon size={20} className={isActive ? 'text-ink' : 'text-ui-mute'} />
               <span className={`h-1 w-1 rounded-full ${isActive ? 'bg-ink' : 'bg-transparent'}`} />
               {tab.id === 'messages' && unreadMessages > 0 && (
                 <span className="absolute right-[26%] top-0 h-[7px] w-[7px] rounded-full bg-accent" />
