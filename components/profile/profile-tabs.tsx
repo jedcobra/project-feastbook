@@ -190,8 +190,8 @@ const SAVED_SHELF_TITLE = 'Saved';
 
 type RecipeListRow = { recipe: Recipe; saved: boolean };
 
-// The whole cookbook on one tab. Shelves come first, as a row of round
-// icons like story highlights; tapping one opens its recipes beneath the
+// The whole cookbook on one tab. Shelves come first, as a row of
+// rounded-square icons like story highlights; tapping one opens its recipes beneath the
 // row. Every recipe not on a shelf follows, one row each. Recipes saved from other cooks carry a heart and
 // that cook's handle instead of living in a tab of their own. In your own
 // cookbook a long press switches to edit mode: drag shelves and loose
@@ -492,10 +492,10 @@ function RecipesTab({
 
   return (
     <div className="mx-5 pb-8">
-      {/* Cookbooks sit in a row of round icons, like story highlights; tap
-          one to open its recipes underneath, tap it again to close them.
-          With none yet there's no heading, and on your own profile the row
-          holds just New. */}
+      {/* Cookbooks sit in a row of rounded-square icons, like story
+          highlights; tap one to open its recipes underneath, tap it again to
+          close them. On your own profile New comes first. With none yet
+          there's no heading, and your own row holds just New. */}
       <div ref={cookbooksRef} className="scroll-mt-2">
         {groups.length > 0 ? (
           <SectionHeading
@@ -514,6 +514,18 @@ function RecipesTab({
 
         {(groups.length > 0 || isOwn) && (
           <div data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 pt-1">
+            {isOwn && (
+              <button
+                type="button"
+                onClick={() => setCreatingShelf(true)}
+                className="flex w-[76px] flex-shrink-0 flex-col items-center gap-2"
+              >
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink text-ink">
+                  <PlusIcon size={20} />
+                </div>
+                <span className="w-full truncate text-center font-mono text-[12px] leading-tight text-ink-soft">New</span>
+              </button>
+            )}
             {groups.map((shelf) => (
               <div
                 key={shelf.id}
@@ -548,18 +560,6 @@ function RecipesTab({
                 </button>
               </div>
             ))}
-            {isOwn && (
-              <button
-                type="button"
-                onClick={() => setCreatingShelf(true)}
-                className="flex w-[76px] flex-shrink-0 flex-col items-center gap-2"
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ink text-ink">
-                  <PlusIcon size={20} />
-                </div>
-                <span className="w-full truncate text-center font-mono text-[12px] leading-tight text-ink-soft">New</span>
-              </button>
-            )}
           </div>
         )}
 

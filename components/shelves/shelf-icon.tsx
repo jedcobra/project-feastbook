@@ -38,7 +38,7 @@ export function ShelfIcon({
   );
 }
 
-// A cookbook in the profile's row of highlights: a circle holding its
+// A cookbook in the profile's row of highlights: a rounded square holding its
 // cover photo, sticker or emoji, or else its recipe count. The open one
 // gets a heavier ring.
 export function ShelfBubble({
@@ -56,7 +56,7 @@ export function ShelfBubble({
 }) {
   return (
     <div
-      className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-cream-deep ${
+      className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-cream-deep ${
         selected ? 'ring-2 ring-ink ring-offset-2 ring-offset-cream' : 'ring-1 ring-rule'
       }`}
     >
