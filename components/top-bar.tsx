@@ -48,7 +48,7 @@ export function TopBar({ title, subtitle, trailing, backHref, onBack }: TopBarPr
     <div
       ref={ref}
       data-top-bar
-      className="absolute inset-x-0 top-0 z-10 grid min-h-[67px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 bg-cream px-5 pb-3.5 pt-6 print:static"
+      className="absolute inset-x-0 top-0 z-10 grid min-h-[67px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 bg-cream px-5 pb-3.5 pt-[calc(1.5rem+var(--safe-top))] print:static"
     >
       <div className="flex justify-start">
         {(backHref || onBack) && (

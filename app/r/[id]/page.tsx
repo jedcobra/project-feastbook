@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 function ShareMasthead() {
   return (
-    <div className="flex flex-shrink-0 items-center gap-2 border-b border-rule-soft px-5 py-3">
+    <div className="flex flex-shrink-0 items-center gap-2 border-b border-rule-soft px-5 pb-3 pt-[calc(0.75rem+var(--safe-top))]">
       <span className="font-display text-[16px] font-bold text-ink">Special Spoon</span>
       <span className="flex-1" />
       <a

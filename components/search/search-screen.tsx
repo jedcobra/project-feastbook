@@ -74,7 +74,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
 
   return (
     <>
-      <div className="flex flex-shrink-0 items-center gap-2.5 px-4 pb-2.5 pt-6">
+      <div className="flex flex-shrink-0 items-center gap-2.5 px-4 pb-2.5 pt-[calc(1.5rem+var(--safe-top))]">
         <BackButton fallbackHref="/discover" />
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-button border border-ink bg-cream-surface px-2.5 py-2">
           <SearchIcon size={14} className="flex-shrink-0 text-ink-mute" />

@@ -96,7 +96,7 @@ export function CookPhotoViewer({
         aria-modal="true"
         aria-label={`Photo by ${photo.handle}`}
         onClick={(e) => e.stopPropagation()}
-        className="mt-auto flex max-h-[100dvh] min-h-0 flex-col overflow-hidden bg-cream sm:my-auto"
+        className="mt-auto flex max-h-[calc(100dvh-var(--safe-top))] min-h-0 flex-col overflow-hidden bg-cream sm:my-auto"
       >
         <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-rule-soft px-4 py-2.5">
           <Link href={`/${photo.handle}`} onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
