@@ -103,9 +103,6 @@ export function OwnCookbook() {
           });
           void saveShelfOrder(profile.id, ids);
         }}
-        onRecipeDeleted={(recipeId) =>
-          setData((cur) => (cur ? { ...cur, recipes: cur.recipes.filter((r) => r.id !== recipeId) } : cur))
-        }
         onShelfRemoved={(shelfId) =>
           setData((cur) => (cur ? { ...cur, shelves: cur.shelves.filter((s) => s.id !== shelfId) } : cur))
         }

@@ -8,7 +8,7 @@ import { ReorderBar, useLongPressReorder } from '@/components/profile/long-press
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { EditShelfSheet, NewShelfSheet, ShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { firstRecipePhoto, ShelfBubble } from '@/components/shelves/shelf-icon';
-import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
+import { deleteShelf, setShelfArchived } from '@/lib/supabase/queries';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
 import { HandleLink } from '@/components/handle-link';
@@ -31,7 +31,6 @@ export function ProfileTabs({
   ownerHandle,
   isOwn,
   onReorderShelves,
-  onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
   onShelfChange,
@@ -47,7 +46,6 @@ export function ProfileTabs({
   ownerHandle: string;
   isOwn: boolean;
   onReorderShelves?: (shelfIds: string[]) => void;
-  onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
   onShelfChange?: (shelf: Shelf) => void;
@@ -157,7 +155,6 @@ export function ProfileTabs({
             isOwn={isOwn}
             archivedShelfCount={archivedShelfCount}
             onReorderShelves={isOwn ? onReorderShelves : undefined}
-            onRecipeDeleted={onRecipeDeleted}
             onShelfRemoved={onShelfRemoved}
             onShelfArchived={onShelfArchived}
             onShelfChange={onShelfChange}
@@ -194,9 +191,9 @@ type RecipeListRow = { recipe: Recipe; saved: boolean };
 // cookbook a long press switches to edit mode: the cookbooks stay in their
 // row and are dragged sideways to reorder (every drop is saved); tapping
 // one offers Edit, Archive (instant, reversible from Archived shelves) or
-// Delete, and tapping one of your own recipes offers Delete. Outside edit
-// mode rows are plain links and toggles, so nothing gets deleted by
-// accident.
+// Delete. The recipes below are dimmed and can't be touched until Done.
+// Outside edit mode rows are plain links and toggles, so nothing gets
+// deleted by accident.
 function RecipesTab({
   shelves,
   recipes,
@@ -205,7 +202,6 @@ function RecipesTab({
   isOwn,
   archivedShelfCount,
   onReorderShelves,
-  onRecipeDeleted,
   onShelfRemoved,
   onShelfArchived,
   onShelfChange,
@@ -219,7 +215,6 @@ function RecipesTab({
   isOwn: boolean;
   archivedShelfCount: number;
   onReorderShelves?: (shelfIds: string[]) => void;
-  onRecipeDeleted?: (recipeId: string) => void;
   onShelfRemoved?: (shelfId: string) => void;
   onShelfArchived?: (shelfId: string) => void;
   onShelfChange?: (shelf: Shelf) => void;
@@ -227,9 +222,8 @@ function RecipesTab({
   // A shelf to open and scroll to on arrival (from a ?shelf= link).
   focusShelfId?: string | null;
 }) {
-  // In edit mode, the cookbook or recipe whose options are showing.
-  const [options, setOptions] = useState<{ kind: 'shelf' | 'recipe'; id: string } | null>(null);
-  const [confirmingRecipeId, setConfirmingRecipeId] = useState<string | null>(null);
+  // In edit mode, the cookbook whose options are showing.
+  const [optionsShelfId, setOptionsShelfId] = useState<string | null>(null);
   const [confirmingShelfId, setConfirmingShelfId] = useState<string | null>(null);
   // The cookbook opened from the row of icons, its recipes shown beneath.
   const [selectedId, setSelectedId] = useState<string | null>(focusShelfId ?? null);
@@ -283,7 +277,7 @@ function RecipesTab({
   const shelfReorder = useLongPressReorder({
     ids: groups.map((s) => s.id),
     onReorder: onReorderShelves && ((ids) => onReorderShelves(savedShelf ? [savedShelf.id, ...ids] : ids)),
-    onStart: () => setOptions(null),
+    onStart: () => setOptionsShelfId(null),
     axis: 'x',
     scrollRef: editRowRef,
   });
@@ -308,7 +302,7 @@ function RecipesTab({
     onPointerUp: () => {
       const press = tilePress.current;
       tilePress.current = null;
-      if (press && !press.dragging && press.id === shelfId) setOptions({ kind: 'shelf', id: shelfId });
+      if (press && !press.dragging && press.id === shelfId) setOptionsShelfId(shelfId);
     },
     onPointerCancel: () => {
       tilePress.current = null;
@@ -323,9 +317,7 @@ function RecipesTab({
     await setShelfArchived(shelfId, true);
   };
 
-  const optionsShelf = options?.kind === 'shelf' ? groups.find((s) => s.id === options.id) : undefined;
-  const optionsRecipe = options?.kind === 'recipe' ? recipes.find((r) => r.id === options.id) : undefined;
-  const confirmingRecipe = confirmingRecipeId ? recipes.find((r) => r.id === confirmingRecipeId) : undefined;
+  const optionsShelf = optionsShelfId ? groups.find((s) => s.id === optionsShelfId) : undefined;
   const confirmingShelf = confirmingShelfId ? groups.find((s) => s.id === confirmingShelfId) : undefined;
   const editingShelf = editingShelfId ? groups.find((s) => s.id === editingShelfId) : undefined;
   const confirmSheets = (
@@ -333,19 +325,12 @@ function RecipesTab({
       {optionsShelf && (
         <OptionsSheet
           title={optionsShelf.title}
-          onClose={() => setOptions(null)}
+          onClose={() => setOptionsShelfId(null)}
           options={[
             { label: 'Edit cookbook', onClick: () => setEditingShelfId(optionsShelf.id) },
             { label: 'Archive', onClick: () => void archiveShelf(optionsShelf.id) },
             { label: 'Delete', danger: true, onClick: () => setConfirmingShelfId(optionsShelf.id) },
           ]}
-        />
-      )}
-      {optionsRecipe && (
-        <OptionsSheet
-          title={optionsRecipe.title}
-          onClose={() => setOptions(null)}
-          options={[{ label: 'Delete recipe', danger: true, onClick: () => setConfirmingRecipeId(optionsRecipe.id) }]}
         />
       )}
       {creatingShelf && (
@@ -371,16 +356,6 @@ function RecipesTab({
             onShelfRemoved?.(editingShelf.id);
           }}
           onClose={() => setEditingShelfId(null)}
-        />
-      )}
-      {confirmingRecipe && (
-        <DeleteRecipeConfirm
-          recipe={confirmingRecipe}
-          onCancel={() => setConfirmingRecipeId(null)}
-          onDeleted={() => {
-            setConfirmingRecipeId(null);
-            onRecipeDeleted?.(confirmingRecipe.id);
-          }}
         />
       )}
       {confirmingShelf && (
@@ -429,7 +404,7 @@ function RecipesTab({
         <ReorderBar
           label="Drag cookbooks to reorder · tap for options"
           onDone={() => {
-            setOptions(null);
+            setOptionsShelfId(null);
             shelfReorder.stop();
           }}
         />
@@ -464,22 +439,17 @@ function RecipesTab({
               ))}
           </div>
         )}
-        {recipeRows.length > 0 && <SectionHeading>Recipes</SectionHeading>}
-        {recipeRows.map(({ recipe: r, saved }) =>
-          isOwn && !saved ? (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => setOptions({ kind: 'recipe', id: r.id })}
-              className="flex w-full items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5 text-left"
-            >
-              {recipeBody(r, saved)}
-            </button>
-          ) : (
-            <div key={r.id} className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5">
-              {recipeBody(r, saved)}
-            </div>
-          ),
+        {/* Only the cookbooks are being rearranged: the recipes below stay
+            in view, dimmed, and can't be tapped until Done. */}
+        {recipeRows.length > 0 && (
+          <div aria-hidden className="pointer-events-none opacity-40">
+            <SectionHeading>Recipes</SectionHeading>
+            {recipeRows.map(({ recipe: r, saved }) => (
+              <div key={r.id} className="flex items-center gap-2.5 border-b border-rule-soft bg-cream py-3.5">
+                {recipeBody(r, saved)}
+              </div>
+            ))}
+          </div>
         )}
         {confirmSheets}
       </div>
@@ -700,70 +670,6 @@ function DeleteShelfConfirm({
           {shelf.count > 0
             ? `The ${shelf.count} recipe${shelf.count === 1 ? '' : 's'} in it stay in your recipes — this just removes the cookbook.`
             : 'This can’t be undone.'}
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 rounded-button border border-ink bg-transparent py-2 font-mono text-[14px] text-ink"
-          >
-            Keep it
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex-1 rounded-button border border-accent bg-accent py-2 font-mono text-[14px] text-cream disabled:opacity-60"
-          >
-            {deleting ? 'Deleting…' : 'Delete'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Impact-aware delete confirmation, matching the copy the owner sheet's
-// "…" menu uses on the recipe page — deleting a recipe has real
-// consequences (its notes, other people's saves) so a swipe alone can't
-// be the whole confirmation, unlike a message or a shelf.
-function DeleteRecipeConfirm({
-  recipe,
-  onCancel,
-  onDeleted,
-}: {
-  recipe: Recipe;
-  onCancel: () => void;
-  onDeleted: () => void;
-}) {
-  const [impact, setImpact] = useState<{ comments: number; saves: number } | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    fetchRecipeDeleteImpact(recipe.id).then(setImpact);
-  }, [recipe.id]);
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    const ok = await deleteRecipe(recipe.id);
-    setDeleting(false);
-    if (ok) onDeleted();
-  };
-
-  return (
-    <div className="fixed inset-0 z-20 mx-auto flex max-w-column flex-col justify-end bg-night/30" onClick={onCancel}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="rounded-t-2xl border-t border-ink bg-cream px-5 pb-6 pt-4"
-      >
-        <h3 className="mb-2 flex items-center gap-2 font-display text-[17px] font-bold text-ink">
-          <TrashIcon size={16} />
-          Delete &ldquo;{recipe.title}&rdquo;?
-        </h3>
-        <div className="mb-3.5 font-mono text-[12px] leading-[1.55] text-ink-mute">
-          {impact
-            ? `The ${impact.comments} note${impact.comments === 1 ? '' : 's'} on it go too. The ${impact.saves} ${impact.saves === 1 ? 'person who' : 'people who'} saved it will lose it.`
-            : 'Checking what this affects…'}
         </div>
         <div className="flex gap-2">
           <button
