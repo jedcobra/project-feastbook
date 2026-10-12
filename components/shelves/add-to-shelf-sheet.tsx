@@ -6,7 +6,7 @@ import { PlusIcon } from '@/components/icons';
 import { NewShelfSheet, ShelfSheet } from '@/components/shelves/edit-shelf-sheet';
 import { fetchShelfIdsForRecipe, fetchShelvesForOwner, setRecipeShelves } from '@/lib/supabase/queries';
 import type { Shelf } from '@/lib/types';
-import { EMOJI_FONT_CLASS } from '@/lib/shelf-emoji';
+import { firstRecipePhoto } from '@/components/shelves/shelf-icon';
 
 interface AddToShelfSheetProps {
   ownerId: string;
@@ -82,10 +82,10 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
             <Checkbox checked={selected.has(shelf.id)} />
             <span className="min-w-0 flex-1">
               <span className="block font-mono text-[14px] text-ink">
-                {shelf.coverUrl ? (
+                {shelf.coverUrl || (!shelf.stickerUrl && firstRecipePhoto(shelf.recipes)) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={shelf.coverUrl}
+                    src={shelf.coverUrl || firstRecipePhoto(shelf.recipes)}
                     alt=""
                     className="mr-1.5 inline-block h-4 w-4 -translate-y-px rounded-[3px] object-cover align-middle"
                   />
@@ -96,9 +96,7 @@ export function AddToShelfSheet({ ownerId, recipeId, recipeTitle, onClose, onSav
                     alt=""
                     className="mr-1.5 inline-block h-4 w-4 -translate-y-px object-contain align-middle"
                   />
-                ) : (
-                  shelf.emoji && <span className={`mr-1.5 ${EMOJI_FONT_CLASS}`}>{shelf.emoji}</span>
-                )}
+                ) : null}
                 {shelf.title}
               </span>
               <span className="block font-mono text-[12px] text-ink-mute">

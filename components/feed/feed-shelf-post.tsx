@@ -11,8 +11,8 @@ const PREVIEW = 5;
 
 // A cookbook its owner posted with "Tell my followers": a feed entry like
 // a recipe's, led by its cover photo if it has one, or else a 2×2 grid of
-// its recipes' photos (its emoji or sticker sits beside the name either
-// way), with a peek at what's in it. Tapping it opens the cookbook where it
+// its recipes' photos (a sticker from when those were offered sits beside
+// the name either way), with a peek at what's in it. Tapping it opens the cookbook where it
 // lives, on its owner's profile.
 export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
   const router = useRouter();
@@ -75,9 +75,7 @@ export function FeedShelfPost({ shelf }: { shelf: FeedShelf }) {
           }
         >
           <div className="flex items-center gap-2.5">
-            {!shelf.coverUrl && (shelf.stickerUrl || shelf.emoji) && (
-              <ShelfIcon emoji={shelf.emoji} stickerUrl={shelf.stickerUrl} count={count} />
-            )}
+            {!shelf.coverUrl && shelf.stickerUrl && <ShelfIcon stickerUrl={shelf.stickerUrl} count={count} />}
             <h3 className="min-w-0 flex-1 font-display text-[19px] font-bold leading-tight text-ink">{shelf.title}</h3>
             <ChevronIcon size={13} className="flex-shrink-0 text-ink-mute" />
           </div>

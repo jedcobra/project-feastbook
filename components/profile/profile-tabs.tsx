@@ -7,7 +7,7 @@ import { HeartIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { ReorderBar, useLongPressReorder } from '@/components/profile/long-press-reorder';
 import { RecipeThumbnail } from '@/components/recipe/recipe-thumbnail';
 import { EditShelfSheet, NewShelfSheet, ShelfSheet } from '@/components/shelves/edit-shelf-sheet';
-import { ShelfBubble } from '@/components/shelves/shelf-icon';
+import { firstRecipePhoto, ShelfBubble } from '@/components/shelves/shelf-icon';
 import { deleteRecipe, deleteShelf, fetchRecipeDeleteImpact, setShelfArchived } from '@/lib/supabase/queries';
 import { formatCount } from '@/lib/format';
 import type { CookPhoto, Recipe, Shelf } from '@/lib/types';
@@ -450,8 +450,8 @@ function RecipesTab({
                   }`}
                 >
                   <ShelfBubble
-                    emoji={shelf.emoji}
                     coverUrl={shelf.coverUrl}
+                    fallbackUrl={firstRecipePhoto([...shelfRows(shelf).map((row) => row.recipe), ...shelf.recipes])}
                     stickerUrl={shelf.stickerUrl}
                     count={shelfRows(shelf).length}
                     selected={shelfReorder.draggingId === shelf.id}
@@ -542,8 +542,8 @@ function RecipesTab({
                   className="flex w-[70px] flex-col items-center gap-2"
                 >
                   <ShelfBubble
-                    emoji={shelf.emoji}
                     coverUrl={shelf.coverUrl}
+                    fallbackUrl={firstRecipePhoto([...shelfRows(shelf).map((row) => row.recipe), ...shelf.recipes])}
                     stickerUrl={shelf.stickerUrl}
                     count={shelfRows(shelf).length}
                     selected={selectedId === shelf.id}

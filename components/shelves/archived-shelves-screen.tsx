@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ChevronIcon } from '@/components/icons';
 import { SwipeableRow } from '@/components/swipeable-row';
-import { ShelfIcon } from '@/components/shelves/shelf-icon';
+import { firstRecipePhoto, ShelfIcon } from '@/components/shelves/shelf-icon';
 import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import { deleteShelf, fetchArchivedShelves, setShelfArchived } from '@/lib/supabase/queries';
@@ -58,7 +58,12 @@ export function ArchivedShelvesScreen() {
                 href={`/shelf/${shelf.id}`}
                 className={`flex items-start gap-3.5 border-b border-rule-soft bg-cream py-3.5 ${i === 0 ? 'border-t' : ''}`}
               >
-                <ShelfIcon emoji={shelf.emoji} coverUrl={shelf.coverUrl} stickerUrl={shelf.stickerUrl} count={shelf.count} />
+                <ShelfIcon
+                  coverUrl={shelf.coverUrl}
+                  stickerUrl={shelf.stickerUrl}
+                  fallbackUrl={firstRecipePhoto(shelf.recipes)}
+                  count={shelf.count}
+                />
                 <div className="min-w-0 flex-1">
                   <h3 className="mb-0.5 font-display text-[17px] font-bold text-ink">{shelf.title}</h3>
                   <div className="mb-1.5 font-mono text-meta text-ink-mute">{shelf.subtitle}</div>

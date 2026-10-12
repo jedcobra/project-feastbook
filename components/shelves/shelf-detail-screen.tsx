@@ -108,13 +108,13 @@ export function ShelfDetailScreen({ id }: { id: string }) {
     stickerUrl: shelf.stickerUrl,
     postedAt: shelf.postedAt,
     count: shelf.recipes.length,
-    recipes: shelf.recipes.map((r) => ({ id: r.id, title: r.title })),
+    recipes: shelf.recipes.map((r) => ({ id: r.id, title: r.title, coverPhotoUrl: r.coverPhotoUrl })),
   };
 
   return (
     <>
       <TopBar
-        title={shelf.emoji ? `${shelf.emoji} ${shelf.title}` : shelf.title}
+        title={shelf.title}
         backHref="/me"
         subtitle={`${shelf.recipes.length} recipe${shelf.recipes.length === 1 ? '' : 's'} · ${shelfVisibilityLabel(shelf.visibility)}`}
         trailing={

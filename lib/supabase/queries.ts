@@ -632,7 +632,7 @@ export async function fetchProfileByHandle(handle: string) {
     supabase.from('recipes').select('*').eq('author_id', profileRow.id).order('created_at', { ascending: false }),
     supabase
       .from('shelves')
-      .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title))')
+      .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title, cover_photo_url))')
       .eq('owner_id', profileRow.id)
       .is('archived_at', null)
       .order('position', { ascending: true, nullsFirst: true })
@@ -659,6 +659,8 @@ export async function fetchProfileByHandle(handle: string) {
   return { person, recipes, shelves, shelfRecipes };
 }
 
+type ShelfRecipeEmbed = { title: string; cover_photo_url: string | null };
+
 interface ShelfRow {
   id: string;
   title: string;
@@ -668,7 +670,11 @@ interface ShelfRow {
   cover_url: string | null;
   sticker_url: string | null;
   posted_at: string | null;
-  shelf_recipes: { recipe_id: string; position: number; recipes: { title: string } | { title: string }[] | null }[];
+  shelf_recipes: {
+    recipe_id: string;
+    position: number;
+    recipes: ShelfRecipeEmbed | ShelfRecipeEmbed[] | null;
+  }[];
 }
 
 function mapShelfRows(rows: ShelfRow[]): Shelf[] {
@@ -684,10 +690,10 @@ function mapShelfRows(rows: ShelfRow[]): Shelf[] {
       stickerUrl: s.sticker_url,
       postedAt: s.posted_at,
       count: sorted.length,
-      recipes: sorted.map((sr) => ({
-        id: sr.recipe_id,
-        title: unwrapOne(sr.recipes)?.title ?? '',
-      })),
+      recipes: sorted.map((sr) => {
+        const recipe = unwrapOne(sr.recipes);
+        return { id: sr.recipe_id, title: recipe?.title ?? '', coverPhotoUrl: recipe?.cover_photo_url ?? undefined };
+      }),
     };
   });
 }
@@ -1385,7 +1391,7 @@ export async function createShelf(
 export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id)')
+    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title, cover_photo_url))')
     .eq('owner_id', ownerId)
     .is('archived_at', null)
     .order('created_at', { ascending: true });
@@ -1393,30 +1399,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
     console.error('fetchShelvesForOwner', error);
     return [];
   }
-  return data.map(
-    (s: {
-      id: string;
-      title: string;
-      subtitle: string;
-      visibility: ShelfVisibility;
-      emoji: string | null;
-      cover_url: string | null;
-      sticker_url: string | null;
-      posted_at: string | null;
-      shelf_recipes: unknown[];
-    }) => ({
-      id: s.id,
-      title: s.title,
-      subtitle: s.subtitle,
-      visibility: s.visibility,
-      emoji: s.emoji,
-      coverUrl: s.cover_url,
-      stickerUrl: s.sticker_url,
-      postedAt: s.posted_at,
-      count: s.shelf_recipes.length,
-      recipes: [],
-    }),
-  );
+  return mapShelfRows(data);
 }
 
 // Archived shelves — hidden from the Cookbook's Recipes tab and the
@@ -1424,7 +1407,7 @@ export async function fetchShelvesForOwner(ownerId: string): Promise<Shelf[]> {
 export async function fetchArchivedShelves(ownerId: string): Promise<Shelf[]> {
   const { data, error } = await supabase
     .from('shelves')
-    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title))')
+    .select('id, title, subtitle, visibility, emoji, cover_url, sticker_url, posted_at, shelf_recipes(recipe_id, position, recipes(title, cover_photo_url))')
     .eq('owner_id', ownerId)
     .not('archived_at', 'is', null);
   if (error || !data) {

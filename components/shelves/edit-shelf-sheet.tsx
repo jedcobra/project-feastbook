@@ -63,7 +63,7 @@ export function EditShelfSheet({
           onChange({
             ...shelf,
             count: shelf.count + added.length,
-            recipes: [...added.map((r) => ({ id: r.id, title: r.title })), ...shelf.recipes],
+            recipes: [...added.map((r) => ({ id: r.id, title: r.title, coverPhotoUrl: r.coverPhotoUrl })), ...shelf.recipes],
           })
         }
         onClose={() => setAdding(false)}
@@ -78,7 +78,7 @@ export function EditShelfSheet({
           title: shelf.title,
           subtitle: shelf.subtitle,
           visibility: shelf.visibility,
-          emoji: shelf.emoji ?? null,
+          emoji: null,
           coverUrl: shelf.coverUrl ?? null,
           stickerUrl: shelf.stickerUrl ?? null,
         }}
