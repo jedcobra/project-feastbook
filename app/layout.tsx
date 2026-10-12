@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { DismissKeyboardOnScroll } from '@/components/dismiss-keyboard-on-scroll';
@@ -17,15 +17,8 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'Special Spoon',
-    // The status bar floats over the page: screens reach up behind it and
-    // pad their tops by the notch (--safe-top in globals.css), and a
-    // frosted strip of the page colour behind it keeps the clock readable.
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
   },
-};
-
-export const viewport: Viewport = {
-  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -43,7 +36,6 @@ export default function RootLayout({
       <body>
         <ThemeSync />
         <RotateNotice />
-        <div aria-hidden className="status-bar-scrim" />
         <div className="mx-auto flex h-dvh w-full max-w-column flex-col overflow-hidden">
           <DismissKeyboardOnScroll />
           <AuthProvider>

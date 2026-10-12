@@ -111,7 +111,7 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
 
   return (
     <div className="flex flex-1 flex-col bg-night font-mono text-paper">
-      <div className="flex items-center gap-2.5 px-5 pt-[calc(1.5rem+var(--safe-top))]">
+      <div className="flex items-center gap-2.5 px-5 pt-6">
         <button
           type="button"
           onClick={exit}

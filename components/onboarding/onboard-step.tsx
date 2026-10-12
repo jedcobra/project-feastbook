@@ -29,7 +29,7 @@ export function OnboardStep({
 }: OnboardStepProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-5 pt-[calc(58px+var(--safe-top))]">
+      <div className="px-5 pt-[58px]">
         <div className="mb-[18px] flex gap-1">
           {Array.from({ length: total }).map((_, i) => (
             <div key={i} className={`h-0.5 flex-1 ${i <= step ? 'bg-ink' : 'bg-rule-soft'}`} />

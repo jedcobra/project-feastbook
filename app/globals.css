@@ -116,32 +116,6 @@
   padding-bottom: var(--tabbar-clearance);
 }
 
-/* The phone's status bar (clock, battery) floats over the page in the
-   installed app (statusBarStyle in app/layout.tsx), so each screen's top
-   pads itself by --safe-top, the notch height, and the page scrolls up
-   behind it. A frosted strip of the page colour sits under the status
-   bar so the clock stays readable over whatever scrolls beneath it. Zero
-   height wherever there's no notch inset. */
-:root {
-  --safe-top: env(safe-area-inset-top, 0px);
-  --status-scrim: rgb(var(--c-cream) / 0.72);
-}
-.status-bar-scrim {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 60;
-  height: var(--safe-top);
-  pointer-events: none;
-  background: var(--status-scrim);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  backdrop-filter: blur(14px) saturate(160%);
-}
-@media print {
-  .status-bar-scrim {
-    display: none;
-  }
-}
-
 /* The tab bar's glass: see-through enough for the screen to show through,
    blurred and a little more saturated, with a bright rim along the top
    edge and a soft sheen across it, like light catching a pane. Browsers
