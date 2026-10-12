@@ -26,7 +26,7 @@ export function PasteImportScreen() {
   return (
     <>
       <TopBar title="Paste a recipe" backHref="/new" />
-      <div className="flex min-h-0 flex-1 flex-col px-5 pb-8">
+      <div className="tabbar-clearance flex min-h-0 flex-1 flex-col px-5 pb-8">
         <div className="mb-3 mt-3 font-mono text-[12px] leading-relaxed text-ink-mute">
           Copy a recipe from anywhere — a note, an email, a text thread — and paste the whole thing below. We&rsquo;ll
           sort it into a title, ingredients, and steps; you confirm every field before it saves.

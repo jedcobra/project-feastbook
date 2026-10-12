@@ -444,7 +444,7 @@ export function ComposerScreen() {
 
       </div>
 
-      <div className="flex flex-shrink-0 gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
+      <div className="tabbar-clearance flex flex-shrink-0 gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
         <OutlineBox onClick={() => goBack(closeHref)} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>
