@@ -27,6 +27,13 @@ export function TabBar() {
   const pathname = usePathname();
   const { user, profile } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [distort, setDistort] = useState(false);
+
+  // Chromium (desktop and Android) can ripple the backdrop through an SVG
+  // filter; Safari and Firefox can't, and would drop the blur with it.
+  useEffect(() => {
+    setDistort(/Chrome\//.test(navigator.userAgent));
+  }, []);
 
   useEffect(() => {
     if (profile) countUnreadMessages(profile.id).then(setUnreadMessages);
@@ -41,7 +48,22 @@ export function TabBar() {
       data-tab-bar
       className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-[max(14px,env(safe-area-inset-bottom))] print:hidden"
     >
-      <div className="pointer-events-auto flex items-stretch justify-around gap-1 rounded-full border border-rule/70 bg-cream-surface/85 px-3 py-2 shadow-[0_8px_24px_rgba(20,42,30,0.16)] backdrop-blur-md">
+      <svg width="0" height="0" aria-hidden className="absolute">
+        {/* A gentle ripple for what shows through the glass. Only Chromium
+            can apply an SVG filter to the backdrop, so only it gets this
+            (glass-distort below); elsewhere the glass is blur and sheen. */}
+        <filter id="tabbar-glass" x="-10%" y="-40%" width="120%" height="180%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" edgeMode="duplicate" result="frosted" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.03" numOctaves={2} seed={7} result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
+          <feDisplacementMap in="frosted" in2="soft" scale={16} xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <div
+        className={`glass-panel pointer-events-auto relative flex items-stretch justify-around gap-1 overflow-hidden rounded-full px-3 py-2 ${
+          distort ? 'glass-distort' : ''
+        }`}
+      >
         {TABS.map((tab) => {
           const isActive = tab.active(pathname);
           const Icon = tab.icon;
