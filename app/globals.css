@@ -155,20 +155,10 @@
   backdrop-filter: url(#glass-ripple) saturate(180%);
 }
 
-/* The top bar is the same glass as a band across the top of the screen,
-   with a hairline along its bottom edge instead of the panel's rim. It
-   lies over the page, so whatever comes right after it starts clear of it:
-   a scrolling area by way of a spacer at its top (so the page then scrolls
-   on up behind the glass), anything else by a margin. */
-.glass-band {
-  background: var(--glass-tint);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
-  backdrop-filter: blur(10px) saturate(180%);
-  box-shadow: inset 0 -1px 0 var(--glass-edge);
-}
-.glass-band.glass-distort {
-  backdrop-filter: url(#glass-ripple) saturate(180%);
-}
+/* The top bar (components/top-bar.tsx) lies over the top of the screen
+   and scrolls away with the page, so whatever comes right after it starts
+   clear of it: a scrolling area by way of a spacer at its top, anything
+   else by a margin. */
 [data-top-bar] + .overflow-y-auto::before {
   content: '';
   display: block;

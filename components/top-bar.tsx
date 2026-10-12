@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { BackButton } from '@/components/back-button';
-import { useGlassDistort } from '@/components/glass';
 
 interface TopBarProps {
   title?: ReactNode;
@@ -16,29 +15,40 @@ interface TopBarProps {
 // columns rather than a flex row, so the title sits dead-center on the
 // page regardless of whether a back button or trailing action is present
 // on either side, instead of centering only between whatever's there.
-// It's a band of the same glass as the tab bar, laid over the top of the
-// screen so the page scrolls on underneath it; its height goes into
-// --topbar-h, which the page below uses to start clear of it (globals.css).
+// It belongs to the page: it sits at the top, and as the page scrolls down
+// it scrolls away with it. It lies over the top of the screen (so it can
+// move with the scrolling area right after it, which starts with a spacer
+// of its height, --topbar-h — see globals.css) and follows that area's
+// scroll position.
 export function TopBar({ title, subtitle, trailing, backHref, onBack }: TopBarProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const distort = useGlassDistort();
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
     const root = document.documentElement;
     const observer = new ResizeObserver(() => root.style.setProperty('--topbar-h', `${el.offsetHeight}px`));
     observer.observe(el);
-    return () => observer.disconnect();
+    // Scroll events don't bubble, so catch them on the way down, from
+    // whichever scrolling area currently follows the bar.
+    const onScroll = (e: Event) => {
+      if (e.target === el.nextElementSibling) {
+        el.style.transform = `translateY(${-(e.target as HTMLElement).scrollTop}px)`;
+      }
+    };
+    parent.addEventListener('scroll', onScroll, true);
+    return () => {
+      observer.disconnect();
+      parent.removeEventListener('scroll', onScroll, true);
+    };
   }, []);
 
   return (
     <div
       ref={ref}
       data-top-bar
-      className={`glass-band absolute inset-x-0 top-0 z-10 grid min-h-[67px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 px-5 pb-3.5 pt-6 print:static ${
-        distort ? 'glass-distort' : ''
-      }`}
+      className="absolute inset-x-0 top-0 z-10 grid min-h-[67px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5 bg-cream px-5 pb-3.5 pt-6 print:static"
     >
       <div className="flex justify-start">
         {(backHref || onBack) && (

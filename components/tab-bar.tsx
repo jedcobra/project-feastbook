@@ -24,6 +24,16 @@ const TABS = [
 // "New" included — it only highlights when its own section is active.
 // Screens leave room for it at the end of their scrolling and under any
 // bottom bar of their own (globals.css, --tabbar-clearance).
+// Every scrolling area on the current screen — not those in a popup — back
+// to the top.
+function scrollPageToTop() {
+  document
+    .querySelectorAll<HTMLElement>('[data-tab-shell] .overflow-y-auto')
+    .forEach((el) => {
+      if (!el.closest('[role="dialog"]') && el.scrollTop > 0) el.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
 export function TabBar() {
   const pathname = usePathname();
   const { user, profile } = useAuth();
@@ -56,6 +66,15 @@ export function TabBar() {
               key={tab.id}
               href={tab.href}
               aria-label={tab.label}
+              onClick={(e) => {
+                // Tapping the tab of the page you're already on takes you
+                // back to its top instead of reloading it. (From deeper in
+                // a section — a thread, a draft — it goes to the section's
+                // own page as usual.)
+                if (pathname !== tab.href) return;
+                e.preventDefault();
+                scrollPageToTop();
+              }}
               className="relative flex flex-1 flex-col items-center gap-1.5 pt-1.5"
             >
               <Icon size={20} className={isActive ? 'text-ink' : 'text-ui-mute'} />
