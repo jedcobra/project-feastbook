@@ -2,43 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* The palette, as RGB triplets for tailwind.config.ts. Light is the
-   original "Cream" design; dark keeps the same ink-and-paper character with
-   the two swapped: a deep indigo page and cream type. */
+/* The palette, as RGB triplets for tailwind.config.ts. Light is a warm
+   off-white page with deep forest-green type; dark keeps the same
+   ink-and-paper character with the two swapped: a deep forest page and
+   off-white type. */
 @layer base {
   :root {
-    --c-cream: 244 238 221;
-    --c-cream-deep: 237 228 201;
-    --c-cream-surface: 251 246 230;
-    --c-ink: 35 36 89;
-    --c-ink-soft: 58 60 122;
-    --c-ink-mute: 139 138 175;
-    --c-rule: 207 196 156;
-    --c-rule-soft: 224 215 180;
+    --c-cream: 248 243 235;
+    --c-cream-deep: 240 232 219;
+    --c-cream-surface: 252 249 244;
+    --c-ink: 27 54 39;
+    --c-ink-soft: 49 84 64;
+    --c-ink-mute: 128 140 128;
+    --c-rule: 220 209 192;
+    --c-rule-soft: 232 224 211;
     --c-accent: 209 62 62;
     --c-accent-2: 46 110 90;
     --c-accent-3: 176 122 31;
     --c-highlight: 242 226 122;
-    --c-tag: 235 225 186;
-    --c-tag-ink: 90 85 52;
+    --c-tag: 238 229 214;
+    --c-tag-ink: 96 84 62;
     color-scheme: light;
   }
 
   :root.dark {
-    --c-cream: 22 22 43;
-    --c-cream-deep: 31 31 59;
-    --c-cream-surface: 32 32 63;
-    --c-ink: 238 231 211;
-    --c-ink-soft: 207 201 230;
-    --c-ink-mute: 141 140 180;
-    --c-rule: 69 68 107;
-    --c-rule-soft: 46 45 82;
+    --c-cream: 18 31 24;
+    --c-cream-deep: 25 42 33;
+    --c-cream-surface: 28 46 36;
+    --c-ink: 241 235 224;
+    --c-ink-soft: 207 218 206;
+    --c-ink-mute: 134 153 139;
+    --c-rule: 55 78 64;
+    --c-rule-soft: 37 56 45;
     --c-accent: 239 106 95;
     --c-accent-2: 93 181 150;
     --c-accent-3: 217 165 72;
     --c-highlight: 92 84 40;
-    --c-tag: 44 43 79;
-    --c-tag-ink: 217 207 159;
+    --c-tag: 35 54 43;
+    --c-tag-ink: 214 205 170;
     color-scheme: dark;
   }
 

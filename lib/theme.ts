@@ -9,7 +9,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export const THEME_KEY = 'ss-theme';
 
 // The browser bar / status bar tint for each theme — the page background.
-const THEME_COLOR = { light: '#F4EEDD', dark: '#16162B' };
+const THEME_COLOR = { light: '#F8F3EB', dark: '#121F18' };
 
 export function getThemePreference(): ThemePreference {
   if (typeof window === 'undefined') return 'light';

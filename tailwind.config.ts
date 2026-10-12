@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
-// Design tokens from design_handoff_special_spoon/README.md — "Cream" palette.
+// Design tokens: warm off-white and forest green (originally the "Cream"
+// palette from design_handoff_special_spoon/README.md).
 const config: Config = {
   content: [
     './app/**/*.{ts,tsx}',
@@ -39,8 +40,8 @@ const config: Config = {
           DEFAULT: 'rgb(var(--c-tag) / <alpha-value>)', // --tag-bg
           ink: 'rgb(var(--c-tag-ink) / <alpha-value>)', // --tag-ink
         },
-        night: 'rgb(35 36 89 / <alpha-value>)',
-        paper: 'rgb(244 238 221 / <alpha-value>)',
+        night: 'rgb(27 54 39 / <alpha-value>)',
+        paper: 'rgb(248 243 235 / <alpha-value>)',
       },
       borderColor: {
         rule: {

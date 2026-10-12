@@ -257,24 +257,26 @@ Reuses the composer. `SSComposerScreen` accepts a `seed` prop shaped exactly lik
 
 ## Design Tokens
 
-### Colors — Default palette ("Cream")
+### Colors — Default palette (warm off-white and forest green)
 
 ```
---bg:          #F4EEDD   /* warm cream paper — primary background */
---bg-deep:     #EDE4C9   /* slightly deeper, for cards / inset blocks */
---surface:     #FBF6E6   /* card surface white */
---ink:         #232459   /* indigo — primary text and accent */
---ink-soft:    #3A3C7A   /* secondary text */
---ink-mute:    #8B8AAF   /* meta text */
---rule:        #CFC49C   /* dashed rules */
---rule-soft:   #E0D7B4   /* lighter rules */
+--bg:          #F8F3EB   /* warm off-white paper — primary background */
+--bg-deep:     #F0E8DB   /* slightly deeper, for cards / inset blocks */
+--surface:     #FCF9F4   /* card surface white */
+--ink:         #1B3627   /* deep forest green — primary text and accent */
+--ink-soft:    #315440   /* secondary text */
+--ink-mute:    #808C80   /* meta text */
+--rule:        #DCD1C0   /* rules and outlines */
+--rule-soft:   #E8E0D3   /* lighter rules */
 --accent:      #D13E3E   /* vermilion — destructive, "new" badge */
 --accent-2:    #2E6E5A   /* forest — success / checked state */
 --accent-3:    #B07A1F   /* mustard — tag highlights */
 --highlight:   #F2E27A   /* yellow highlighter (rarely used) */
---tag-bg:      #EBE1BA   /* tag pill background */
---tag-ink:     #5A5534   /* tag pill text */
+--tag-bg:      #EEE5D6   /* tag pill background */
+--tag-ink:     #60543E   /* tag pill text */
 ```
+
+The values live in `app/globals.css` (light and dark).
 
 Alternate palettes (Ivory, Graph) exist in `prototype/theme.jsx` if the user wants seasonal/dark-mode variants — but ship Cream as the default.
 
