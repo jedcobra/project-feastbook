@@ -14,6 +14,7 @@ import {
   blockUser,
   fetchCookPhotos,
   fetchProfileByHandle,
+  fetchSavedRecipes,
   isBlockedByMe,
   isFollowing,
   setFollowing,
@@ -32,6 +33,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cookPhotos, setCookPhotos] = useState<CookPhoto[]>([]);
+  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
 
   // A link to your own @handle — from a comment, an activity row, search,
   // wherever — should land you on your own Cookbook (with Edit/Share and
@@ -51,6 +53,11 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
   useEffect(() => {
     if (!data) return;
     fetchCookPhotos(data.person.id, profile?.id ?? null).then(setCookPhotos);
+    // What they've saved shows on their profile too, newest save first —
+    // except recipes the viewer can't see (made private, or followers-only
+    // and the viewer doesn't follow the author), which the recipes table's
+    // own rules leave out.
+    fetchSavedRecipes(data.person.id).then(setSavedRecipes);
   }, [data, profile?.id]);
 
   useEffect(() => {
@@ -158,6 +165,7 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
           shelves={data.shelves}
           recipes={data.recipes}
           shelfRecipes={data.shelfRecipes}
+          savedRecipes={savedRecipes}
           cookPhotos={cookPhotos}
           onCookPhotosChange={setCookPhotos}
           ownerHandle={data.person.handle}

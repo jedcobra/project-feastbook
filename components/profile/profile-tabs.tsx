@@ -261,8 +261,9 @@ function RecipesTab({
   const groups = shelves.filter((s) => s !== savedShelf);
   const shelfRows = (shelf: Shelf) => rowsFor(shelf.recipes.map((r) => r.id));
 
-  // Saved recipes come from your own saves, or on someone else's profile
-  // from their Saved shelf where you're allowed to see it. Saving your own
+  // Saved recipes come from the person's saves (only the ones you're
+  // allowed to see), plus on someone else's profile their Saved shelf
+  // where that's shared with you. Saving your own
   // recipe doesn't un-author it, hence the de-duplication. Newest first: a
   // recipe of your own by when it was posted, a saved one by when it was
   // saved (or posted, where that isn't known).
