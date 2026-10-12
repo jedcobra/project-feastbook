@@ -434,7 +434,7 @@ function RecipesTab({
         />
         {groups.length > 0 && <SectionHeading>Cookbooks</SectionHeading>}
         {groups.length > 0 && (
-          <div ref={editRowRef} data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 pt-1">
+          <div ref={editRowRef} data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 pt-1">
             {(shelfReorder.reorderIds ?? [])
               .map((id) => shelfById.get(id))
               .filter((s): s is Shelf => !!s)
@@ -445,7 +445,7 @@ function RecipesTab({
                   {...tileProps(shelf.id)}
                   aria-label={`${shelf.title}: drag to move, tap for options`}
                   role="button"
-                  className={`flex w-[76px] flex-shrink-0 cursor-grab touch-none flex-col items-center gap-2 transition-transform ${
+                  className={`flex w-[70px] flex-shrink-0 cursor-grab touch-none flex-col items-center gap-2 transition-transform ${
                     shelfReorder.draggingId === shelf.id ? 'z-10 scale-110 opacity-90' : ''
                   }`}
                 >
@@ -511,12 +511,12 @@ function RecipesTab({
         )}
 
         {(groups.length > 0 || isOwn) && (
-          <div data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 pt-1">
+          <div data-own-swipe className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 pt-1">
             {isOwn && (
               <button
                 type="button"
                 onClick={() => setCreatingShelf(true)}
-                className="flex w-[76px] flex-shrink-0 flex-col items-center gap-2"
+                className="flex w-[70px] flex-shrink-0 flex-col items-center gap-2"
               >
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink text-ink">
                   <PlusIcon size={20} />
@@ -539,7 +539,7 @@ function RecipesTab({
                   aria-expanded={selectedId === shelf.id}
                   aria-controls="cookbook-recipes"
                   onClick={() => toggleShelf(shelf.id)}
-                  className="flex w-[76px] flex-col items-center gap-2"
+                  className="flex w-[70px] flex-col items-center gap-2"
                 >
                   <ShelfBubble
                     emoji={shelf.emoji}
