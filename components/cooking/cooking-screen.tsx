@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { CookedPhotoPrompt } from '@/components/cooked/cooked-photo-prompt';
 import { BackIcon, ChevronIcon, XIcon } from '@/components/icons';
+import { track } from '@/lib/analytics';
 import { useBackNav } from '@/lib/back-nav';
 import { getKeepAwake } from '@/lib/keep-awake';
 import { setCooked } from '@/lib/supabase/queries';
@@ -28,6 +29,10 @@ export function CookingScreen({ recipe, authorId }: { recipe: Recipe; authorId: 
   const total = recipe.steps.length;
   const progress = ((step + 1) / total) * 100;
   const allIngredients = recipe.ingredients.flatMap((section) => section.items);
+
+  useEffect(() => {
+    track('cooking_started', { recipe_id: recipe.id, step_count: recipe.steps.length });
+  }, [recipe.id, recipe.steps.length]);
 
   // Wake Lock releases itself whenever the tab goes hidden, so it has to be
   // re-requested on visibilitychange, not just once on mount.

@@ -3,6 +3,8 @@
 // reliably fetch arbitrary third-party pages itself (CORS) and shouldn't be
 // the one deciding what's safe to fetch anyway.
 
+import { track } from '@/lib/analytics';
+
 export interface ImportedRecipe {
   title: string;
   subtitle: string;
@@ -26,14 +28,29 @@ export type ImportResult =
     };
 
 export async function importRecipeFromUrl(url: string): Promise<ImportResult> {
+  let result: ImportResult;
   try {
     const res = await fetch('/api/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     });
-    return (await res.json()) as ImportResult;
+    result = (await res.json()) as ImportResult;
   } catch {
-    return { ok: false, reason: 'fetch-failed' };
+    result = { ok: false, reason: 'fetch-failed' };
+  }
+  // The site's host (not the full URL) shows which recipe sites the parser
+  // handles badly, which is where import fixes pay off most.
+  const host = hostOf(result.ok ? result.sourceUrl : result.sourceUrl ?? url);
+  if (result.ok) track('recipe_import_succeeded', { host });
+  else track('recipe_import_failed', { host, reason: result.reason });
+  return result;
+}
+
+function hostOf(url: string): string | undefined {
+  try {
+    return new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`).hostname.replace(/^www\./, '');
+  } catch {
+    return undefined;
   }
 }

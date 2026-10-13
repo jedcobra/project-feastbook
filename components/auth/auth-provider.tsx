@@ -3,6 +3,7 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { track } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase/client';
 import type { ProfileRow } from '@/lib/supabase/types';
 
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) return { error: error.message, needsEmailConfirmation: false };
+    track('signup_completed', { needs_email_confirmation: !data.session });
     // Set session/profile locally instead of waiting on the onAuthStateChange
     // listener — the caller navigates immediately after this resolves, and
     // AuthGate/OnboardingGate need `user`/`profile` current by then or they'll

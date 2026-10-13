@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { Avatar } from '@/components/avatar';
 import { LinkIcon, MessageIcon, ShareIcon } from '@/components/icons';
+import { track } from '@/lib/analytics';
 import { fetchConversations, fetchFollowing, getOrCreateConversation, sendMessage } from '@/lib/supabase/queries';
 import type { CookPhoto, Person, Recipe } from '@/lib/types';
 
@@ -97,7 +98,10 @@ export function ShareSheet({ item, onClose }: ShareSheetProps) {
         item.message.photoUrl,
         item.message.recipeId,
       );
-      if (message) setSentIds((s) => new Set(s).add(personId));
+      if (message) {
+        setSentIds((s) => new Set(s).add(personId));
+        track('recipe_shared', { method: 'message', path: item.path });
+      }
     }
     setSendingId(null);
   };
@@ -105,6 +109,7 @@ export function ShareSheet({ item, onClose }: ShareSheetProps) {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
+      track('recipe_shared', { method: 'copy_link', path: item.path });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -115,6 +120,7 @@ export function ShareSheet({ item, onClose }: ShareSheetProps) {
   const nativeShare = async () => {
     try {
       await navigator.share({ title: item.title, text, url });
+      track('recipe_shared', { method: 'native', path: item.path });
       onClose();
     } catch {
       // Cancelled by the person, or blocked mid-call — either way, no error to show.
