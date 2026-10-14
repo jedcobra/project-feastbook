@@ -1,3 +1,4 @@
+import { track } from '@/lib/analytics';
 import { formatRelativeTime, MAX_SERVINGS } from '@/lib/format';
 import type { RecipeDraft } from '@/lib/recipe-draft';
 import { supabase } from '@/lib/supabase/client';
@@ -549,6 +550,7 @@ export async function completeOnboarding(profileId: string, tasteTags: string[])
     .update({ onboarded_at: new Date().toISOString(), taste_tags: tasteTags })
     .eq('id', profileId);
   if (error) console.error('completeOnboarding', error);
+  else track('onboarding_completed', { taste_tag_count: tasteTags.length });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -895,6 +897,7 @@ export async function addCookPhoto(userId: string, recipeId: string, photoUrl: s
     console.error('addCookPhoto', error);
     return null;
   }
+  track('cook_photo_added', { recipe_id: recipeId });
   return id;
 }
 
@@ -1236,6 +1239,7 @@ export async function setFollowing(followerId: string, followeeId: string, follo
       return false;
     }
     await notify(followeeId, followerId, 'follow');
+    track('follow_created');
     return true;
   }
   const { error } = await supabase
@@ -1278,6 +1282,7 @@ export async function setCooked(
       return false;
     }
     if (recipeAuthorId) await notify(recipeAuthorId, userId, 'cooked', { recipeId });
+    track('recipe_cooked', { recipe_id: recipeId, own_recipe: recipeAuthorId === userId });
     return true;
   }
   const { error } = await supabase.from('made_it').delete().eq('user_id', userId).eq('recipe_id', recipeId);
@@ -1313,6 +1318,7 @@ export async function rateRecipe(userId: string, recipeId: string, stars: number
     console.error('rateRecipe', error);
     return false;
   }
+  track('recipe_rated', { recipe_id: recipeId, stars });
   return true;
 }
 
@@ -1373,6 +1379,8 @@ export async function postComment(
   } else if (opts.recipeAuthorId) {
     await notify(opts.recipeAuthorId, authorId, 'note', { recipeId, commentId: data.id, excerpt: text });
   }
+
+  track('comment_posted', { recipe_id: recipeId, is_reply: !!opts.parentId, cooked: !!opts.cooked, has_photo: !!opts.photoUrl });
 
   if (opts.cooked) {
     await setCooked(authorId, recipeId, true, opts.recipeAuthorId);
@@ -1457,6 +1465,7 @@ export async function createShelf(
     return null;
   }
   if (tellFollowers && visibility !== 'private') void postShelf(data.id as string);
+  track('shelf_created', { visibility, told_followers: tellFollowers });
   return { id: data.id as string, title: data.title as string };
 }
 
@@ -1637,6 +1646,7 @@ export async function quickSaveRecipe(ownerId: string, recipeId: string): Promis
   const current = ownShelves.map((s) => s.id).filter((sid) => shelfIdsWithRecipe.has(sid));
 
   await setRecipeShelves(ownerId, recipeId, [...new Set([...current, defaultShelfId])]);
+  track('recipe_saved', { recipe_id: recipeId });
   return true;
 }
 
@@ -1829,6 +1839,13 @@ export async function publishRecipe(
   const recipeId = recipeRow.id as string;
   await insertRecipeContent(recipeId, draft);
   await linkShelves(recipeId, shelfIds);
+  track('recipe_published', {
+    recipe_id: recipeId,
+    source: draft.source,
+    visibility,
+    has_photo: !!draft.coverPhotoUrl,
+    step_count: draft.steps.length,
+  });
   return recipeId;
 }
 
@@ -2381,6 +2398,7 @@ export async function sendMessage(
     .update({ last_message_at: row.created_at })
     .eq('id', conversationId);
   if (convError) console.error('sendMessage: conversation update', convError);
+  track('message_sent', { has_photo: !!photoUrl, shares_recipe: !!recipeId });
 
   await notify(recipientId, senderId, 'message', {
     conversationId,

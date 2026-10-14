@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Avatar } from '@/components/avatar';
 import { XIcon } from '@/components/icons';
+import { track } from '@/lib/analytics';
 import { formatCount } from '@/lib/format';
 import type { Person } from '@/lib/types';
 
@@ -36,9 +37,11 @@ export function ProfileHeader({ person, isOwn = false }: { person: Person; isOwn
     try {
       if (navigator.share) {
         await navigator.share({ title: `@${person.handle}`, url });
+        track('profile_shared', { method: 'native' });
         return;
       }
       await navigator.clipboard.writeText(url);
+      track('profile_shared', { method: 'copy_link' });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {

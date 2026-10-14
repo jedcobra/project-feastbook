@@ -20,6 +20,7 @@ import {
   setFollowing,
   unblockUser,
 } from '@/lib/supabase/queries';
+import { track } from '@/lib/analytics';
 import type { CookPhoto, Person, Recipe, Shelf } from '@/lib/types';
 
 export function FriendProfileScreen({ handle }: { handle: string }) {
@@ -85,9 +86,11 @@ export function FriendProfileScreen({ handle }: { handle: string }) {
     try {
       if (navigator.share) {
         await navigator.share({ title: `@${data.person.handle}`, url });
+        track('profile_shared', { method: 'native' });
         return;
       }
       await navigator.clipboard.writeText(url);
+      track('profile_shared', { method: 'copy_link' });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {

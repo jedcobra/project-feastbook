@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BookIcon, ChevronIcon, LinkIcon, PencilIcon, PrintIcon, SaveIcon, TrashIcon } from '@/components/icons';
+import { track } from '@/lib/analytics';
 import { deleteRecipe, fetchRecipeDeleteImpact, updateRecipeVisibility } from '@/lib/supabase/queries';
 import type { Visibility } from '@/lib/types';
 import { VISIBILITY_OPTIONS, visibilityLabel } from '@/lib/visibility';
@@ -44,6 +45,7 @@ export function OwnerSheet({ recipeId, title, visibility, onVisibilityChanged, o
       // /r/[id] is the public share page — readable without an account,
       // unlike /recipe/[id] which sits behind the sign-in-only tabs shell.
       await navigator.clipboard.writeText(`${window.location.origin}/r/${recipeId}`);
+      track('recipe_shared', { method: 'copy_link', path: `/r/${recipeId}` });
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {

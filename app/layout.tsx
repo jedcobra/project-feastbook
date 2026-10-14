@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AnalyticsProvider } from '@/components/analytics/analytics-provider';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { DismissKeyboardOnScroll } from '@/components/dismiss-keyboard-on-scroll';
@@ -40,6 +41,7 @@ export default function RootLayout({
           <DismissKeyboardOnScroll />
           <AuthProvider>
             <AuthGate />
+            <AnalyticsProvider />
             {children}
           </AuthProvider>
         </div>
