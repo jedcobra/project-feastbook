@@ -7,7 +7,7 @@ import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
 import { Label } from '@/components/label';
 import type { CookPhoto, RecentCook } from '@/lib/types';
 
-const BUBBLE = 68;
+const BUBBLE = 80;
 
 // The row of rounded-square pictures across the top of the feed, like stories: what
 // you and the people you follow cooked lately, newest first, scrolling sideways.
@@ -30,9 +30,9 @@ export function RecentlyCooked({
   if (cooks.length === 0) return null;
 
   return (
-    <section aria-label="Recently cooked" className="border-b border-rule-soft pb-3.5 pt-3">
+    <section aria-label="Recently cooked" className="pb-2.5 pt-3">
       <Label className="px-5 pb-2.5">Recently cooked</Label>
-      <ul className="flex gap-3.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <ul className="flex gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {cooks.map((cook) => {
           const handle = cook.type === 'photo' ? cook.photo.handle : cook.handle;
           const title = cook.type === 'photo' ? cook.photo.recipeTitle : cook.recipeTitle;
@@ -43,9 +43,6 @@ export function RecentlyCooked({
               avatarUrl={cook.type === 'photo' ? cook.photo.avatarUrl : cook.avatarUrl}
             />
           );
-          const caption = (
-            <span className="block w-[72px] truncate text-center font-mono text-meta text-ink">{handle}</span>
-          );
           const label = `@${handle} cooked ${title}`;
           return (
             <li key={cook.key} className="flex-shrink-0">
@@ -54,19 +51,13 @@ export function RecentlyCooked({
                   type="button"
                   onClick={() => setOpenPhotoId(cook.photo.id)}
                   aria-label={label}
-                  className="flex flex-col items-center gap-1.5"
+                  className="block"
                 >
                   {bubble}
-                  {caption}
                 </button>
               ) : (
-                <Link
-                  href={`/recipe/${cook.recipeId}`}
-                  aria-label={label}
-                  className="flex flex-col items-center gap-1.5"
-                >
+                <Link href={`/recipe/${cook.recipeId}`} aria-label={label} className="block">
                   {bubble}
-                  {caption}
                 </Link>
               )}
             </li>
@@ -89,20 +80,16 @@ export function RecentlyCooked({
   );
 }
 
-// The dish in a rounded-square frame, with the cook's own face tucked into the corner.
+// The dish in a rounded-square frame, with the cook's own face tucked into
+// the corner — that face is the only sign of who cooked it; no name.
 function Bubble({ imageUrl, handle, avatarUrl }: { imageUrl: string; handle: string; avatarUrl?: string }) {
   return (
     <span className="relative block" style={{ width: BUBBLE, height: BUBBLE }}>
-      <span className="block h-full w-full rounded-[18px] border-2 border-accent p-[2px]">
+      <span className="block h-full w-full rounded-[20px] border-2 border-accent p-[2px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="h-full w-full rounded-[14px] bg-cream-deep object-cover" />
+        <img src={imageUrl} alt="" className="h-full w-full rounded-[16px] bg-cream-deep object-cover" />
       </span>
-      <Avatar
-        name={handle}
-        src={avatarUrl}
-        size={22}
-        className="absolute -bottom-1 -right-1 border-2 border-cream"
-      />
+      <Avatar name={handle} src={avatarUrl} size={24} className="absolute -bottom-1 -right-1 border-2 border-cream" />
     </span>
   );
 }
