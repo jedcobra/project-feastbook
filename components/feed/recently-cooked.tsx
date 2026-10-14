@@ -30,7 +30,7 @@ export function RecentlyCooked({
   if (cooks.length === 0) return null;
 
   return (
-    <section aria-label="Recently cooked" className="border-b border-rule-soft pb-2.5 pt-3">
+    <section aria-label="Recently cooked" className="pb-2.5 pt-3">
       <Label className="px-5 pb-2.5">Recently cooked</Label>
       <ul className="flex gap-3.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {cooks.map((cook) => {
