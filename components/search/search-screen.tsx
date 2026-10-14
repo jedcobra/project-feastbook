@@ -43,11 +43,21 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
       const res = await searchAll(trimmed);
       setResults(res);
       setLoading(false);
-      addRecentSearch(trimmed);
-      setRecent(listRecentSearches());
     }, 350);
     return () => clearTimeout(timer);
   }, [q]);
+
+  // Only remember a search the user actually initiated (enter, or tapping a
+  // recent/trending suggestion) — not every keystroke the live search sees.
+  const commitSearch = (term: string) => {
+    addRecentSearch(term);
+    setRecent(listRecentSearches());
+  };
+
+  const runSuggestion = (term: string) => {
+    setQ(term);
+    commitSearch(term);
+  };
 
   const toggleFilter = (f: QuickFilter) =>
     setFilters((fs) => {
@@ -82,6 +92,13 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+              e.preventDefault();
+              commitSearch(q);
+              e.currentTarget.blur();
+            }}
+            enterKeyHint="search"
             placeholder="Recipes, cooks, tags, ingredients…"
             className="min-w-0 flex-1 border-none bg-transparent font-mono text-[14px] text-ink outline-none placeholder:text-ink-mute"
           />
@@ -156,7 +173,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
             )}
             {recent.map((s) => (
               <div key={s} className="flex items-center gap-2.5 border-b border-rule-soft py-2.5">
-                <button type="button" onClick={() => setQ(s)} className="flex-1 text-left font-mono text-[14px] text-ink">
+                <button type="button" onClick={() => runSuggestion(s)} className="flex-1 text-left font-mono text-[14px] text-ink">
                   {s}
                 </button>
                 <button
@@ -177,7 +194,7 @@ export function SearchScreen({ initial = '' }: { initial?: string }) {
                 <Subheading className="mb-2.5">Trending tags</Subheading>
                 <div className="flex flex-wrap gap-1.5">
                   {trendingTags.map((t) => (
-                    <button key={t} type="button" onClick={() => setQ(t)}>
+                    <button key={t} type="button" onClick={() => runSuggestion(t)}>
                       <Tag>{t}</Tag>
                     </button>
                   ))}
