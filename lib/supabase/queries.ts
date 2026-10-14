@@ -782,8 +782,8 @@ export async function fetchCookPhotos(userId: string, viewerId: string | null): 
   return mapCookPhotoRows(data as CookPhotoRow[], viewerId);
 }
 
-// The "Recently cooked" row above the feed: what the people the viewer
-// follows cooked lately, newest first — their cook photos, plus plain
+// The "Recently cooked" row above the feed: what the viewer and the people
+// they follow cooked lately, all mixed together newest first — cook photos, plus plain
 // "cooked" marks shown with the photo they attached or the recipe's cover.
 // A cook with no picture at all is left out, and a plain mark for a recipe
 // the same person also posted a photo of would just repeat that photo.
@@ -797,8 +797,7 @@ export async function fetchRecentlyCooked(viewerId: string | null, limit = 20): 
     console.error('fetchRecentlyCooked follows', followError);
     return [];
   }
-  const ids = ((followRows ?? []) as { followee_id: string }[]).map((f) => f.followee_id);
-  if (ids.length === 0) return [];
+  const ids = [viewerId, ...((followRows ?? []) as { followee_id: string }[]).map((f) => f.followee_id)];
 
   const [{ data: photoRows, error: photoError }, { data: madeRows, error: madeError }] = await Promise.all([
     supabase
