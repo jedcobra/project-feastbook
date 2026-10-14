@@ -9,7 +9,7 @@ import type { CookPhoto, RecentCook } from '@/lib/types';
 
 const BUBBLE = 68;
 
-// The row of round pictures across the top of the feed, like stories: what
+// The row of rounded-square pictures across the top of the feed, like stories: what
 // the people you follow cooked lately, newest first, scrolling sideways.
 // A cook photo opens large in the same popup as the profile's Cooked grid;
 // a plain "cooked" mark opens its recipe.
@@ -89,19 +89,19 @@ export function RecentlyCooked({
   );
 }
 
-// The dish in a ring, with the cook's own face tucked into the corner.
+// The dish in a rounded-square frame, with the cook's own face tucked into the corner.
 function Bubble({ imageUrl, handle, avatarUrl }: { imageUrl: string; handle: string; avatarUrl?: string }) {
   return (
     <span className="relative block" style={{ width: BUBBLE, height: BUBBLE }}>
-      <span className="block h-full w-full rounded-full border-2 border-accent p-[2px]">
+      <span className="block h-full w-full rounded-[18px] border-2 border-accent p-[2px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="h-full w-full rounded-full bg-cream-deep object-cover" />
+        <img src={imageUrl} alt="" className="h-full w-full rounded-[14px] bg-cream-deep object-cover" />
       </span>
       <Avatar
         name={handle}
         src={avatarUrl}
         size={22}
-        className="absolute -bottom-0.5 -right-0.5 border-2 border-cream"
+        className="absolute -bottom-1 -right-1 border-2 border-cream"
       />
     </span>
   );
