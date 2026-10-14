@@ -10,7 +10,7 @@ import type { CookPhoto, RecentCook } from '@/lib/types';
 const BUBBLE = 68;
 
 // The row of rounded-square pictures across the top of the feed, like stories: what
-// the people you follow cooked lately, newest first, scrolling sideways.
+// you and the people you follow cooked lately, newest first, scrolling sideways.
 // A cook photo opens large in the same popup as the profile's Cooked grid;
 // a plain "cooked" mark opens its recipe.
 export function RecentlyCooked({
@@ -25,7 +25,7 @@ export function RecentlyCooked({
   const [openPhotoId, setOpenPhotoId] = useState<string | null>(null);
   const openPhoto = cooks.flatMap((c) => (c.type === 'photo' && c.photo.id === openPhotoId ? [c.photo] : []))[0];
 
-  // Nothing from the people you follow yet: no row at all, rather than an
+  // Nothing from you or the people you follow yet: no row at all, rather than an
   // empty shelf at the top of every visit.
   if (cooks.length === 0) return null;
 
