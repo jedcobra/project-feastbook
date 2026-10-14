@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Avatar } from '@/components/avatar';
 import { CookPhotoViewer } from '@/components/cooked/cook-photo-viewer';
-import { Label } from '@/components/label';
 import type { CookPhoto, RecentCook } from '@/lib/types';
 
 const BUBBLE = 80;
@@ -31,7 +30,10 @@ export function RecentlyCooked({
 
   return (
     <section aria-label="Recently cooked" className="pb-2.5 pt-3">
-      <Label className="px-5 pb-2.5">Recently cooked</Label>
+      {/* Same treatment as the section headings on profiles (Cookbooks, Recipes). */}
+      <h2 className="px-5 pb-3 font-mono text-[12px] uppercase leading-none tracking-[0.08em] text-ink-mute">
+        Recently cooked
+      </h2>
       <ul className="flex gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {cooks.map((cook) => {
           const handle = cook.type === 'photo' ? cook.photo.handle : cook.handle;
