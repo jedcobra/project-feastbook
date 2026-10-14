@@ -13,6 +13,7 @@ import type {
   FeedShelf,
   NotificationKind,
   Person,
+  RecentCook,
   Recipe,
   RecipeComment,
   Shelf,
@@ -140,19 +141,16 @@ async function mapRecipeRows(rows: RecipeRow[]): Promise<Recipe[]> {
 // `nextCursor` as `before` to load older posts; it's null once there's
 // nothing older.
 export async function fetchFeedPage(
-  viewerId: string | null,
   before: string | null = null,
   limit = 15,
 ): Promise<{ items: FeedItem[]; nextCursor: string | null } | null> {
+  // Cooks (plain "cooked" posts and cook photos) live in the Recently
+  // cooked row above the feed instead — see fetchRecentlyCooked.
   let activityQuery = supabase
     .from('feed_activity')
     .select('*')
+    .neq('kind', 'madeit')
     .order('happened_at', { ascending: false })
-    .limit(limit);
-  let photoQuery = supabase
-    .from('cook_photos')
-    .select(COOK_PHOTO_SELECT)
-    .order('created_at', { ascending: false })
     .limit(limit);
   // Shelves their owners posted with "Tell my followers"; RLS leaves out
   // any this viewer isn't allowed to see.
@@ -167,65 +165,50 @@ export async function fetchFeedPage(
     .limit(limit);
   if (before) {
     activityQuery = activityQuery.lt('happened_at', before);
-    photoQuery = photoQuery.lt('created_at', before);
     shelfQuery = shelfQuery.lt('posted_at', before);
   }
-  const [{ data: activity, error }, { data: photoRows, error: photoError }, { data: shelfRows, error: shelfError }] =
-    await Promise.all([activityQuery, photoQuery, shelfQuery]);
+  const [{ data: activity, error }, { data: shelfRows, error: shelfError }] = await Promise.all([
+    activityQuery,
+    shelfQuery,
+  ]);
   if (error || !activity) {
     console.error('fetchFeedPage', error);
     return null;
   }
-  if (photoError) console.error('fetchFeedPage photos', photoError);
   if (shelfError) console.error('fetchFeedPage shelves', shelfError);
 
   // Merge both sources by time and keep the newest `limit`; the cursor is
   // the oldest kept timestamp, so the next page picks up strictly before it.
   type Raw =
     | { type: 'activity'; at: string; row: (typeof activity)[number] }
-    | { type: 'photo'; at: string; row: CookPhotoRow }
     | { type: 'shelf'; at: string; row: FeedShelfRow };
   const merged: Raw[] = [
     ...activity.map((row): Raw => ({ type: 'activity', at: row.happened_at, row })),
-    ...((photoRows ?? []) as CookPhotoRow[]).map((row): Raw => ({ type: 'photo', at: row.created_at, row })),
     ...((shelfRows ?? []) as FeedShelfRow[]).map((row): Raw => ({ type: 'shelf', at: row.posted_at, row })),
   ]
     .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
     .slice(0, limit);
-  const fetchedEnough =
-    activity.length >= limit || (photoRows?.length ?? 0) >= limit || (shelfRows?.length ?? 0) >= limit;
+  const fetchedEnough = activity.length >= limit || (shelfRows?.length ?? 0) >= limit;
   const nextCursor = merged.length > 0 && fetchedEnough ? merged[merged.length - 1].at : null;
 
   const activityRows = merged.flatMap((m) => (m.type === 'activity' ? [m.row] : []));
   const recipeIds = [...new Set(activityRows.map((a) => a.recipe_id))];
   const whoIds = [...new Set(activityRows.map((a) => a.who_id))];
-  const [{ data: recipeRows }, { data: peopleRows }, peopleStats, photos] = await Promise.all([
+  const [{ data: recipeRows }, { data: peopleRows }, peopleStats] = await Promise.all([
     recipeIds.length ? supabase.from('recipes').select('*').in('id', recipeIds) : Promise.resolve({ data: [] }),
     whoIds.length
       ? supabase.from('profiles').select('id, name, handle, bio, avatar_url').in('id', whoIds)
       : Promise.resolve({ data: [] }),
     fetchProfileStatsByIds(whoIds),
-    mapCookPhotoRows(
-      merged.flatMap((m) => (m.type === 'photo' ? [m.row] : [])),
-      viewerId,
-    ),
   ]);
   const recipes = await mapRecipeRows((recipeRows ?? []) as RecipeRow[]);
   const recipeById = new Map(recipes.map((r) => [r.id, r]));
   const personById = new Map(
     ((peopleRows ?? []) as ProfileRow[]).map((p) => [p.id, mapPerson(p, peopleStats.get(p.id))]),
   );
-  const photoById = new Map(photos.map((p) => [p.id, p]));
-  // A cook who posted a photo already shows up as that photo; their plain
-  // "cooked" row for the same recipe would just repeat it.
-  const photographed = new Set(photos.map((p) => `${p.userId}:${p.recipeId}`));
 
   const items = merged.flatMap((m): FeedItem[] => {
     if (m.type === 'shelf') return [{ type: 'shelf', key: `shelf:${m.row.id}`, shelf: mapFeedShelf(m.row) }];
-    if (m.type === 'photo') {
-      const photo = photoById.get(m.row.id);
-      return photo ? [{ type: 'photo', key: `photo:${photo.id}`, photo }] : [];
-    }
     const a = m.row;
     const recipe = recipeById.get(a.recipe_id);
     const author = personById.get(a.who_id);
@@ -233,7 +216,6 @@ export async function fetchFeedPage(
     // "X saved their own recipe" isn't activity worth seeing — saving
     // your own recipe to a shelf is a filing action, not a cook finding it.
     if (a.kind === 'saved' && recipe.author === author.handle) return [];
-    if (a.kind === 'madeit' && photographed.has(`${a.who_id}:${a.recipe_id}`)) return [];
     return [
       {
         type: 'activity',
@@ -798,6 +780,99 @@ export async function fetchCookPhotos(userId: string, viewerId: string | null): 
     return [];
   }
   return mapCookPhotoRows(data as CookPhotoRow[], viewerId);
+}
+
+// The "Recently cooked" row above the feed: what the people the viewer
+// follows cooked lately, newest first — their cook photos, plus plain
+// "cooked" marks shown with the photo they attached or the recipe's cover.
+// A cook with no picture at all is left out, and a plain mark for a recipe
+// the same person also posted a photo of would just repeat that photo.
+export async function fetchRecentlyCooked(viewerId: string | null, limit = 20): Promise<RecentCook[]> {
+  if (!viewerId) return [];
+  const { data: followRows, error: followError } = await supabase
+    .from('follows')
+    .select('followee_id')
+    .eq('follower_id', viewerId);
+  if (followError) {
+    console.error('fetchRecentlyCooked follows', followError);
+    return [];
+  }
+  const ids = ((followRows ?? []) as { followee_id: string }[]).map((f) => f.followee_id);
+  if (ids.length === 0) return [];
+
+  const [{ data: photoRows, error: photoError }, { data: madeRows, error: madeError }] = await Promise.all([
+    supabase
+      .from('cook_photos')
+      .select(COOK_PHOTO_SELECT)
+      .in('user_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    supabase
+      .from('made_it')
+      .select('user_id, recipe_id, photo_url, created_at')
+      .in('user_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+  ]);
+  if (photoError) console.error('fetchRecentlyCooked photos', photoError);
+  if (madeError) console.error('fetchRecentlyCooked made_it', madeError);
+
+  const made = (madeRows ?? []) as { user_id: string; recipe_id: string; photo_url: string | null; created_at: string }[];
+  const recipeIds = [...new Set(made.map((m) => m.recipe_id))];
+  const whoIds = [...new Set(made.map((m) => m.user_id))];
+  const [photos, { data: recipeRows }, { data: peopleRows }] = await Promise.all([
+    mapCookPhotoRows((photoRows ?? []) as CookPhotoRow[], viewerId),
+    recipeIds.length
+      ? supabase.from('recipes').select('id, title, cover_photo_url').in('id', recipeIds)
+      : Promise.resolve({ data: [] }),
+    whoIds.length
+      ? supabase.from('profiles').select('id, handle, avatar_url').in('id', whoIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  // Recipes the viewer can't see don't come back (RLS), so neither does
+  // the cook of them.
+  const recipeById = new Map(
+    ((recipeRows ?? []) as { id: string; title: string; cover_photo_url: string | null }[]).map((r) => [r.id, r]),
+  );
+  const personById = new Map(
+    ((peopleRows ?? []) as { id: string; handle: string; avatar_url: string | null }[]).map((p) => [p.id, p]),
+  );
+  const photographed = new Set(photos.map((p) => `${p.userId}:${p.recipeId}`));
+  const photoAt = new Map(
+    ((photoRows ?? []) as CookPhotoRow[]).map((r) => [r.id, r.created_at]),
+  );
+
+  const cooks: { at: string; cook: RecentCook }[] = [
+    ...photos.map((photo) => ({
+      at: photoAt.get(photo.id) ?? '',
+      cook: { type: 'photo' as const, key: `photo:${photo.id}`, photo },
+    })),
+    ...made.flatMap((m) => {
+      const recipe = recipeById.get(m.recipe_id);
+      const person = personById.get(m.user_id);
+      const imageUrl = m.photo_url ?? recipe?.cover_photo_url;
+      if (!recipe || !person || !imageUrl || photographed.has(`${m.user_id}:${m.recipe_id}`)) return [];
+      return [
+        {
+          at: m.created_at,
+          cook: {
+            type: 'madeit' as const,
+            key: `madeit:${m.user_id}:${m.recipe_id}:${m.created_at}`,
+            handle: person.handle,
+            avatarUrl: person.avatar_url ?? undefined,
+            recipeId: recipe.id,
+            recipeTitle: recipe.title,
+            imageUrl,
+            when: formatRelativeTime(m.created_at),
+          },
+        },
+      ];
+    }),
+  ];
+  return cooks
+    .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
+    .slice(0, limit)
+    .map((c) => c.cook);
 }
 
 export async function fetchCookPhoto(photoId: string, viewerId: string | null): Promise<CookPhoto | null> {
