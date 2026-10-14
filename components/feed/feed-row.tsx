@@ -28,8 +28,8 @@ const VERB_ICON: Record<FeedActivity['kind'], (props: { size?: number }) => Reac
 // left edge and the entry's bottom across the first quarter, and the
 // details fill the other three. The image is at least square and grows with
 // the entry if the text runs taller. Entries without a picture are just the
-// text. (Cooked photos get their own full-width post, with the same top
-// line — see FeedPhotoPost.)
+// text. (Cooks sit in the Recently cooked row above the feed instead —
+// see RecentlyCooked.)
 export function FeedEntry({
   byline,
   image,

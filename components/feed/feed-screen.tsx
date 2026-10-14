@@ -3,24 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ErrorScreen } from '@/components/error-screen';
-import { FeedPhotoPost } from '@/components/feed/feed-photo-post';
 import { FeedRow } from '@/components/feed/feed-row';
 import { FeedShelfPost } from '@/components/feed/feed-shelf-post';
 import { FeedSkeleton } from '@/components/feed/feed-skeleton';
-import { fetchFeedPage } from '@/lib/supabase/queries';
-import type { CookPhoto, FeedItem } from '@/lib/types';
-
-// A cook who posted a photo already shows up as that photo; their plain
-// "cooked" post for the same recipe would just repeat it, even when the two
-// land on different pages.
-function withoutRepeatCooks(items: FeedItem[]): FeedItem[] {
-  const photographed = new Set(
-    items.flatMap((i) => (i.type === 'photo' ? [`${i.photo.handle}:${i.photo.recipeId}`] : [])),
-  );
-  return items.filter(
-    (i) => !(i.type === 'activity' && i.activity.kind === 'madeit' && photographed.has(`${i.activity.who}:${i.recipe.id}`)),
-  );
-}
+import { RecentlyCooked } from '@/components/feed/recently-cooked';
+import { fetchFeedPage, fetchRecentlyCooked } from '@/lib/supabase/queries';
+import type { CookPhoto, FeedItem, RecentCook } from '@/lib/types';
 
 // How far (after damping) the list has to be pulled down to refresh.
 const PULL_TRIGGER = 64;
@@ -31,6 +19,8 @@ export function FeedScreen() {
   const viewerId = profile?.id ?? null;
   // undefined = loading, null = fetch failed, [] = genuinely empty.
   const [items, setItems] = useState<FeedItem[] | null | undefined>(undefined);
+  // The Recently cooked row, loaded alongside each first page of the feed.
+  const [cooks, setCooks] = useState<RecentCook[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,8 +29,9 @@ export function FeedScreen() {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const loadFirst = useCallback(async () => {
-    const page = await fetchFeedPage(viewerId);
-    setItems(page ? withoutRepeatCooks(page.items) : null);
+    const [page, recent] = await Promise.all([fetchFeedPage(), fetchRecentlyCooked(viewerId)]);
+    setItems(page ? page.items : null);
+    setCooks(recent);
     setCursor(page?.nextCursor ?? null);
   }, [viewerId]);
 
@@ -59,15 +50,15 @@ export function FeedScreen() {
   const loadMore = useCallback(async () => {
     if (!cursor || loadingMore) return;
     setLoadingMore(true);
-    const page = await fetchFeedPage(viewerId, cursor);
+    const page = await fetchFeedPage(cursor);
     setLoadingMore(false);
     if (!page) return;
     setItems((cur) => {
       const seen = new Set((cur ?? []).map((i) => i.key));
-      return withoutRepeatCooks([...(cur ?? []), ...page.items.filter((i) => !seen.has(i.key))]);
+      return [...(cur ?? []), ...page.items.filter((i) => !seen.has(i.key))];
     });
     setCursor(page.nextCursor);
-  }, [cursor, loadingMore, viewerId]);
+  }, [cursor, loadingMore]);
 
   // Load the next page as the end of the list scrolls into view.
   useEffect(() => {
@@ -129,11 +120,9 @@ export function FeedScreen() {
   }, [hasItems]);
 
   const updatePhoto = (photo: CookPhoto) =>
-    setItems((cur) =>
-      cur?.map((i) => (i.type === 'photo' && i.photo.id === photo.id ? { ...i, photo } : i)) ?? cur,
-    );
+    setCooks((cur) => cur.map((c) => (c.type === 'photo' && c.photo.id === photo.id ? { ...c, photo } : c)));
   const removePhoto = (photoId: string) =>
-    setItems((cur) => cur?.filter((i) => !(i.type === 'photo' && i.photo.id === photoId)) ?? cur);
+    setCooks((cur) => cur.filter((c) => !(c.type === 'photo' && c.photo.id === photoId)));
 
   if (items === undefined) {
     return <FeedSkeleton />;
@@ -165,16 +154,16 @@ export function FeedScreen() {
         </span>
       </div>
 
+      <RecentlyCooked cooks={cooks} onChange={updatePhoto} onDeleted={removePhoto} />
+
       {items.length === 0 ? (
         <div className="px-5 pt-8 text-center font-mono text-[14px] text-ink-mute">
-          No activity yet — recipes people add, cook, or save will show up here.
+          No activity yet — recipes people add or save will show up here.
         </div>
       ) : (
         items.map((item) =>
           item.type === 'shelf' ? (
             <FeedShelfPost key={item.key} shelf={item.shelf} />
-          ) : item.type === 'photo' ? (
-            <FeedPhotoPost key={item.key} photo={item.photo} onChange={updatePhoto} onDeleted={removePhoto} />
           ) : (
             <FeedRow key={item.key} item={item.activity} recipe={item.recipe} author={item.author} />
           ),

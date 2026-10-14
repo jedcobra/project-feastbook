@@ -142,12 +142,26 @@ export interface FeedActivity {
   caption: string;
 }
 
-// One post in the feed: an activity row (added / cooked / saved a recipe)
-// or someone's photo of a dish they cooked.
+// One post in the feed: an activity row (added or saved a recipe) or a
+// posted shelf. Cooks live in the Recently cooked row instead (RecentCook).
 export type FeedItem =
   | { type: 'activity'; key: string; activity: FeedActivity; recipe: Recipe; author: Person }
-  | { type: 'photo'; key: string; photo: CookPhoto }
   | { type: 'shelf'; key: string; shelf: FeedShelf };
+
+// One bubble in the feed's "Recently cooked" row: a cook photo, or a plain
+// "cooked" mark shown with its attached photo or the recipe's cover.
+export type RecentCook =
+  | { type: 'photo'; key: string; photo: CookPhoto }
+  | {
+      type: 'madeit';
+      key: string;
+      handle: string;
+      avatarUrl?: string;
+      recipeId: string;
+      recipeTitle: string;
+      imageUrl: string;
+      when: string;
+    };
 
 // A shelf its owner posted to the feed, with enough of its recipes to
 // preview.
