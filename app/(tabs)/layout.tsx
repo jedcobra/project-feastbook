@@ -1,6 +1,7 @@
 import { OnboardingGate } from '@/components/auth/onboarding-gate';
 import { GlassFilter } from '@/components/glass';
 import { TabBar } from '@/components/tab-bar';
+import { Toaster } from '@/components/toaster';
 
 // Shared shell for every tab-root screen (Feed, Cookbook, Discover, Add) and
 // anything pushed on top of them (Recipe Detail). Cooking Mode lives outside
@@ -15,6 +16,7 @@ export default function TabsLayout({ children }: { children: React.ReactNode }) 
       <div data-tab-shell className="relative flex min-h-0 flex-1 flex-col">
         {children}
         <TabBar />
+        <Toaster />
         <GlassFilter />
       </div>
     </>
