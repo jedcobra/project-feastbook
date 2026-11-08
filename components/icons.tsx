@@ -418,3 +418,11 @@ export function HeartIcon({ filled, ...props }: StrokeIconProps & { filled?: boo
     </StrokeIcon>
   );
 }
+
+export function CheckIcon(props: StrokeIconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </StrokeIcon>
+  );
+}

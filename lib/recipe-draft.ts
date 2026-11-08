@@ -211,7 +211,7 @@ export function deleteDraft(id: string) {
   saveAll(all);
 }
 
-function isDraftEmpty(draft: RecipeDraft): boolean {
+export function isDraftEmpty(draft: RecipeDraft): boolean {
   const hasText = [draft.title, draft.subtitle, draft.intro, draft.notes].some((v) => v.trim());
   const hasIngredient = draft.sections.some(
     (s) => s.section.trim() || s.items.some((it) => it.q.trim() || it.i.trim()),

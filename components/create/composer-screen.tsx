@@ -14,12 +14,14 @@ import { Tag } from '@/components/tag';
 import { TopBar } from '@/components/top-bar';
 import { useBackNav } from '@/lib/back-nav';
 import { moveItem } from '@/lib/cookbook-order';
+import { showToast } from '@/lib/toast';
 import { clampServingsInput } from '@/lib/format';
 import {
   createDraft,
   draftFromRecipe,
   draftProgress,
   loadDraft,
+  isDraftEmpty,
   saveDraft,
   type DraftSource,
   type RecipeDraft,
@@ -200,6 +202,16 @@ export function ComposerScreen() {
 
   const isEdit = !!draft.editId;
   const closeHref = isEdit ? `/recipe/${draft.editId}` : '/new';
+
+  // Drafts already autosave as they're typed; this makes it explicit and
+  // confirms it on the screen you land on. An empty draft is never kept, so
+  // there's nothing to confirm. Editing a published recipe isn't a draft in
+  // the Drafts list, so it gets no "Draft saved" either.
+  const saveAndClose = () => {
+    saveDraft(draft);
+    if (!isEdit && !isDraftEmpty(draft)) showToast('Draft saved');
+    goBack(closeHref);
+  };
   const pct = draftProgress(draft);
   const update = (patch: Partial<RecipeDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
 
@@ -532,7 +544,7 @@ export function ComposerScreen() {
         </div>
       )}
       <div className="tabbar-clearance flex flex-shrink-0 gap-2.5 border-t border-rule-soft bg-cream px-5 pb-5 pt-3">
-        <OutlineBox onClick={() => goBack(closeHref)} aria-label="Save and close">
+        <OutlineBox onClick={saveAndClose} aria-label="Save and close">
           <SaveIcon size={14} />
         </OutlineBox>
         <button
