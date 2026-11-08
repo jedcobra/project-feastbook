@@ -16,6 +16,7 @@ interface FieldProps {
   min?: number;
   max?: number;
   maxLength?: number;
+  enterKeyHint?: React.HTMLAttributes<HTMLElement>['enterKeyHint'];
 }
 
 // Underline field — real input, no border box. The composer's signature
@@ -38,6 +39,7 @@ export function Field({
   min,
   max,
   maxLength,
+  enterKeyHint,
 }: FieldProps) {
   const inputClassName = `block w-full resize-none border-none bg-transparent py-1.5 outline-none ${
     mono ? 'font-mono' : 'font-display'
@@ -52,6 +54,7 @@ export function Field({
       {multiline ? (
         <AutoGrowTextarea
           rows={rows}
+          enterKeyHint={enterKeyHint}
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
@@ -61,6 +64,7 @@ export function Field({
       ) : type === 'text' && !autoComplete ? (
         <AutoGrowLine
           maxLength={maxLength}
+          enterKeyHint={enterKeyHint}
           value={value}
           placeholder={placeholder}
           onChange={onChange}
@@ -70,6 +74,7 @@ export function Field({
       ) : (
         <input
           type={type}
+          enterKeyHint={enterKeyHint}
           autoComplete={autoComplete}
           min={min}
           max={max}
