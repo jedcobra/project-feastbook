@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { useAuth } from '@/components/auth/auth-provider';
 import { AutoGrowLine, AutoGrowTextarea } from '@/components/auto-grow-textarea';
 import { Field } from '@/components/create/field';
@@ -84,6 +85,8 @@ export function ComposerScreen() {
   const ingredientRows = useRef(new Map<string, HTMLElement>());
   const stepRows = useRef(new Map<number, HTMLElement>());
   const draftRef = useRef(draft);
+  // The scrolling form, which Enter moves through (see onFormEnter).
+  const formRef = useRef<HTMLDivElement>(null);
   draftRef.current = draft;
   // The draft as it was before the last ingredient or step was removed,
   // offered back for a few seconds.
@@ -259,6 +262,80 @@ export function ComposerScreen() {
   const addStep = () =>
     setDraft((d) => (d ? { ...d, steps: [...d.steps, { t: '', d: '', timer: '', photoUrl: '' }] } : d));
 
+  // Enter on the phone keyboard moves on to the next thing to fill in, so a
+  // recipe can be typed out top to bottom without reaching for the screen.
+  // Finishing a filled-in ingredient or step starts a fresh one below it;
+  // Enter on that fresh, still-empty row moves on to the next part (empty
+  // rows are dropped at publish). Optional extras (section names, step
+  // timers) and number boxes, whose iPhone keypad has no Enter key, are
+  // passed over but stay a tap away.
+  const focusField = (el: Element | null | undefined) => {
+    if (el instanceof HTMLElement) el.focus();
+  };
+  const focusNext = (from: HTMLElement) => {
+    const fields = Array.from(
+      formRef.current?.querySelectorAll<HTMLElement>(
+        'textarea, input:not([type="file"]):not([type="hidden"]):not([type="number"])',
+      ) ?? [],
+    ).filter((el) => !el.hasAttribute('data-enter-skip') && !(el as HTMLInputElement).disabled && el.offsetParent);
+    const next = fields[fields.indexOf(from) + 1];
+    if (next) focusField(next);
+    else from.blur();
+  };
+  // Adds the row synchronously so focus can move into it while still inside
+  // the key press, which keeps the iPhone keyboard up.
+  const addAndFocus = (add: () => void, selector: string) => {
+    flushSync(add);
+    focusField(formRef.current?.querySelector(selector));
+  };
+  const onFormEnter = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
+    const el = e.target as HTMLElement;
+    if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) return;
+    if (el.dataset.enter === 'own' || !draft) return;
+    e.preventDefault();
+
+    const [kind, a, b] = (el.dataset.field ?? '').split(':');
+    if (kind === 'i') {
+      const si = Number(a);
+      const ii = Number(b);
+      const items = draft.sections[si].items;
+      const item = items[ii];
+      if (ii === items.length - 1 && (item.q.trim() || item.i.trim())) {
+        addAndFocus(() => addItem(si), `[data-field="q:${si}:${ii + 1}"]`);
+        return;
+      }
+    }
+    // Enter on a fresh, empty last ingredient: leave the ingredients.
+    if (kind === 'q') {
+      const si = Number(a);
+      const ii = Number(b);
+      const items = draft.sections[si].items;
+      if (ii > 0 && ii === items.length - 1 && !items[ii].q.trim() && !items[ii].i.trim()) {
+        focusNext(formRef.current?.querySelector<HTMLElement>(`[data-field="i:${si}:${ii}"]`) ?? el);
+        return;
+      }
+    }
+    if (kind === 'd') {
+      const i = Number(a);
+      const step = draft.steps[i];
+      if (i === draft.steps.length - 1 && (step.t.trim() || step.d.trim())) {
+        addAndFocus(addStep, `[data-field="t:${i + 1}"]`);
+        return;
+      }
+    }
+    // An empty last step: skip its description and leave the method.
+    if (kind === 't' && Number(a) === draft.steps.length - 1 && !el.value.trim() && Number(a) > 0) {
+      const stepFields = formRef.current?.querySelectorAll<HTMLElement>('[data-field^="d:"]');
+      const lastDesc = stepFields?.[stepFields.length - 1];
+      if (lastDesc) {
+        focusNext(lastDesc);
+        return;
+      }
+    }
+    focusNext(el);
+  };
+
   const startDrag = (drag: Drag) => {
     (document.activeElement as HTMLElement | null)?.blur();
     draggingRef.current = drag;
@@ -284,13 +361,14 @@ export function ComposerScreen() {
         backHref={closeHref}
         subtitle={`${pct}% · draft saved`}
       />
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
+      <div ref={formRef} onKeyDownCapture={onFormEnter} className="min-h-0 flex-1 overflow-y-auto px-5 pb-8">
         <div className="mb-[18px] h-0.5 bg-rule-soft">
           <div className="h-full bg-ink transition-[width] duration-200" style={{ width: `${pct}%` }} />
         </div>
 
         <Field
           label="Title"
+          enterKeyHint="next"
           value={draft.title}
           onChange={(v) => update({ title: v })}
           placeholder="Brown Butter Miso Pasta"
@@ -299,6 +377,7 @@ export function ComposerScreen() {
         />
         <Field
           label="One-line description"
+          enterKeyHint="next"
           value={draft.subtitle}
           onChange={(v) => update({ subtitle: v })}
           placeholder="A 20-minute dinner that tastes like a two-hour one."
@@ -316,6 +395,7 @@ export function ComposerScreen() {
           <TimeField value={draft.time} onChange={(v) => update({ time: v })} />
           <Field
             label="Serves"
+          enterKeyHint="next"
             type="number"
             min={1}
             max={20}
@@ -346,6 +426,7 @@ export function ComposerScreen() {
 
         <Field
           label="Intro — the story"
+          enterKeyHint="next"
           value={draft.intro}
           onChange={(v) => update({ intro: v })}
           multiline
@@ -366,6 +447,8 @@ export function ComposerScreen() {
               <AutoGrowLine
                 value={section.section}
                 onChange={(v) => setSectionName(si, v)}
+                enterKeyHint="next"
+                data-enter-skip
                 placeholder={si === 0 ? 'Section name (optional)' : 'Section name'}
                 className="mb-1.5 block w-full resize-none border-none bg-transparent p-0 font-mono text-[11px] uppercase tracking-wide text-ink-mute outline-none"
               />
@@ -384,12 +467,16 @@ export function ComposerScreen() {
                   <AutoGrowLine
                     value={item.q}
                     onChange={(v) => setItem(si, ii, 'q', v)}
+                    enterKeyHint="next"
+                    data-field={`q:${si}:${ii}`}
                     placeholder="200g"
                     className="block w-[112px] flex-shrink-0 resize-none border-none bg-transparent p-0 pt-px font-mono text-[12px] leading-[1.5] text-ink-mute outline-none"
                   />
                   <AutoGrowLine
                     value={item.i}
                     onChange={(v) => setItem(si, ii, 'i', v)}
+                    enterKeyHint="next"
+                    data-field={`i:${si}:${ii}`}
                     placeholder="bucatini"
                     className="block min-w-0 flex-1 resize-none border-none bg-transparent p-0 font-mono text-[14px] leading-[1.4] text-ink outline-none"
                   />
@@ -431,6 +518,8 @@ export function ComposerScreen() {
                   <AutoGrowLine
                     value={step.t}
                     onChange={(v) => setStep(i, 't', v)}
+                    enterKeyHint="next"
+                    data-field={`t:${i}`}
                     placeholder="Brown the butter"
                     className="mb-1 block w-full resize-none border-none bg-transparent p-0 font-display text-[16px] font-bold leading-[1.3] text-ink outline-none"
                   />
@@ -439,6 +528,8 @@ export function ComposerScreen() {
                     rows={2}
                     maxLength={STEP_DESCRIPTION_LIMIT}
                     onChange={(e) => setStep(i, 'd', e.target.value)}
+                    enterKeyHint="next"
+                    data-field={`d:${i}`}
                     placeholder="What to do, and what it should look like when it's right."
                     className="block w-full resize-none border-none bg-transparent p-0 font-mono text-[14px] leading-[1.55] text-ink-mute outline-none"
                   />
@@ -452,6 +543,8 @@ export function ComposerScreen() {
                     <input
                       value={step.timer}
                       onChange={(e) => setStep(i, 'timer', e.target.value)}
+                      enterKeyHint="next"
+                      data-enter-skip
                       placeholder="timer (min)"
                       className="w-[110px] border-none bg-transparent p-0 font-mono text-[11px] text-ink-mute outline-none"
                     />
@@ -482,6 +575,7 @@ export function ComposerScreen() {
 
         <Field
           label="Your notes"
+          enterKeyHint="next"
           value={draft.notes}
           onChange={(v) => update({ notes: v })}
           multiline
@@ -513,6 +607,8 @@ export function ComposerScreen() {
             <input
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
+              enterKeyHint="done"
+              data-enter="own"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
